@@ -1,0 +1,43 @@
+name: Update Hynoe YouTube Broadcast
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "*/15 * * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: hynoe-youtube-broadcast
+  cancel-in-progress: true
+
+jobs:
+  update-stream:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out website
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Find latest Hynoe livestream
+        run: python scripts/update_youtube.py
+
+      - name: Commit broadcast change
+        shell: bash
+        run: |
+          if git diff --quiet -- data/stream.json; then
+            echo "No stream change."
+            exit 0
+          fi
+
+          git config user.name "hynoe-broadcast-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/stream.json
+          git commit -m "Update Hynoe broadcast"
+          git push
