@@ -20,6 +20,7 @@
     <div class="guide-xp-track"><i id="guide-progress-fill"></i></div>
   </div>
   <div class="hud-actions">
+      <a class="hud-action youtube" href="https://www.youtube.com/@Hynoe/live" target="_blank" rel="noreferrer">● WATCH</a>
       <a class="hud-action pack" href="https://github.com/HynoeGeshi/hynoesmp/releases/latest/download/Hynoe_SMP_Client_Pack.zip">↓ PACK</a>
       <a class="hud-action discord" href="https://discord.gg/wYTePCkXd5" target="_blank" rel="noreferrer">DISCORD</a>
       <button class="journal-toggle" type="button" data-journal-toggle aria-expanded="false">JOURNAL <span>▣</span></button>
@@ -168,6 +169,47 @@
   <div class="updates-actions"><a class="mc-button gold" href="https://github.com/HynoeGeshi/hynoesmp/releases/latest/download/Hynoe_SMP_Client_Pack.zip">DOWNLOAD CURRENT PACK</a><a class="mc-button stone" href="https://discord.gg/wYTePCkXd5" target="_blank" rel="noreferrer">READ ANNOUNCEMENTS IN DISCORD ↗</a></div>
 </section>
 
+
+<section class="world-broadcast reveal" id="broadcast" data-broadcast data-status="syncing">
+  <div class="broadcast-rig">
+    <div class="broadcast-antenna" aria-hidden="true">
+      <i></i><i></i><i></i><span></span>
+    </div>
+
+    <div class="broadcast-screen">
+      <div class="broadcast-screen-top">
+        <span class="broadcast-status" data-stream-status>SYNCING</span>
+        <small>HYNOE WORLD FEED // YOUTUBE</small>
+      </div>
+
+      <div class="broadcast-video" data-stream-video>
+        <div class="broadcast-placeholder">
+          <div class="signal-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+          <span>LOCATING THE LATEST HYNOE BROADCAST...</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="broadcast-console">
+      <span class="eyebrow">WORLD BROADCAST // HYNOE</span>
+      <h2 data-stream-heading>Latest Hynoe SMP stream</h2>
+      <p class="broadcast-title" data-stream-title>The broadcast beacon is syncing with the Hynoe YouTube channel.</p>
+
+      <div class="broadcast-meta">
+        <div><small>STATUS</small><b data-stream-meta-status>SYNCING</b></div>
+        <div><small>CHANNEL</small><b>@Hynoe</b></div>
+      </div>
+
+      <div class="broadcast-actions">
+        <a class="mc-button red" data-stream-watch href="https://www.youtube.com/@Hynoe/live" target="_blank" rel="noreferrer">WATCH ON YOUTUBE ↗</a>
+        <a class="mc-button purple" href="https://discord.gg/wYTePCkXd5" target="_blank" rel="noreferrer">JOIN DISCORD</a>
+      </div>
+
+      <p class="broadcast-note">This beacon automatically checks Hynoe's YouTube stream feed. If Hynoe is live, the live broadcast takes priority; otherwise it shows the newest completed stream.</p>
+    </div>
+  </div>
+</section>
+
 <section class="download-dock reveal">
   <div class="download-dock-copy"><span class="eyebrow">CLIENT SETUP</span><h2>Everything you need to enter the world.</h2><p>The client pack is built from the current Hynoe SMP server mod set with server/admin tools removed. Iris and your Hynoe shader preset are included; the Complementary shader itself must be downloaded from its official page.</p></div>
   <div class="download-dock-actions">
@@ -202,6 +244,7 @@
 </footer>
 
 <script src="assets/common.js"></script>
+<script src="assets/stream.js"></script>
 
 </body>
 </html>

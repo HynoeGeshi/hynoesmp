@@ -268,3 +268,233 @@ body[data-page="join"] .server-code,body[data-page="join"] .arrival-screen{backd
  .genesis-ages{padding:0 18px}.age-tabs{overflow-x:auto}.age-tabs button{min-width:92px}.age-panel{padding:16px}
  .armor-age-grid,.story-age-path,.skill-age-grid{grid-template-columns:1fr}.genesis-reminder{grid-template-columns:1fr}.unlock-chain{padding-bottom:10px}
 }
+
+
+/* v6: Hynoe World Broadcast */
+.hud-action.youtube{
+  color:#ffd7d3!important;
+  border-color:#7d3a32!important;
+  background:linear-gradient(#351614,#1e0e0c)!important;
+}
+.hud-action.youtube:hover{color:#fff!important;border-color:#e56a5c!important}
+
+.world-broadcast{
+  max-width:var(--max);
+  margin:0 auto 64px;
+  padding:0 24px;
+}
+.broadcast-rig{
+  display:grid;
+  grid-template-columns:minmax(0,1.28fr) minmax(300px,.72fr);
+  gap:0;
+  position:relative;
+  background:linear-gradient(145deg,#171b15,#0c0e0b);
+  border:5px solid #41483d;
+  box-shadow:0 0 0 4px #080a07,8px 8px #000;
+}
+.broadcast-rig:before{
+  content:"";
+  position:absolute;
+  left:-14px;right:-14px;bottom:-15px;height:13px;
+  background:repeating-linear-gradient(90deg,#353a31 0 24px,#1c201a 24px 48px);
+  border:3px solid #10120e;
+}
+.broadcast-screen{
+  min-width:0;
+  background:#050605;
+  border-right:4px solid #41483d;
+  padding:13px;
+}
+.broadcast-screen-top{
+  min-height:37px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  padding:0 9px;
+  background:#10130f;
+  border:2px solid #323a2f;
+  margin-bottom:9px;
+}
+.broadcast-screen-top small{
+  color:#939d8d;
+  font:900 8px Consolas,monospace;
+  letter-spacing:.12em;
+}
+.broadcast-status{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  color:#d2ddd0;
+  font:900 9px Consolas,monospace;
+  letter-spacing:.12em;
+}
+.broadcast-status:before{
+  content:"";
+  width:9px;height:9px;
+  background:#7f887b;
+  box-shadow:0 0 0 2px #242a22;
+}
+.world-broadcast[data-status="live"] .broadcast-status{
+  color:#ffb8af;
+}
+.world-broadcast[data-status="live"] .broadcast-status:before{
+  background:#ff4d3d;
+  box-shadow:0 0 0 2px #5b211b,0 0 14px #ff4d3d;
+  animation:broadcastPulse 1.3s infinite;
+}
+.world-broadcast[data-status="upcoming"] .broadcast-status{
+  color:#d9c5ff;
+}
+.world-broadcast[data-status="upcoming"] .broadcast-status:before{
+  background:#8d69ed;
+}
+.broadcast-video{
+  position:relative;
+  aspect-ratio:16/9;
+  min-height:260px;
+  background:
+    radial-gradient(circle at 50% 50%,rgba(92,131,69,.12),transparent 36%),
+    repeating-linear-gradient(0deg,#060806 0 2px,#090b08 2px 4px);
+  border:3px solid #586052;
+  overflow:hidden;
+}
+.broadcast-video iframe{
+  width:100%;height:100%;border:0;display:block;
+}
+.broadcast-placeholder{
+  position:absolute;inset:0;
+  display:grid;place-items:center;align-content:center;gap:20px;
+  padding:25px;text-align:center;
+  color:#aeb9a7;
+  font:900 10px Consolas,monospace;
+  letter-spacing:.11em;
+}
+.signal-bars{
+  height:58px;
+  display:flex;align-items:flex-end;gap:7px;
+}
+.signal-bars i{
+  width:12px;background:#66875a;border:2px solid #92b77f;
+  animation:signal 1.2s ease-in-out infinite;
+}
+.signal-bars i:nth-child(1){height:19px}
+.signal-bars i:nth-child(2){height:34px;animation-delay:.12s}
+.signal-bars i:nth-child(3){height:49px;animation-delay:.24s}
+.signal-bars i:nth-child(4){height:58px;animation-delay:.36s}
+
+.broadcast-console{
+  position:relative;
+  padding:27px 25px 25px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  background:
+    linear-gradient(rgba(17,21,15,.94),rgba(10,12,9,.97)),
+    repeating-linear-gradient(90deg,rgba(255,255,255,.02) 0 1px,transparent 1px 18px);
+}
+.broadcast-console:before{
+  content:"";
+  position:absolute;
+  left:11px;top:11px;right:11px;bottom:11px;
+  border:1px solid rgba(255,255,255,.07);
+  pointer-events:none;
+}
+.broadcast-console h2{
+  position:relative;
+  font:700 clamp(29px,3.6vw,45px)/1 Georgia,serif;
+  margin:7px 0 12px;
+}
+.broadcast-title{
+  position:relative;
+  margin:0;
+  color:#f1eee4;
+  font-size:15px;
+  line-height:1.45;
+}
+.broadcast-meta{
+  position:relative;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:7px;
+  margin:18px 0;
+}
+.broadcast-meta div{
+  padding:10px 11px;
+  background:#0b0d0a;
+  border:2px solid #343b30;
+}
+.broadcast-meta small{
+  display:block;color:#8c9785;font-size:7px;font-weight:900;letter-spacing:.12em;
+}
+.broadcast-meta b{
+  display:block;margin-top:3px;color:#fff;font-size:11px;
+}
+.world-broadcast[data-status="live"] .broadcast-meta div:first-child{
+  border-color:#74352e;
+  background:#1b0d0b;
+}
+.world-broadcast[data-status="live"] [data-stream-meta-status]{
+  color:#ff8e82;
+}
+.broadcast-actions{
+  position:relative;
+  display:flex;gap:7px;flex-wrap:wrap;
+}
+.mc-button.red{
+  background:#8b2e25;
+  border-color:#e46a5c;
+  color:#fff;
+}
+.broadcast-note{
+  position:relative;
+  margin:15px 0 0;
+  color:#9d9a91;
+  font-size:10px;
+  line-height:1.45;
+}
+.broadcast-antenna{
+  position:absolute;
+  z-index:5;
+  right:34px;
+  top:-42px;
+  width:58px;height:44px;
+  pointer-events:none;
+}
+.broadcast-antenna span{
+  position:absolute;left:27px;bottom:0;width:5px;height:29px;
+  background:#666d62;
+}
+.broadcast-antenna i{
+  position:absolute;left:50%;top:0;border:2px solid rgba(119,155,103,.58);border-radius:50%;
+  transform:translateX(-50%);
+}
+.broadcast-antenna i:nth-child(1){width:18px;height:18px;top:8px}
+.broadcast-antenna i:nth-child(2){width:34px;height:34px}
+.broadcast-antenna i:nth-child(3){width:51px;height:51px;top:-9px;opacity:.55}
+
+@keyframes signal{
+  0%,100%{filter:brightness(.72)}
+  50%{filter:brightness(1.45)}
+}
+@keyframes broadcastPulse{
+  0%,100%{opacity:1}
+  50%{opacity:.45}
+}
+@media(prefers-reduced-motion:reduce){
+  .signal-bars i,.world-broadcast[data-status="live"] .broadcast-status:before{animation:none}
+}
+@media(max-width:900px){
+  .broadcast-rig{grid-template-columns:1fr}
+  .broadcast-screen{border-right:0;border-bottom:4px solid #41483d}
+  .broadcast-antenna{right:22px}
+}
+@media(max-width:600px){
+  .world-broadcast{padding:0 18px}
+  .broadcast-video{min-height:0}
+  .broadcast-screen{padding:8px}
+  .broadcast-screen-top small{display:none}
+  .broadcast-console{padding:22px 18px}
+  .broadcast-meta{grid-template-columns:1fr}
+  .broadcast-actions .mc-button{width:100%}
+}
