@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#090806"><meta name="application-name" content="hynoesmp"><meta property="og:site_name" content="Hynoe SMP"><link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="assets/images/favicon.png">
+<link rel="stylesheet" href="assets/styles.css">
+<title>World Hub | Hynoe SMP</title>
+</head>
+<body data-page="home">
+
+<header class="world-hud">
+  <a class="hynoe-mark" href="index.html" aria-label="Hynoe SMP world hub">
+    <img src="assets/images/hynoe-logo.png" alt="Hynoe logo">
+    <span><b>HYNOE SMP</b><small>ADVENTURE GUIDE</small></span>
+  </a>
+  <div class="guide-xp" aria-label="World guide progress">
+    <div class="guide-xp-top"><span>WORLD GUIDE XP</span><b id="guide-progress-label">0%</b></div>
+    <div class="guide-xp-track"><i id="guide-progress-fill"></i></div>
+  </div>
+  <div class="hud-actions">
+      <a class="hud-action pack" href="https://github.com/HynoeGeshi/hynoesmp/releases/latest/download/Hynoe_SMP_Client_Pack.zip">↓ PACK</a>
+      <a class="hud-action discord" href="https://discord.gg/wYTePCkXd5" target="_blank" rel="noreferrer">DISCORD</a>
+      <button class="journal-toggle" type="button" data-journal-toggle aria-expanded="false">JOURNAL <span>▣</span></button>
+    </div>
+</header>
+<nav class="hotbar" aria-label="Hynoe SMP guide navigation">
+  <a class="hotbar-slot active" href="index.html"><span>WORLD</span><b>World Hub</b></a><a class="hotbar-slot" href="start.html"><span>01</span><b>Start Here</b></a><a class="hotbar-slot" href="mca.html"><span>02</span><b>Village Life</b></a><a class="hotbar-slot" href="progression.html"><span>03</span><b>Progression</b></a><a class="hotbar-slot" href="economy.html"><span>04</span><b>Economy</b></a><a class="hotbar-slot" href="bosses.html"><span>05</span><b>Bosses</b></a><a class="hotbar-slot" href="join.html"><span>06</span><b>Join</b></a>
+</nav>
+
+
+<aside class="quest-journal" id="quest-journal" aria-hidden="true">
+  <div class="journal-head">
+    <div><small>HYNOE SMP</small><h2>Adventurer's Journal</h2></div>
+    <button type="button" data-journal-toggle aria-label="Close journal">×</button>
+  </div>
+  <p class="journal-intro">Explore the guide like a world. Every chapter you visit fills your Guide XP. No quiz, no grind — just discover the systems before you jump in.</p>
+  <div class="quest-list" id="quest-list"></div>
+  <div class="journal-reward" id="journal-reward">
+    <span>FINAL DISCOVERY</span>
+    <b>Server Ready</b>
+    <p>Visit all six guide chapters to unlock this badge.</p>
+  </div>
+</aside>
+<div class="journal-scrim" data-journal-toggle></div>
+<div class="achievement-toast" id="achievement-toast" role="status" aria-live="polite">
+  <span>ACHIEVEMENT GET!</span><b id="achievement-name">Chapter Discovered</b>
+</div>
+
+<main>
+<section class="world-gate">
+  <div class="world-gate-bg" aria-hidden="true"></div>
+  <div class="pixel-cloud cloud-a"></div><div class="pixel-cloud cloud-b"></div>
+  <div class="gate-copy reveal">
+    <div class="quest-tag"><span>MAIN QUEST</span><b>ENTER THE WORLD</b></div>
+    <img class="hero-logo" src="assets/images/hynoe-logo.png" alt="Hynoe">
+    <p class="world-name">HYNOE SMP</p>
+    <h1>A Minecraft world that <em>keeps unfolding.</em></h1>
+    <p class="hero-lead">Build a home. Grow a settlement. Make money. Earn rare gear. Fight bosses. Start a family. Explore for months — not hours.</p>
+    <div class="hero-actions">
+      <a class="mc-button gold" href="https://github.com/HynoeGeshi/hynoesmp/releases/latest/download/Hynoe_SMP_Client_Pack.zip">↓ DOWNLOAD MODPACK</a>
+      <a class="mc-button purple" href="https://discord.gg/wYTePCkXd5" target="_blank" rel="noreferrer">JOIN DISCORD</a>
+      <a class="mc-button stone" href="start.html">EXPLORE THE GUIDE →</a>
+    </div>
+    <div class="hero-subactions">
+      <a href="https://modrinth.com/shader/complementary-unbound/version/r5.8.1" target="_blank" rel="noreferrer">Recommended Shader: Complementary Unbound r5.8.1 ↗</a>
+      <button type="button" data-journal-toggle>Open Adventurer's Journal</button>
+    </div>
+  </div>
+  <div class="world-compass" aria-hidden="true"><span>N</span><i></i><b>HYNOE</b></div>
+  <div class="gate-status reveal">
+    <div><small>GENESIS</small><b>Ages Active</b></div>
+    <div><small>VILLAGE LIFE</small><b>MCA 8.1.9</b></div>
+    <div><small>GEAR PATH</small><b>7 Tiers</b></div>
+    <div><small>TOKEN VAULT</small><b>16 Rewards</b></div>
+  </div>
+</section>
+
+<section class="world-intro">
+  <div class="wood-sign reveal">
+    <span>WELCOME, TRAVELER</span>
+    <h2>This site is the map before the adventure.</h2>
+    <p>Hynoe SMP is built so its systems feed one another. Genesis Ages controls when parts of the game open. Village life creates reasons to build. Exploration feeds progression. Progression opens bosses. Economy makes other players matter. The site works the same way: move through the world below and discover each system in context.</p>
+  </div>
+</section>
+
+
+<section class="genesis-world-rule reveal">
+  <div class="genesis-lock" aria-hidden="true"><span>G</span><i></i></div>
+  <div class="genesis-world-copy">
+    <span class="eyebrow">WORLD RULE // GENESIS AGES</span>
+    <h2>You cannot rush every unlock.</h2>
+    <p>Hynoe SMP uses <strong>Genesis</strong> to gate tools, armor, smelting, combat power, dimensions, and story progression behind time played and accomplishments. Finding, buying, or being handed an item does not automatically mean your character has reached the Age required to use it properly.</p>
+  </div>
+  <div class="genesis-quick">
+    <div><small>5 IN-GAME DAYS</small><b>Smelting Age</b><span>≈ 1h 40m playtime</span></div>
+    <div><small>10 IN-GAME DAYS</small><b>Copper Armor Age</b><span>≈ 3h 20m playtime</span></div>
+    <div><small>STORY FINALE</small><b>The End</b><span>Complete every Story Age first</span></div>
+  </div>
+  <a class="genesis-route-link" href="progression.html#genesis-ages">OPEN GENESIS AGE MAP →</a>
+</section>
+
+<section class="world-route" aria-label="Hynoe SMP world guide route">
+  <div class="route-spine" aria-hidden="true"></div>
+
+  <article class="route-scene scene-start reveal" style="--scene:url('assets/images/first_day.png')">
+    <a class="scene-marker" href="start.html"><span>01</span><b>FIRST DAY</b></a>
+    <div class="scene-sign">
+      <small>QUEST 01 // ARRIVAL</small>
+      <h2>Make your first hour matter.</h2>
+      <p>Food, shelter, recovery gear, one Home, Waystones, claims, and the three economy layers. Start stable before you start ambitious.</p>
+      <a href="start.html">Open the First-Day Guide →</a>
+    </div>
+  </article>
+
+  <article class="route-scene scene-village reveal" style="--scene:url('assets/images/community.png')">
+    <a class="scene-marker" href="mca.html"><span>02</span><b>VILLAGE LIFE</b></a>
+    <div class="scene-sign right">
+      <small>QUEST 02 // SETTLEMENT</small>
+      <h2>Villagers become part of your story.</h2>
+      <p>Relationships, personalities, homes, work, marriage, children, guards, generations, and village growth turn a settlement into a second game inside the server.</p>
+      <a href="mca.html">Meet Minecraft Comes Alive →</a>
+    </div>
+  </article>
+
+  <article class="route-scene scene-progression reveal" style="--scene:url('assets/images/progression.png')">
+    <a class="scene-marker" href="progression.html"><span>03</span><b>PROGRESSION</b></a>
+    <div class="scene-sign">
+      <small>QUEST 03 // POWER</small>
+      <h2>Iron is the beginning. Worldbreaker is the horizon.</h2>
+      <p>Genesis Ages control the early unlocks before the seven-tier gear ladder takes over. Time played, broken tools, trials, raids, exploration, and story milestones all matter.</p>
+      <a href="progression.html">See the Gear Roadmap →</a>
+    </div>
+  </article>
+
+  <article class="route-scene scene-economy reveal" style="--scene:url('assets/images/community.png')">
+    <a class="scene-marker" href="economy.html"><span>04</span><b>ECONOMY</b></a>
+    <div class="scene-sign right">
+      <small>QUEST 04 // TRADE</small>
+      <h2>Your base can become a business.</h2>
+      <p>Hynoe Dollars handle everyday trade. Tokens reward progression. Jobs+ gives professions their own identity. None of them replace the survival game.</p>
+      <a href="economy.html">Enter the Economy Network →</a>
+    </div>
+  </article>
+
+  <article class="route-scene scene-bosses reveal" style="--scene:url('assets/images/adventure.png')">
+    <a class="scene-marker" href="bosses.html"><span>05</span><b>BOSSES</b></a>
+    <div class="scene-sign">
+      <small>QUEST 05 // ENDGAME</small>
+      <h2>The world eventually fights back.</h2>
+      <p>Major encounters, rituals, Token bounties, and the World Boss route give powerful gear somewhere meaningful to go.</p>
+      <a href="bosses.html">Study the Boss Route →</a>
+    </div>
+  </article>
+</section>
+
+<section class="recent-updates reveal" id="updates">
+  <div class="updates-head">
+    <div><span class="eyebrow">WORLD LOG // RECENT CHANGES</span><h2>What changed in Hynoe SMP?</h2></div>
+    <span class="updates-live">UPDATED SEPT 4, 2026</span>
+  </div>
+  <div class="update-strip">
+    <article><time>SEP 04</time><div><small>GENESIS AGE GUIDE</small><h3>The server's unlock system is now fully mapped.</h3><p>New players can see why tools, armor, furnaces, dimensions, and combat power may still be locked — plus the exact milestones that open them.</p></div></article>
+    <article><time>SEP 04</time><div><small>TOKEN NETWORK v12</small><h3>The Token Vault now has 16 curated rewards.</h3><p>Mending is 9 Tokens, the netherite-tier backpack is 20, Beacon is 30, and Elytra remains the prestige reward at 50.</p></div></article>
+    <article><time>SEP 04</time><div><small>HEAVEN LOOT PASS</small><h3>Heaven village loot is less progression-breaking.</h3><p>The general Heaven village table was nerfed and Elytra was removed from that loot route so rare travel gear stays meaningful.</p></div></article>
+  </div>
+  <div class="updates-actions"><a class="mc-button gold" href="https://github.com/HynoeGeshi/hynoesmp/releases/latest/download/Hynoe_SMP_Client_Pack.zip">DOWNLOAD CURRENT PACK</a><a class="mc-button stone" href="https://discord.gg/wYTePCkXd5" target="_blank" rel="noreferrer">READ ANNOUNCEMENTS IN DISCORD ↗</a></div>
+</section>
+
+<section class="download-dock reveal">
+  <div class="download-dock-copy"><span class="eyebrow">CLIENT SETUP</span><h2>Everything you need to enter the world.</h2><p>The client pack is built from the current Hynoe SMP server mod set with server/admin tools removed. Iris and your Hynoe shader preset are included; the Complementary shader itself must be downloaded from its official page.</p></div>
+  <div class="download-dock-actions">
+    <a class="mc-button gold big" href="https://github.com/HynoeGeshi/hynoesmp/releases/latest/download/Hynoe_SMP_Client_Pack.zip">↓ HYNOE SMP CLIENT PACK</a>
+    <a class="mc-button purple" href="https://discord.gg/wYTePCkXd5" target="_blank" rel="noreferrer">JOIN DISCORD</a>
+    <a class="mc-button stone" href="https://modrinth.com/shader/complementary-unbound/version/r5.8.1" target="_blank" rel="noreferrer">GET RECOMMENDED SHADER ↗</a>
+  </div>
+</section>
+
+<section class="crossroads reveal">
+  <div class="crossroads-art"></div>
+  <div class="crossroads-copy">
+    <span class="eyebrow">SIDE QUEST // CREATE YOUR STORY</span>
+    <h2>Who are you going to be in Hynoe SMP?</h2>
+    <p>Before you even join, build a settler identity on the Minecraft Comes Alive page. Pick a role, personality, life goal, and generate your own Hynoe arrival card.</p>
+    <a class="mc-button emerald" href="mca.html#creator">CREATE YOUR SETTLER <span>→</span></a>
+  </div>
+</section>
+
+<section class="portal-callout reveal">
+  <div class="portal-frame"><i></i><i></i><i></i><i></i><div><small>FINAL STEP</small><h2>Ready to enter Hynoe SMP?</h2><p>The Discord is the front door for the current modpack, server details, announcements, support, and the people already building the world.</p><a class="mc-button purple" href="join.html">OPEN THE PORTAL →</a></div></div>
+</section>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-brand">
+    <img src="assets/images/hynoe-logo.png" alt="">
+    <div><strong>HYNOE SMP</strong><span>One long-term world. Progression, community, discovery, and stories worth keeping.</span></div>
+  </div>
+  <div class="footer-links"><a href="start.html">Start Here</a><a href="mca.html">Village Life</a><a href="progression.html">Progression</a><a href="economy.html">Economy</a><a href="bosses.html">Bosses</a><a href="join.html">Join</a></div>
+  <small>Hynoe SMP is an independent community server and is not affiliated with Mojang or Microsoft.</small>
+</footer>
+
+<script src="assets/common.js"></script>
+
+</body>
+</html>

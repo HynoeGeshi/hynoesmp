@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#090806"><meta name="application-name" content="hynoesmp"><meta property="og:site_name" content="Hynoe SMP"><link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="assets/images/favicon.png">
+<link rel="stylesheet" href="assets/styles.css">
+<title>Start Here | Hynoe SMP</title>
+</head>
+<body data-page="start">
+
+<header class="world-hud">
+  <a class="hynoe-mark" href="index.html" aria-label="Hynoe SMP world hub">
+    <img src="assets/images/hynoe-logo.png" alt="Hynoe logo">
+    <span><b>HYNOE SMP</b><small>ADVENTURE GUIDE</small></span>
+  </a>
+  <div class="guide-xp" aria-label="World guide progress">
+    <div class="guide-xp-top"><span>WORLD GUIDE XP</span><b id="guide-progress-label">0%</b></div>
+    <div class="guide-xp-track"><i id="guide-progress-fill"></i></div>
+  </div>
+  <div class="hud-actions">
+      <a class="hud-action pack" href="https://github.com/HynoeGeshi/hynoesmp/releases/latest/download/Hynoe_SMP_Client_Pack.zip">↓ PACK</a>
+      <a class="hud-action discord" href="https://discord.gg/wYTePCkXd5" target="_blank" rel="noreferrer">DISCORD</a>
+      <button class="journal-toggle" type="button" data-journal-toggle aria-expanded="false">JOURNAL <span>▣</span></button>
+    </div>
+</header>
+<nav class="hotbar" aria-label="Hynoe SMP guide navigation">
+  <a class="hotbar-slot" href="index.html"><span>WORLD</span><b>World Hub</b></a><a class="hotbar-slot active" href="start.html"><span>01</span><b>Start Here</b></a><a class="hotbar-slot" href="mca.html"><span>02</span><b>Village Life</b></a><a class="hotbar-slot" href="progression.html"><span>03</span><b>Progression</b></a><a class="hotbar-slot" href="economy.html"><span>04</span><b>Economy</b></a><a class="hotbar-slot" href="bosses.html"><span>05</span><b>Bosses</b></a><a class="hotbar-slot" href="join.html"><span>06</span><b>Join</b></a>
+</nav>
+
+
+<aside class="quest-journal" id="quest-journal" aria-hidden="true">
+  <div class="journal-head">
+    <div><small>HYNOE SMP</small><h2>Adventurer's Journal</h2></div>
+    <button type="button" data-journal-toggle aria-label="Close journal">×</button>
+  </div>
+  <p class="journal-intro">Explore the guide like a world. Every chapter you visit fills your Guide XP. No quiz, no grind — just discover the systems before you jump in.</p>
+  <div class="quest-list" id="quest-list"></div>
+  <div class="journal-reward" id="journal-reward">
+    <span>FINAL DISCOVERY</span>
+    <b>Server Ready</b>
+    <p>Visit all six guide chapters to unlock this badge.</p>
+  </div>
+</aside>
+<div class="journal-scrim" data-journal-toggle></div>
+<div class="achievement-toast" id="achievement-toast" role="status" aria-live="polite">
+  <span>ACHIEVEMENT GET!</span><b id="achievement-name">Chapter Discovered</b>
+</div>
+
+<main>
+<section class="chapter-hero" style="--hero:url('assets/images/first_day.png')">
+  <div class="chapter-shade"></div>
+  <div class="chapter-copy reveal">
+    <div class="chapter-number">QUEST 01</div>
+    <span class="eyebrow">START HERE</span>
+    <h1>Your first day should create <em>momentum.</em></h1>
+    <p>This is the recommended route from fresh spawn to a stable Hynoe SMP character. Hynoe does not use vanilla unlock pacing: Genesis Ages open parts of the game over time and through milestones. Check things off as you understand them — the list saves in your browser.</p>
+  </div>
+  <div class="pixel-banner">NEW WORLD // FIRST SUNSET</div>
+</section>
+
+<section class="adventure-layout">
+  <aside class="mission-panel reveal">
+    <span>ACTIVE QUEST</span><h2>First Day Foundations</h2>
+    <p>Learn the route below. Genesis Ages intentionally slow some unlocks, so the first goal is understanding the world — not forcing vanilla progression.</p>
+    <div class="mission-progress"><i id="firstday-fill"></i></div>
+    <b id="firstday-count">0 / 7 understood</b>
+  </aside>
+  <div class="quest-road">
+    <article class="quest-step reveal" data-check="basics"><button class="quest-check" type="button" aria-label="Mark understood">□</button><div><small>FIRST 20 MINUTES</small><h2>Secure the basics.</h2><p>Get wood, food, torches, a bed if possible, and a safe place for storage. Do not panic when familiar recipes or tiers are locked — Genesis is intentionally controlling the early-game pace.</p><div class="loot-row"><span>WOOD</span><span>FOOD</span><span>TORCHES</span><span>CHEST</span><span>BED</span></div></div></article>
+
+    <article class="quest-step genesis-step reveal" data-check="genesis"><button class="quest-check" type="button">□</button><div><small>LEARN THE LOCKS</small><h2>Genesis Ages decide what your character is ready for.</h2><p>Tool tiers unlock by actually wearing out the previous tier. Smelting waits for 5 in-game days of playtime. Copper armor waits for 10. Story milestones control major dimension access, including The End.</p><div class="mini-age-row"><span>WOOD → STONE → COPPER → IRON → DIAMOND → NETHERITE</span><a href="progression.html#genesis-ages">See every Genesis Age →</a></div></div></article>
+    <article class="quest-step reveal" data-check="iron"><button class="quest-check" type="button">□</button><div><small>PROGRESS WITHOUT SKIPPING</small><h2>Build a recovery plan as each Age opens.</h2><p>Keep spare food and unlocked tools at base so one death never erases the whole session. Follow the Genesis tool chain instead of trying to jump straight to iron or diamond, and build armor around the Age your character has actually reached.</p></div></article>
+    <article class="quest-step reveal" data-check="travel"><button class="quest-check" type="button">□</button><div><small>LOCK IN YOUR WORLD</small><h2>Set one Home. Activate Waystones.</h2><p>Use <code>/sethome &lt;name&gt;</code> once you choose a real base. Hynoe SMP allows one Home maximum. Waystones remain the primary long-range travel network.</p></div></article>
+    <article class="quest-step reveal" data-check="claims"><button class="quest-check" type="button">□</button><div><small>PROTECT THE BUILD</small><h2>Claim important land and storage.</h2><p>Claims protect your base, containers, farms, villagers, and infrastructure. Expand deliberately and only trust players who should be able to modify the area.</p></div></article>
+    <article class="quest-step reveal" data-check="economy"><button class="quest-check" type="button">□</button><div><small>LEARN THE NETWORK</small><h2>Dollars. Tokens. Jobs+.</h2><p>Dollars handle normal trade. Tokens reward progression and buy curated Vault rewards. Jobs+ handles profession specialization.</p><a class="quest-link" href="economy.html">Travel to the Economy District →</a></div></article>
+    <article class="quest-step reveal" data-check="story"><button class="quest-check" type="button">□</button><div><small>BEGIN YOUR STORY</small><h2>Choose what kind of world you want to build.</h2><p>Explore structures, establish farms and storage, start an MCA settlement, specialize through Jobs+, or begin climbing the gear ladder. Hynoe SMP is designed around a long survival arc.</p></div></article>
+  </div>
+</section>
+
+<section class="command-workbench reveal">
+  <div class="crafting-label">USEFUL FIRST COMMANDS</div>
+  <div class="crafting-grid"><code>/sethome &lt;name&gt;</code><code>/homes</code><code>/bal</code><code>/tokens</code><code>/tbal</code><code>/trigger handbook</code></div>
+  <a class="next-quest" href="mca.html"><span>NEXT QUEST</span><b>Village Life →</b></a>
+</section>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-brand">
+    <img src="assets/images/hynoe-logo.png" alt="">
+    <div><strong>HYNOE SMP</strong><span>One long-term world. Progression, community, discovery, and stories worth keeping.</span></div>
+  </div>
+  <div class="footer-links"><a href="start.html">Start Here</a><a href="mca.html">Village Life</a><a href="progression.html">Progression</a><a href="economy.html">Economy</a><a href="bosses.html">Bosses</a><a href="join.html">Join</a></div>
+  <small>Hynoe SMP is an independent community server and is not affiliated with Mojang or Microsoft.</small>
+</footer>
+
+<script src="assets/common.js"></script>
+<script src="assets/start.js"></script>
+</body>
+</html>

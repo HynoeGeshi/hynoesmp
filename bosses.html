@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#090806"><meta name="application-name" content="hynoesmp"><meta property="og:site_name" content="Hynoe SMP"><link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="assets/images/favicon.png">
+<link rel="stylesheet" href="assets/styles.css">
+<title>Bosses | Hynoe SMP</title>
+</head>
+<body data-page="bosses">
+
+<header class="world-hud">
+  <a class="hynoe-mark" href="index.html" aria-label="Hynoe SMP world hub">
+    <img src="assets/images/hynoe-logo.png" alt="Hynoe logo">
+    <span><b>HYNOE SMP</b><small>ADVENTURE GUIDE</small></span>
+  </a>
+  <div class="guide-xp" aria-label="World guide progress">
+    <div class="guide-xp-top"><span>WORLD GUIDE XP</span><b id="guide-progress-label">0%</b></div>
+    <div class="guide-xp-track"><i id="guide-progress-fill"></i></div>
+  </div>
+  <div class="hud-actions">
+      <a class="hud-action pack" href="https://github.com/HynoeGeshi/hynoesmp/releases/latest/download/Hynoe_SMP_Client_Pack.zip">↓ PACK</a>
+      <a class="hud-action discord" href="https://discord.gg/wYTePCkXd5" target="_blank" rel="noreferrer">DISCORD</a>
+      <button class="journal-toggle" type="button" data-journal-toggle aria-expanded="false">JOURNAL <span>▣</span></button>
+    </div>
+</header>
+<nav class="hotbar" aria-label="Hynoe SMP guide navigation">
+  <a class="hotbar-slot" href="index.html"><span>WORLD</span><b>World Hub</b></a><a class="hotbar-slot" href="start.html"><span>01</span><b>Start Here</b></a><a class="hotbar-slot" href="mca.html"><span>02</span><b>Village Life</b></a><a class="hotbar-slot" href="progression.html"><span>03</span><b>Progression</b></a><a class="hotbar-slot" href="economy.html"><span>04</span><b>Economy</b></a><a class="hotbar-slot active" href="bosses.html"><span>05</span><b>Bosses</b></a><a class="hotbar-slot" href="join.html"><span>06</span><b>Join</b></a>
+</nav>
+
+
+<aside class="quest-journal" id="quest-journal" aria-hidden="true">
+  <div class="journal-head">
+    <div><small>HYNOE SMP</small><h2>Adventurer's Journal</h2></div>
+    <button type="button" data-journal-toggle aria-label="Close journal">×</button>
+  </div>
+  <p class="journal-intro">Explore the guide like a world. Every chapter you visit fills your Guide XP. No quiz, no grind — just discover the systems before you jump in.</p>
+  <div class="quest-list" id="quest-list"></div>
+  <div class="journal-reward" id="journal-reward">
+    <span>FINAL DISCOVERY</span>
+    <b>Server Ready</b>
+    <p>Visit all six guide chapters to unlock this badge.</p>
+  </div>
+</aside>
+<div class="journal-scrim" data-journal-toggle></div>
+<div class="achievement-toast" id="achievement-toast" role="status" aria-live="polite">
+  <span>ACHIEVEMENT GET!</span><b id="achievement-name">Chapter Discovered</b>
+</div>
+
+<main>
+<section class="chapter-hero boss-tint" style="--hero:url('assets/images/adventure.png')">
+  <div class="chapter-shade"></div>
+  <div class="chapter-copy reveal">
+    <div class="chapter-number">QUEST 05</div><span class="eyebrow">BOSSES + ENDGAME</span>
+    <h1>The fight is the test. <em>Preparation is the progression.</em></h1>
+    <p>Bosses connect rare materials, Token bounties, advanced encounters, and the route toward Worldbreaker.</p>
+  </div>
+  <div class="pixel-banner danger">DANGER ZONE // PREPARE BEFORE SUMMONING</div>
+</section>
+
+<section class="boss-map">
+  <div class="boss-map-title reveal"><span class="eyebrow">WORLD BOSS ROUTE</span><h2>Six sigils. One final ascent.</h2><p>Study the route before you start a ritual. Hynoe SMP treats preparation as part of the encounter.</p></div>
+  <div class="sigil-route">
+    <article class="boss-sigil reveal"><div>I</div><span>Sylvaron</span></article><i>→</i>
+    <article class="boss-sigil reveal"><div>II</div><span>Aureon</span></article><i>→</i>
+    <article class="boss-sigil reveal"><div>III</div><span>Nekhraz</span></article><i>→</i>
+    <article class="boss-sigil reveal"><div>IV</div><span>Varkhul</span></article><i>→</i>
+    <article class="boss-sigil reveal"><div>V</div><span>Morvath</span></article><i>→</i>
+    <article class="boss-sigil reveal"><div>VI</div><span>Elyndra</span></article>
+  </div>
+  <div class="final-shrine reveal"><div class="shrine-runes"></div><small>FINAL WORLD BOSS</small><h2>Astrael, the Primordial Worldbreaker</h2><p>Defeat the six major bosses, gather their progression materials, craft the Primordial Keystone, locate the generated Primordial Shrine/Nexus, and begin the final route.</p></div>
+</section>
+
+<section class="boss-camp reveal">
+  <div class="campfire" aria-hidden="true"><i></i><i></i><i></i></div>
+  <div><small>BEFORE EVERY RITUAL</small><h2>Boss protocol</h2></div>
+  <ol><li>Repair gear and unload unrelated valuables.</li><li>Stage food, healing, spare equipment, and a safe return route.</li><li>Know exactly how the encounter starts before touching the ritual.</li><li>Never summon destructive bosses beside homes, villages, farms, or public infrastructure.</li><li>For teams, agree on loot ownership and retreat conditions before the fight.</li></ol>
+</section>
+
+<section class="side-encounters">
+  <article class="encounter-card reveal"><span>VANILLA</span><h3>Wither + Dragon</h3><p>Classic encounters remain part of the network and feed Token progression.</p></article>
+  <article class="encounter-card reveal"><span>ALEX'S MOBS</span><h3>Void Worm</h3><p>Create the Mysterious Worm, take it to The End, and throw it into the void.</p></article>
+  <article class="encounter-card reveal"><span>MOBZ</span><h3>Pillager Boss + Withender</h3><p>Ritual-based encounters requiring proper structures and progression items.</p></article>
+</section>
+
+<section class="design-rule reveal"><span>THE POWER CEILING</span><p>Worldbreaker is Hynoe SMP's strongest overall endgame armor goal.</p><a class="next-quest" href="join.html"><span>FINAL QUEST</span><b>Join Hynoe SMP →</b></a></section>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-brand">
+    <img src="assets/images/hynoe-logo.png" alt="">
+    <div><strong>HYNOE SMP</strong><span>One long-term world. Progression, community, discovery, and stories worth keeping.</span></div>
+  </div>
+  <div class="footer-links"><a href="start.html">Start Here</a><a href="mca.html">Village Life</a><a href="progression.html">Progression</a><a href="economy.html">Economy</a><a href="bosses.html">Bosses</a><a href="join.html">Join</a></div>
+  <small>Hynoe SMP is an independent community server and is not affiliated with Mojang or Microsoft.</small>
+</footer>
+
+<script src="assets/common.js"></script>
+
+</body>
+</html>

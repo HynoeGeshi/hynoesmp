@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#090806"><meta name="application-name" content="hynoesmp"><meta property="og:site_name" content="Hynoe SMP"><link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="assets/images/favicon.png">
+<link rel="stylesheet" href="assets/styles.css">
+<title>Economy | Hynoe SMP</title>
+</head>
+<body data-page="economy">
+
+<header class="world-hud">
+  <a class="hynoe-mark" href="index.html" aria-label="Hynoe SMP world hub">
+    <img src="assets/images/hynoe-logo.png" alt="Hynoe logo">
+    <span><b>HYNOE SMP</b><small>ADVENTURE GUIDE</small></span>
+  </a>
+  <div class="guide-xp" aria-label="World guide progress">
+    <div class="guide-xp-top"><span>WORLD GUIDE XP</span><b id="guide-progress-label">0%</b></div>
+    <div class="guide-xp-track"><i id="guide-progress-fill"></i></div>
+  </div>
+  <div class="hud-actions">
+      <a class="hud-action pack" href="https://github.com/HynoeGeshi/hynoesmp/releases/latest/download/Hynoe_SMP_Client_Pack.zip">↓ PACK</a>
+      <a class="hud-action discord" href="https://discord.gg/wYTePCkXd5" target="_blank" rel="noreferrer">DISCORD</a>
+      <button class="journal-toggle" type="button" data-journal-toggle aria-expanded="false">JOURNAL <span>▣</span></button>
+    </div>
+</header>
+<nav class="hotbar" aria-label="Hynoe SMP guide navigation">
+  <a class="hotbar-slot" href="index.html"><span>WORLD</span><b>World Hub</b></a><a class="hotbar-slot" href="start.html"><span>01</span><b>Start Here</b></a><a class="hotbar-slot" href="mca.html"><span>02</span><b>Village Life</b></a><a class="hotbar-slot" href="progression.html"><span>03</span><b>Progression</b></a><a class="hotbar-slot active" href="economy.html"><span>04</span><b>Economy</b></a><a class="hotbar-slot" href="bosses.html"><span>05</span><b>Bosses</b></a><a class="hotbar-slot" href="join.html"><span>06</span><b>Join</b></a>
+</nav>
+
+
+<aside class="quest-journal" id="quest-journal" aria-hidden="true">
+  <div class="journal-head">
+    <div><small>HYNOE SMP</small><h2>Adventurer's Journal</h2></div>
+    <button type="button" data-journal-toggle aria-label="Close journal">×</button>
+  </div>
+  <p class="journal-intro">Explore the guide like a world. Every chapter you visit fills your Guide XP. No quiz, no grind — just discover the systems before you jump in.</p>
+  <div class="quest-list" id="quest-list"></div>
+  <div class="journal-reward" id="journal-reward">
+    <span>FINAL DISCOVERY</span>
+    <b>Server Ready</b>
+    <p>Visit all six guide chapters to unlock this badge.</p>
+  </div>
+</aside>
+<div class="journal-scrim" data-journal-toggle></div>
+<div class="achievement-toast" id="achievement-toast" role="status" aria-live="polite">
+  <span>ACHIEVEMENT GET!</span><b id="achievement-name">Chapter Discovered</b>
+</div>
+
+<main>
+<section class="chapter-hero" style="--hero:url('assets/images/community.png')">
+  <div class="chapter-shade"></div>
+  <div class="chapter-copy reveal">
+    <div class="chapter-number">QUEST 04</div><span class="eyebrow">ECONOMY DISTRICT</span>
+    <h1>Earn through play. <em>Trade through people.</em></h1>
+    <p>Hynoe SMP separates normal money, progression currency, and profession leveling so one system never replaces the whole game.</p>
+  </div>
+  <div class="pixel-banner">MARKET DISTRICT // PLAYER TRADE ENABLED</div>
+</section>
+
+<section class="market-square reveal">
+  <div class="market-stall dollars"><div class="stall-awning"></div><span>$</span><h2>Hynoe Dollars</h2><p>Your everyday economy for trading, the player marketplace, server-shop transactions, and orders.</p><code>/bal</code><div class="stall-foot">EVERYDAY CURRENCY</div></div>
+  <div class="market-stall tokens"><div class="stall-awning"></div><span>✦</span><h2>Hynoe Tokens</h2><p>Rare progression currency earned through bosses, exploration, milestones, and long-term accomplishments.</p><code>/tbal</code><div class="stall-foot">PROGRESSION CURRENCY</div></div>
+  <div class="market-stall jobs"><div class="stall-awning"></div><span>⚒</span><h2>Jobs+</h2><p>A separate profession system with its own levels and Job Coins for specialization.</p><b class="job-note">LEVEL YOUR WAY</b><div class="stall-foot">PROFESSION SYSTEM</div></div>
+</section>
+
+<section class="vault-room">
+  <div class="vault-heading reveal"><span class="eyebrow">TOKEN VAULT // 16 REWARDS</span><h2>Open the vault. Pick a shelf.</h2><p>These rewards support progression without selling the progression-only armor tiers themselves.</p></div>
+  <div class="vault-console reveal">
+    <div class="vault-tabs"><button class="active" data-tier="all">ALL</button><button data-tier="field">FIELD</button><button data-tier="enchant">ENCHANT</button><button data-tier="gear">GEAR</button><button data-tier="prestige">PRESTIGE</button></div>
+    <div class="vault-grid" id="vault-grid">
+      <article data-tier="field"><b>3 ✦</b><h3>4 Golden Apples</h3></article><article data-tier="field"><b>4 ✦</b><h3>64 Bottles o' Enchanting</h3></article><article data-tier="field"><b>4 ✦</b><h3>16 Ender Pearls</h3></article><article data-tier="field"><b>5 ✦</b><h3>2 Shulker Shells</h3></article><article data-tier="field"><b>12 ✦</b><h3>3 Wither Skeleton Skulls</h3></article>
+      <article data-tier="enchant"><b>6 ✦</b><h3>Silk Touch I</h3></article><article data-tier="enchant"><b>8 ✦</b><h3>Fortune III</h3></article><article data-tier="enchant"><b>9 ✦</b><h3>Mending I</h3></article>
+      <article data-tier="gear"><b>10 ✦</b><h3>Netherite Upgrade Template</h3></article><article data-tier="gear"><b>13 ✦</b><h3>Totem of Undying</h3></article><article data-tier="gear"><b>15 ✦</b><h3>Trident</h3></article><article data-tier="gear"><b>18 ✦</b><h3>Maxed Netherite Sword</h3></article><article data-tier="gear"><b>20 ✦</b><h3>Netherite-tier Traveler's Backpack</h3></article>
+      <article data-tier="prestige"><b>23 ✦</b><h3>Enchanted Golden Apple</h3></article><article data-tier="prestige"><b>30 ✦</b><h3>Beacon</h3></article><article data-tier="prestige"><b>50 ✦</b><h3>Elytra</h3></article>
+    </div>
+  </div>
+  <div class="no-sale-sign reveal"><b>PROGRESSION-ONLY</b><span>Vibranium • Vulpus • Enderium • Worldbreaker</span><p>These are not sold in the Token Vault.</p></div>
+</section>
+
+<section class="command-workbench reveal">
+  <div class="crafting-label">ECONOMY COMMAND MAP</div>
+  <div class="crafting-grid"><code>/eco</code><code>/shop</code><code>/servershop</code><code>/sell</code><code>/orders</code><code>/bal</code><code>/tokens</code><code>/tbal</code></div>
+  <a class="next-quest" href="bosses.html"><span>NEXT QUEST</span><b>Bosses →</b></a>
+</section>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-brand">
+    <img src="assets/images/hynoe-logo.png" alt="">
+    <div><strong>HYNOE SMP</strong><span>One long-term world. Progression, community, discovery, and stories worth keeping.</span></div>
+  </div>
+  <div class="footer-links"><a href="start.html">Start Here</a><a href="mca.html">Village Life</a><a href="progression.html">Progression</a><a href="economy.html">Economy</a><a href="bosses.html">Bosses</a><a href="join.html">Join</a></div>
+  <small>Hynoe SMP is an independent community server and is not affiliated with Mojang or Microsoft.</small>
+</footer>
+
+<script src="assets/common.js"></script>
+
+</body>
+</html>

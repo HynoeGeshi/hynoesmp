@@ -1,0 +1,19 @@
+
+(()=>{
+ const chapters=[...document.querySelectorAll('.guide-chapter')],dialogue=document.getElementById('guide-dialogue');
+ if(chapters.length&&dialogue){const obs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting)dialogue.textContent=e.target.dataset.dialogue;});},{rootMargin:'-32% 0px -48% 0px'});chapters.forEach(c=>obs.observe(c));}
+ const form=document.getElementById('settler-form'),card=document.getElementById('settler-card');if(!form||!card)return;
+ const name=document.getElementById('settler-name'),role=document.getElementById('settler-role'),personality=document.getElementById('settler-personality'),goal=document.getElementById('settler-goal');
+ const cn=document.getElementById('card-name'),cr=document.getElementById('card-role'),cp=document.getElementById('card-personality'),cg=document.getElementById('card-goal'),cm=document.getElementById('card-motto');
+ const mottos={Builder:'Build something worth coming home to.',Farmer:'A strong village starts with a full table.',Merchant:'Value is what people need when they need it.',Scholar:'Every system has a pattern worth learning.',Explorer:'The next horizon is part of the plan.','Village Guard':'A living village is worth defending.'};
+ const saveKey='hynoeSettlerProfileV2';
+ try{const saved=JSON.parse(localStorage.getItem(saveKey)||'null');if(saved){name.value=saved.name||name.value;role.value=saved.role||role.value;personality.value=saved.personality||personality.value;goal.value=saved.goal||goal.value;if(saved.accent)card.style.setProperty('--card-accent',saved.accent);}}catch{}
+ function sync(){cn.textContent=name.value.trim()||'New Settler';cr.textContent=role.value;cp.textContent=personality.value;cg.textContent=goal.value;cm.textContent='“'+(mottos[role.value]||mottos.Builder)+'”';}
+ form.addEventListener('input',sync);
+ form.addEventListener('submit',e=>{e.preventDefault();sync();const accent=getComputedStyle(card).getPropertyValue('--card-accent').trim()||'#d6a72b';localStorage.setItem(saveKey,JSON.stringify({name:name.value.trim(),role:role.value,personality:personality.value,goal:goal.value,accent}));card.animate([{transform:'scale(.985)'},{transform:'scale(1)'}],{duration:260,easing:'ease-out'});});
+ document.querySelectorAll('.swatches button').forEach(b=>b.addEventListener('click',()=>{card.style.setProperty('--card-accent',b.dataset.accent);}));
+ const dl=document.getElementById('download-card');
+ dl?.addEventListener('click',()=>{sync();const c=document.createElement('canvas');c.width=1200;c.height=675;const x=c.getContext('2d'),accent=getComputedStyle(card).getPropertyValue('--card-accent').trim()||'#d6a72b';x.fillStyle='#090b08';x.fillRect(0,0,c.width,c.height);x.fillStyle=accent;x.fillRect(0,0,22,c.height);x.strokeStyle=accent;x.lineWidth=4;x.strokeRect(48,48,1104,579);x.fillStyle=accent;x.font='bold 26px Arial';x.fillText('HYNOE SMP // SETTLER RECORD',82,98);x.fillStyle='#fffdf4';x.font='bold 72px Georgia';x.fillText(cn.textContent,82,205);x.fillStyle='#a7a195';x.font='bold 18px Arial';x.fillText('ROLE',82,278);x.fillText('PERSONALITY',480,278);x.fillText('LIFE GOAL',82,407);x.fillStyle='#fffdf4';x.font='bold 31px Arial';x.fillText(cr.textContent,82,325);x.fillText(cp.textContent,480,325);x.font='bold 29px Georgia';wrap(x,cg.textContent,82,452,800,35);x.fillStyle=accent;x.font='italic 25px Georgia';wrap(x,cm.textContent,82,566,900,32);x.fillStyle='#a7a195';x.font='16px Arial';x.fillText('HYNOE SMP // ARRIVAL CARD',82,625);const a=document.createElement('a');a.download=(cn.textContent.replace(/[^a-z0-9]+/gi,'-').toLowerCase()||'settler')+'-hynoe-smp-card.png';a.href=c.toDataURL('image/png');a.click();});
+ function wrap(ctx,text,x,y,max,w){const words=text.split(' ');let line='';for(const word of words){const test=line+word+' ';if(ctx.measureText(test).width>max&&line){ctx.fillText(line,x,y);line=word+' ';y+=w}else line=test;}ctx.fillText(line,x,y);}
+ sync();
+})();

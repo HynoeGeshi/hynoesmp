@@ -1,0 +1,17 @@
+{
+  "name": "Hynoe SMP",
+  "short_name": "hynoesmp",
+  "start_url": "./",
+  "scope": "./",
+  "display": "browser",
+  "background_color": "#070806",
+  "theme_color": "#090806",
+  "icons": [
+    {
+      "src": "assets/images/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ],
+  "description": "Hynoe SMP Adventure Guide \u2014 Genesis Ages, progression, village life, economy, bosses, and joining."
+}

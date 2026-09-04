@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#090806"><meta name="application-name" content="hynoesmp"><meta property="og:site_name" content="Hynoe SMP"><link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="assets/images/favicon.png">
+<link rel="stylesheet" href="assets/styles.css">
+<title>Village Life | Hynoe SMP</title>
+</head>
+<body data-page="mca">
+
+<header class="world-hud">
+  <a class="hynoe-mark" href="index.html" aria-label="Hynoe SMP world hub">
+    <img src="assets/images/hynoe-logo.png" alt="Hynoe logo">
+    <span><b>HYNOE SMP</b><small>ADVENTURE GUIDE</small></span>
+  </a>
+  <div class="guide-xp" aria-label="World guide progress">
+    <div class="guide-xp-top"><span>WORLD GUIDE XP</span><b id="guide-progress-label">0%</b></div>
+    <div class="guide-xp-track"><i id="guide-progress-fill"></i></div>
+  </div>
+  <div class="hud-actions">
+      <a class="hud-action pack" href="https://github.com/HynoeGeshi/hynoesmp/releases/latest/download/Hynoe_SMP_Client_Pack.zip">↓ PACK</a>
+      <a class="hud-action discord" href="https://discord.gg/wYTePCkXd5" target="_blank" rel="noreferrer">DISCORD</a>
+      <button class="journal-toggle" type="button" data-journal-toggle aria-expanded="false">JOURNAL <span>▣</span></button>
+    </div>
+</header>
+<nav class="hotbar" aria-label="Hynoe SMP guide navigation">
+  <a class="hotbar-slot" href="index.html"><span>WORLD</span><b>World Hub</b></a><a class="hotbar-slot" href="start.html"><span>01</span><b>Start Here</b></a><a class="hotbar-slot active" href="mca.html"><span>02</span><b>Village Life</b></a><a class="hotbar-slot" href="progression.html"><span>03</span><b>Progression</b></a><a class="hotbar-slot" href="economy.html"><span>04</span><b>Economy</b></a><a class="hotbar-slot" href="bosses.html"><span>05</span><b>Bosses</b></a><a class="hotbar-slot" href="join.html"><span>06</span><b>Join</b></a>
+</nav>
+
+
+<aside class="quest-journal" id="quest-journal" aria-hidden="true">
+  <div class="journal-head">
+    <div><small>HYNOE SMP</small><h2>Adventurer's Journal</h2></div>
+    <button type="button" data-journal-toggle aria-label="Close journal">×</button>
+  </div>
+  <p class="journal-intro">Explore the guide like a world. Every chapter you visit fills your Guide XP. No quiz, no grind — just discover the systems before you jump in.</p>
+  <div class="quest-list" id="quest-list"></div>
+  <div class="journal-reward" id="journal-reward">
+    <span>FINAL DISCOVERY</span>
+    <b>Server Ready</b>
+    <p>Visit all six guide chapters to unlock this badge.</p>
+  </div>
+</aside>
+<div class="journal-scrim" data-journal-toggle></div>
+<div class="achievement-toast" id="achievement-toast" role="status" aria-live="polite">
+  <span>ACHIEVEMENT GET!</span><b id="achievement-name">Chapter Discovered</b>
+</div>
+
+<main>
+<section class="chapter-hero" style="--hero:url('assets/images/community.png')">
+  <div class="chapter-shade"></div>
+  <div class="chapter-copy reveal">
+    <div class="chapter-number">QUEST 02</div>
+    <span class="eyebrow">MINECRAFT COMES ALIVE 8.1.9</span>
+    <h1>Villagers are <em>people now.</em></h1>
+    <p>Names, moods, personalities, relationships, homes, workplaces, families, generations, guards, and village ranks turn settlement building into a game of its own.</p>
+  </div>
+  <div class="pixel-banner">SETTLEMENT DISTRICT // POPULATION MATTERS</div>
+</section>
+
+<section class="village-guide">
+  <aside class="npc-guide reveal">
+    <div class="npc-name"><span>VILLAGE GUIDE</span><b>MIRA</b></div>
+    <div class="villager-portrait" aria-hidden="true"><i class="hair"></i><i class="brow"></i><i class="eyes"></i><i class="nose"></i><i class="robe"></i></div>
+    <div class="dialogue-box"><p id="guide-dialogue">“Start with the person, not the menu. Every villager reacts differently.”</p><span>▼</span></div>
+  </aside>
+  <div class="village-path">
+    <article class="guide-chapter reveal" data-dialogue="“Hearts belong to one relationship. Pay attention to how each person responds.”"><span>01</span><div><small>RELATIONSHIPS</small><h2>Relationships are individual.</h2><p>Personality and current mood can change how conversations, jokes, stories, hugs, flirting, and gifts are received. Repeating the same interaction can become less effective, so read the response instead of spamming the menu.</p><div class="heart-meter"><i></i><i></i><i></i><i class="empty"></i><i class="empty"></i><b>Every relationship has its own story.</b></div></div></article>
+    <article class="guide-chapter reveal" data-dialogue="“A house is only the beginning. Give people places to live, work, and relax.”"><span>02</span><div><small>LIFE MAP</small><h2>Give every resident a place in town.</h2><div class="village-locations"><div><b>⌂</b><strong>HOME</strong><p>Where they return and sleep.</p></div><div><b>⚒</b><strong>WORKPLACE</strong><p>Where daily work is centered.</p></div><div><b>✦</b><strong>HANGOUT</strong><p>Where free time happens.</p></div></div><p>Follow Me, Stay Here, Move Freely, and Go Home help turn random villagers into a controlled settlement.</p></div></article>
+    <article class="guide-chapter reveal" data-dialogue="“Good villages grow families and housing together. Beds alone are not a population plan.”"><span>03</span><div><small>FAMILY</small><h2>Marriage changes the settlement.</h2><p>Relationships can progress into engagement, marriage, children, and eventually multiple generations. Children grow through life stages and can become adults with lives of their own.</p></div></article>
+    <article class="guide-chapter reveal" data-dialogue="“Jobs make a village useful. Defense makes it last.”"><span>04</span><div><small>PROFESSIONS + DEFENSE</small><h2>Build districts, not workstation clutter.</h2><p>Librarians, Farmers, Smiths, Clerics, and other professions still depend on workstations and safe access. As a village matures, advanced progression can support guards, archers, village rules, and stronger settlement management.</p></div></article>
+    <article class="guide-chapter reveal" data-dialogue="“A valuable resident is not a replaceable trade machine. Protect the people whose stories matter.”"><span>05</span><div><small>LEGACY</small><h2>Loss has history.</h2><p>MCA includes systems around villager death, graves, and revival-related progression. Build walls, lighting, safe paths, protected sleeping zones, and recovery plans before your population becomes large.</p></div></article>
+  </div>
+</section>
+
+<section class="settlement-map reveal">
+  <div class="map-title"><small>HYNOE SETTLEMENT BLUEPRINT</small><h2>From five villagers to a living town.</h2></div>
+  <div class="map-line">
+    <div><span>01</span><b>Safe Housing</b></div><i>→</i><div><span>02</span><b>Homes + Workplaces</b></div><i>→</i><div><span>03</span><b>Relationships</b></div><i>→</i><div><span>04</span><b>Families</b></div><i>→</i><div><span>05</span><b>Defense</b></div><i>→</i><div><span>06</span><b>Ranks + Community</b></div>
+  </div>
+</section>
+
+<section class="settler-registry reveal" id="creator">
+  <div class="registry-form">
+    <span class="eyebrow">SIDE QUEST // SETTLER REGISTRY</span>
+    <h2>Create your Hynoe SMP settler.</h2>
+    <p>This creates a roleplay arrival card for your server identity. It does not alter your in-game MCA character automatically.</p>
+    <form id="settler-form">
+      <label>Name<input id="settler-name" maxlength="18" value="New Settler" required></label>
+      <div class="form-two"><label>Role<select id="settler-role"><option>Builder</option><option>Farmer</option><option>Merchant</option><option>Scholar</option><option>Explorer</option><option>Village Guard</option></select></label><label>Personality<select id="settler-personality"><option>Warm</option><option>Adventurous</option><option>Witty</option><option>Reserved</option><option>Ambitious</option><option>Protective</option></select></label></div>
+      <label>Life Goal<select id="settler-goal"><option>Build a family legacy</option><option>Create a trading empire</option><option>Master the gear ladder</option><option>Defeat every major boss</option><option>Build the greatest settlement</option><option>Explore every corner of the world</option></select></label>
+      <fieldset><legend>Banner accent</legend><div class="swatches"><button type="button" data-accent="#d6a72b" aria-label="Gold"></button><button type="button" data-accent="#7b61ff" aria-label="Purple"></button><button type="button" data-accent="#4cc9a7" aria-label="Emerald"></button><button type="button" data-accent="#dc644f" aria-label="Ember"></button></div></fieldset>
+      <button class="mc-button emerald" type="submit">REGISTER SETTLER</button>
+    </form>
+  </div>
+  <div class="settler-card" id="settler-card">
+    <div class="card-top"><span>HYNOE SMP // SETTLER RECORD</span><b>ARRIVAL</b></div>
+    <div class="avatar-block"><div class="avatar-hair"></div><div class="avatar-eyes"></div></div>
+    <small>NAME</small><h3 id="card-name">New Settler</h3>
+    <div class="profile-row"><div><small>ROLE</small><b id="card-role">Builder</b></div><div><small>PERSONALITY</small><b id="card-personality">Warm</b></div></div>
+    <small>LIFE GOAL</small><p id="card-goal">Build a family legacy</p>
+    <blockquote id="card-motto">“Build something worth coming home to.”</blockquote>
+    <button id="download-card" class="mc-button stone" type="button">DOWNLOAD ARRIVAL CARD</button>
+  </div>
+</section>
+
+<section class="next-zone reveal"><div><small>YOUR SETTLEMENT NEEDS POWER TOO</small><h2>See what your village grows into.</h2></div><a class="next-quest" href="progression.html"><span>NEXT QUEST</span><b>Progression →</b></a></section>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-brand">
+    <img src="assets/images/hynoe-logo.png" alt="">
+    <div><strong>HYNOE SMP</strong><span>One long-term world. Progression, community, discovery, and stories worth keeping.</span></div>
+  </div>
+  <div class="footer-links"><a href="start.html">Start Here</a><a href="mca.html">Village Life</a><a href="progression.html">Progression</a><a href="economy.html">Economy</a><a href="bosses.html">Bosses</a><a href="join.html">Join</a></div>
+  <small>Hynoe SMP is an independent community server and is not affiliated with Mojang or Microsoft.</small>
+</footer>
+
+<script src="assets/common.js"></script>
+<script src="assets/mca.js"></script>
+</body>
+</html>

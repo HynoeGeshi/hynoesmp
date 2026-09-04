@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#090806"><meta name="application-name" content="hynoesmp"><meta property="og:site_name" content="Hynoe SMP"><link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="assets/images/favicon.png">
+<link rel="stylesheet" href="assets/styles.css">
+<title>Join | Hynoe SMP</title>
+</head>
+<body data-page="join">
+
+<header class="world-hud">
+  <a class="hynoe-mark" href="index.html" aria-label="Hynoe SMP world hub">
+    <img src="assets/images/hynoe-logo.png" alt="Hynoe logo">
+    <span><b>HYNOE SMP</b><small>ADVENTURE GUIDE</small></span>
+  </a>
+  <div class="guide-xp" aria-label="World guide progress">
+    <div class="guide-xp-top"><span>WORLD GUIDE XP</span><b id="guide-progress-label">0%</b></div>
+    <div class="guide-xp-track"><i id="guide-progress-fill"></i></div>
+  </div>
+  <div class="hud-actions">
+      <a class="hud-action pack" href="https://github.com/HynoeGeshi/hynoesmp/releases/latest/download/Hynoe_SMP_Client_Pack.zip">↓ PACK</a>
+      <a class="hud-action discord" href="https://discord.gg/wYTePCkXd5" target="_blank" rel="noreferrer">DISCORD</a>
+      <button class="journal-toggle" type="button" data-journal-toggle aria-expanded="false">JOURNAL <span>▣</span></button>
+    </div>
+</header>
+<nav class="hotbar" aria-label="Hynoe SMP guide navigation">
+  <a class="hotbar-slot" href="index.html"><span>WORLD</span><b>World Hub</b></a><a class="hotbar-slot" href="start.html"><span>01</span><b>Start Here</b></a><a class="hotbar-slot" href="mca.html"><span>02</span><b>Village Life</b></a><a class="hotbar-slot" href="progression.html"><span>03</span><b>Progression</b></a><a class="hotbar-slot" href="economy.html"><span>04</span><b>Economy</b></a><a class="hotbar-slot" href="bosses.html"><span>05</span><b>Bosses</b></a><a class="hotbar-slot active" href="join.html"><span>06</span><b>Join</b></a>
+</nav>
+
+
+<aside class="quest-journal" id="quest-journal" aria-hidden="true">
+  <div class="journal-head">
+    <div><small>HYNOE SMP</small><h2>Adventurer's Journal</h2></div>
+    <button type="button" data-journal-toggle aria-label="Close journal">×</button>
+  </div>
+  <p class="journal-intro">Explore the guide like a world. Every chapter you visit fills your Guide XP. No quiz, no grind — just discover the systems before you jump in.</p>
+  <div class="quest-list" id="quest-list"></div>
+  <div class="journal-reward" id="journal-reward">
+    <span>FINAL DISCOVERY</span>
+    <b>Server Ready</b>
+    <p>Visit all six guide chapters to unlock this badge.</p>
+  </div>
+</aside>
+<div class="journal-scrim" data-journal-toggle></div>
+<div class="achievement-toast" id="achievement-toast" role="status" aria-live="polite">
+  <span>ACHIEVEMENT GET!</span><b id="achievement-name">Chapter Discovered</b>
+</div>
+
+<main>
+<section class="portal-hero">
+  <div class="portal-landscape"></div>
+  <div class="portal-gateway" aria-hidden="true"><i></i><i></i><i></i><i></i><div></div></div>
+  <div class="portal-copy reveal">
+    <div class="chapter-number">QUEST 06</div><span class="eyebrow">JOIN HYNOE SMP</span>
+    <h1>Enter the world the <em>right way.</em></h1>
+    <p>The Discord is the front door for current pack files, server access details, announcements, support, and the community.</p>
+    <div class="join-hero-actions">
+      <a class="mc-button gold big" href="https://github.com/HynoeGeshi/hynoesmp/releases/latest/download/Hynoe_SMP_Client_Pack.zip">↓ DOWNLOAD MODPACK</a>
+      <a class="mc-button purple big" href="https://discord.gg/wYTePCkXd5" target="_blank" rel="noreferrer">JOIN THE HYNOE DISCORD →</a>
+    </div>
+  </div>
+</section>
+
+<section class="join-path">
+  <article class="join-step reveal"><span>01</span><div><small>OPEN THE PORTAL</small><h2>Join Discord</h2><p>Get the current server information and stay synced with update announcements.</p></div></article>
+  <article class="join-step reveal"><span>02</span><div><small>SYNC YOUR CLIENT</small><h2>Install the current pack</h2><p>Download the Hynoe SMP Client Pack from this site and copy it into a fresh Minecraft 26.2 Fabric instance. The recommended Complementary Unbound shader is a separate official download; the Hynoe preset is already in the pack.</p>
+    <div class="inline-actions"><a href="https://github.com/HynoeGeshi/hynoesmp/releases/latest/download/Hynoe_SMP_Client_Pack.zip">Download Pack</a><a href="https://modrinth.com/shader/complementary-unbound/version/r5.8.1" target="_blank" rel="noreferrer">Get Shader ↗</a></div></div></article>
+  <article class="join-step reveal"><span>03</span><div><small>READ THE MAP</small><h2>Know Genesis before you assume something is broken.</h2><p>Hynoe SMP intentionally gates tools, armor, furnaces, weapon power, The Nether, and The End through Genesis Ages. If something familiar is locked, check the Progression guide before troubleshooting it.</p><div class="inline-actions"><a href="progression.html#genesis-ages">Open Genesis Age Map</a></div></div></article>
+  <article class="join-step reveal"><span>04</span><div><small>PLACE YOUR FIRST BLOCK</small><h2>Build your first anchor</h2><p>Food, shelter, storage, one Home, nearby Waystones, and a claimed base give you a stable launch point.</p></div></article>
+</section>
+
+<section class="server-code reveal">
+  <div class="code-block"><span>SERVER STANDARD</span><h2>Build the kind of server you want to play on.</h2></div>
+  <p>Do not grief, steal, cheat, duplicate, exploit, harass, or intentionally damage server performance. Respect claims, private storage, builds, farms, animals, villagers, and agreed trades. Current Discord announcements override outdated screenshots or old guides.</p>
+</section>
+
+<section class="arrival-screen reveal">
+  <img src="assets/images/hynoe-logo.png" alt="Hynoe">
+  <small>GUIDE COMPLETE</small><h2>Come build something that matters.</h2>
+  <p>One world. Long-term. Hynoe SMP.</p>
+  <a class="mc-button gold big" href="https://discord.gg/wYTePCkXd5" target="_blank" rel="noreferrer">ENTER THE COMMUNITY →</a>
+</section>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-brand">
+    <img src="assets/images/hynoe-logo.png" alt="">
+    <div><strong>HYNOE SMP</strong><span>One long-term world. Progression, community, discovery, and stories worth keeping.</span></div>
+  </div>
+  <div class="footer-links"><a href="start.html">Start Here</a><a href="mca.html">Village Life</a><a href="progression.html">Progression</a><a href="economy.html">Economy</a><a href="bosses.html">Bosses</a><a href="join.html">Join</a></div>
+  <small>Hynoe SMP is an independent community server and is not affiliated with Mojang or Microsoft.</small>
+</footer>
+
+<script src="assets/common.js"></script>
+
+</body>
+</html>

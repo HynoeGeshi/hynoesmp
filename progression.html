@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#090806"><meta name="application-name" content="hynoesmp"><meta property="og:site_name" content="Hynoe SMP"><link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="assets/images/favicon.png">
+<link rel="stylesheet" href="assets/styles.css">
+<title>Progression | Hynoe SMP</title>
+</head>
+<body data-page="progression">
+
+<header class="world-hud">
+  <a class="hynoe-mark" href="index.html" aria-label="Hynoe SMP world hub">
+    <img src="assets/images/hynoe-logo.png" alt="Hynoe logo">
+    <span><b>HYNOE SMP</b><small>ADVENTURE GUIDE</small></span>
+  </a>
+  <div class="guide-xp" aria-label="World guide progress">
+    <div class="guide-xp-top"><span>WORLD GUIDE XP</span><b id="guide-progress-label">0%</b></div>
+    <div class="guide-xp-track"><i id="guide-progress-fill"></i></div>
+  </div>
+  <div class="hud-actions">
+      <a class="hud-action pack" href="https://github.com/HynoeGeshi/hynoesmp/releases/latest/download/Hynoe_SMP_Client_Pack.zip">↓ PACK</a>
+      <a class="hud-action discord" href="https://discord.gg/wYTePCkXd5" target="_blank" rel="noreferrer">DISCORD</a>
+      <button class="journal-toggle" type="button" data-journal-toggle aria-expanded="false">JOURNAL <span>▣</span></button>
+    </div>
+</header>
+<nav class="hotbar" aria-label="Hynoe SMP guide navigation">
+  <a class="hotbar-slot" href="index.html"><span>WORLD</span><b>World Hub</b></a><a class="hotbar-slot" href="start.html"><span>01</span><b>Start Here</b></a><a class="hotbar-slot" href="mca.html"><span>02</span><b>Village Life</b></a><a class="hotbar-slot active" href="progression.html"><span>03</span><b>Progression</b></a><a class="hotbar-slot" href="economy.html"><span>04</span><b>Economy</b></a><a class="hotbar-slot" href="bosses.html"><span>05</span><b>Bosses</b></a><a class="hotbar-slot" href="join.html"><span>06</span><b>Join</b></a>
+</nav>
+
+
+<aside class="quest-journal" id="quest-journal" aria-hidden="true">
+  <div class="journal-head">
+    <div><small>HYNOE SMP</small><h2>Adventurer's Journal</h2></div>
+    <button type="button" data-journal-toggle aria-label="Close journal">×</button>
+  </div>
+  <p class="journal-intro">Explore the guide like a world. Every chapter you visit fills your Guide XP. No quiz, no grind — just discover the systems before you jump in.</p>
+  <div class="quest-list" id="quest-list"></div>
+  <div class="journal-reward" id="journal-reward">
+    <span>FINAL DISCOVERY</span>
+    <b>Server Ready</b>
+    <p>Visit all six guide chapters to unlock this badge.</p>
+  </div>
+</aside>
+<div class="journal-scrim" data-journal-toggle></div>
+<div class="achievement-toast" id="achievement-toast" role="status" aria-live="polite">
+  <span>ACHIEVEMENT GET!</span><b id="achievement-name">Chapter Discovered</b>
+</div>
+
+<main>
+<section class="chapter-hero" style="--hero:url('assets/images/progression.png')">
+  <div class="chapter-shade"></div>
+  <div class="chapter-copy reveal">
+    <div class="chapter-number">QUEST 03</div><span class="eyebrow">PROGRESSION ROADMAP</span>
+    <h1>Power should feel <em>earned.</em></h1>
+    <p>Hynoe SMP is balanced around having meaningful goals left weeks and months later. Genesis controls the early unlocks, then the server-specific gear ladder takes over. Power is one road through the world — not a skip button for the rest of it.</p>
+  </div>
+  <div class="pixel-banner">DEEP PROGRESSION // RARE ORES AHEAD</div>
+</section>
+
+<section class="loop-altar reveal">
+  <small>THE HYNOE LOOP</small><h2>Everything feeds the next adventure.</h2>
+  <div class="loop-orbit"><span>Survive</span><i>→</i><span>Explore</span><i>→</i><span>Earn</span><i>→</i><span>Upgrade</span><i>→</i><span>Fight</span><i>→</i><span>Build</span></div>
+</section>
+
+
+<section class="genesis-ages" id="genesis-ages">
+  <div class="genesis-heading reveal">
+    <div>
+      <span class="eyebrow">GENESIS // AGE SYSTEM</span>
+      <h2>Your character has to earn access to the world.</h2>
+      <p>Genesis sits underneath Hynoe SMP's gear ladder. Some unlocks are based on <strong>time played</strong>; others require you to use a previous tier, clear a challenge, or complete a Story Age. That is why a recipe, item, furnace, armor set, or dimension can still be unavailable even when you know it exists.</p>
+    </div>
+    <div class="age-rule-card">
+      <span>CORE RULE</span>
+      <b>OWNING IT ≠ UNLOCKING IT</b>
+      <p>Progress the Age itself. Do not assume another player handing you an item will bypass the gate.</p>
+    </div>
+  </div>
+
+  <div class="age-console reveal" data-age-console>
+    <div class="age-tabs" role="tablist" aria-label="Genesis Age categories">
+      <button class="active" type="button" data-age-tab="tools">TOOLS</button>
+      <button type="button" data-age-tab="armor">ARMOR</button>
+      <button type="button" data-age-tab="skills">SKILLS</button>
+      <button type="button" data-age-tab="story">STORY</button>
+    </div>
+
+    <div class="age-panel active" data-age-panel="tools">
+      <div class="age-panel-intro"><small>TOOL AGES</small><h3>Use the tier before you graduate from it.</h3><p>Tool progression is built around actually exhausting each material tier instead of crafting one pickaxe and instantly skipping ahead.</p></div>
+      <div class="unlock-chain">
+        <div class="unlock-node open"><span>START</span><b>Wood</b><small>Available immediately</small></div><i>→</i>
+        <div class="unlock-node"><span>BREAK WOOD TOOL</span><b>Stone</b><small>Unlock stone tools</small></div><i>→</i>
+        <div class="unlock-node copper"><span>BREAK STONE TOOL</span><b>Copper</b><small>Unlock copper tools</small></div><i>→</i>
+        <div class="unlock-node iron"><span>BREAK COPPER TOOL</span><b>Iron + Gold</b><small>Unlock iron/gold tools</small></div><i>→</i>
+        <div class="unlock-node diamond"><span>BREAK IRON TOOL</span><b>Diamond</b><small>Unlock diamond tools</small></div><i>→</i>
+        <div class="unlock-node netherite"><span>BREAK DIAMOND TOOL</span><b>Netherite</b><small>Unlock netherite tools</small></div>
+      </div>
+    </div>
+
+    <div class="age-panel" data-age-panel="armor">
+      <div class="age-panel-intro"><small>ARMOR AGES</small><h3>Armor is gated by both patience and accomplishments.</h3><p>Early armor deliberately takes longer than vanilla so reaching a new protection tier feels like an event.</p></div>
+      <div class="armor-age-grid">
+        <article><span>START</span><b>Leather</b><p>Your baseline armor Age.</p></article>
+        <article class="time-age"><span>10 IN-GAME DAYS</span><b>Copper</b><p>Accumulate 240,000 play-time ticks — roughly <strong>3h 20m</strong> of playtime.</p></article>
+        <article><span>TRIAL SPAWNER</span><b>Iron + Gold</b><p>Complete a normal Trial Spawner while wearing copper armor.</p></article>
+        <article><span>OMINOUS TRIAL</span><b>Diamond</b><p>Complete an Ominous Trial Spawner while wearing iron armor.</p></article>
+        <article><span>COMPLETE A RAID</span><b>Netherite</b><p>Earn Hero of the Village by completing a raid.</p></article>
+      </div>
+    </div>
+
+    <div class="age-panel" data-age-panel="skills">
+      <div class="age-panel-intro"><small>SKILL AGES</small><h3>Some basic systems become stronger only after you have lived in the world.</h3></div>
+      <div class="skill-age-grid">
+        <article class="furnace-age"><div class="age-icon">▦</div><div><span>5 IN-GAME DAYS</span><h3>Smelting</h3><p>Accumulate 120,000 play-time ticks — roughly <strong>1h 40m</strong>. This unlocks furnace blocks.</p></div></article>
+        <article class="combat-age"><div class="age-icon">⚔</div><div><span>25 HOSTILE KILLS</span><h3>Combat</h3><p>Kill 25 hostile mobs. Before this Age is complete, Genesis heavily reduces the attack damage of restricted swords and axes.</p></div></article>
+      </div>
+    </div>
+
+    <div class="age-panel" data-age-panel="story">
+      <div class="age-panel-intro"><small>STORY AGES</small><h3>The End is a checklist, not a shortcut.</h3><p>The major Story Ages can be progressed through their own milestones, but <strong>The End stays locked until every required Story Age is complete.</strong></p></div>
+      <div class="story-age-path">
+        <article><span>NETHER</span><b>Enchant an item</b><p>Unlocks access to The Nether.</p></article>
+        <article><span>OCEAN</span><b>Complete an Ocean Monument</b><p>Unlocks Tridents.</p></article>
+        <article><span>PALE</span><b>Kill a Creaking</b><p>Counts toward the Story completion required for The End.</p></article>
+        <article><span>SCULK</span><b>Discover Ancient City loot</b><p>Counts toward the Story completion required for The End.</p></article>
+        <article><span>WITHER</span><b>Kill the Wither</b><p>Unlocks Enchanted Golden Apples.</p></article>
+        <article class="end-age"><span>THE END</span><b>Complete all Story Ages</b><p>Unlocks Eyes of Ender and access to The End dimension.</p></article>
+      </div>
+    </div>
+  </div>
+
+  <div class="genesis-reminder reveal">
+    <span>WHY THIS EXISTS</span>
+    <p>Hynoe SMP is supposed to have a beginning, middle, and endgame. Genesis prevents a lucky chest, rich friend, or fast mining route from deleting the early game before you have actually played it.</p>
+  </div>
+</section>
+
+<section class="gear-forge">
+  <div class="forge-copy reveal"><span class="eyebrow">GEAR FORGE</span><h2>Seven tiers. Click one to inspect it.</h2><p>The important part is not only what comes next — it is why the previous tier still had time to matter.</p></div>
+  <div class="gear-path reveal" id="gear-path">
+    <button class="gear-crystal selected" data-tier="Iron" data-phase="Foundation" data-desc="Your first real armor and tool baseline. Iron is where recovery gear, shields, buckets, and reliable mining begin."><span>I</span><b>Iron</b></button><i>→</i>
+    <button class="gear-crystal" data-tier="Diamond" data-phase="Core Power" data-desc="The first major vanilla power jump. Strong enough to explore harder structures without ending the progression curve."><span>II</span><b>Diamond</b></button><i>→</i>
+    <button class="gear-crystal" data-tier="Netherite" data-phase="Vanilla Baseline" data-desc="The point where vanilla endgame becomes Hynoe SMP's advanced starting line."><span>III</span><b>Netherite</b></button><i>→</i>
+    <button class="gear-crystal cyan" data-tier="Vibranium" data-phase="Advanced Path" data-desc="The first rare modded tier. This is where exploration, ore hunting, and server-specific progression really begin."><span>IV</span><b>Vibranium</b></button><i>→</i>
+    <button class="gear-crystal purple" data-tier="Vulpus" data-phase="Late Game" data-desc="Stronger and rarer than Vibranium. A meaningful step that should take commitment rather than a quick mining session."><span>V</span><b>Vulpus</b></button><i>→</i>
+    <button class="gear-crystal violet" data-tier="Enderium" data-phase="Deep Late Game" data-desc="A deep late-game material tier intended to stay aspirational well after Netherite feels normal."><span>VI</span><b>Enderium</b></button><i>→</i>
+    <button class="gear-crystal gold" data-tier="Worldbreaker" data-phase="Power Ceiling" data-desc="Hynoe SMP's strongest overall armor goal. Worldbreaker belongs at the end of the network, not in a shop menu."><span>VII</span><b>Worldbreaker</b></button>
+  </div>
+  <div class="gear-inspector reveal"><small id="gear-phase">FOUNDATION</small><h3 id="gear-title">Iron</h3><p id="gear-desc">Your first real armor and tool baseline. Iron is where recovery gear, shields, buckets, and reliable mining begin.</p></div>
+</section>
+
+<section class="phase-biomes">
+  <article class="phase-biome reveal"><span>PHASE 01</span><h3>Foundation</h3><p>Food, shelter, tools, claims, one Home, nearby Waystones.</p></article>
+  <article class="phase-biome reveal"><span>PHASE 02</span><h3>Establish</h3><p>Storage, farms, recovery kits, structures, and your first serious base or MCA settlement.</p></article>
+  <article class="phase-biome reveal"><span>PHASE 03</span><h3>Specialize</h3><p>Dollars, Tokens, Jobs+, player trade, and businesses begin supporting your main progression route.</p></article>
+  <article class="phase-biome reveal"><span>PHASE 04</span><h3>Power Ladder</h3><p>Move beyond Netherite into Vibranium, Vulpus, and Enderium without deleting the journey by rushing.</p></article>
+  <article class="phase-biome reveal"><span>PHASE 05</span><h3>Endgame Network</h3><p>Bosses, advanced structures, Token milestones, rare materials, large settlements, and Worldbreaker.</p></article>
+</section>
+
+<section class="design-rule reveal"><span>HYNOE SMP DESIGN RULE</span><p>“Endgame is a network — not one final item.”</p><a class="next-quest" href="economy.html"><span>NEXT QUEST</span><b>Economy →</b></a></section>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-brand">
+    <img src="assets/images/hynoe-logo.png" alt="">
+    <div><strong>HYNOE SMP</strong><span>One long-term world. Progression, community, discovery, and stories worth keeping.</span></div>
+  </div>
+  <div class="footer-links"><a href="start.html">Start Here</a><a href="mca.html">Village Life</a><a href="progression.html">Progression</a><a href="economy.html">Economy</a><a href="bosses.html">Bosses</a><a href="join.html">Join</a></div>
+  <small>Hynoe SMP is an independent community server and is not affiliated with Mojang or Microsoft.</small>
+</footer>
+
+<script src="assets/common.js"></script>
+<script src="assets/progression.js"></script>
+</body>
+</html>
