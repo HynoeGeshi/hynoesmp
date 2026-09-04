@@ -498,3 +498,113 @@ body[data-page="join"] .server-code,body[data-page="join"] .arrival-screen{backd
   .broadcast-meta{grid-template-columns:1fr}
   .broadcast-actions .mc-button{width:100%}
 }
+
+
+/* Hynoe SMP server support */
+.hud-action.support{
+  color:#fff0a9!important;
+  border-color:#8f7020!important;
+  background:linear-gradient(#3b2c08,#211904)!important;
+}
+.hud-action.support:hover{
+  color:#fff!important;
+  border-color:#e0b936!important;
+  box-shadow:0 0 14px rgba(224,185,54,.18);
+}
+
+.server-support{
+  max-width:var(--max);
+  margin:0 auto 62px;
+  padding:22px 24px;
+  display:grid;
+  grid-template-columns:72px minmax(0,1fr) auto;
+  align-items:center;
+  gap:22px;
+  position:relative;
+  background:
+    linear-gradient(100deg,rgba(35,28,9,.96),rgba(13,16,11,.96)),
+    repeating-linear-gradient(90deg,rgba(255,255,255,.025) 0 1px,transparent 1px 18px);
+  border:3px solid #6e5a22;
+  box-shadow:0 0 0 3px #0b0d09,7px 7px #000;
+}
+.server-support:before{
+  content:"";
+  position:absolute;
+  inset:7px;
+  border:1px solid rgba(230,192,63,.22);
+  pointer-events:none;
+}
+.server-support-emblem{
+  width:62px;
+  height:62px;
+  display:grid;
+  place-items:center;
+  position:relative;
+  z-index:1;
+  color:#151006;
+  background:#d3aa2f;
+  border:4px solid #f1d36b;
+  box-shadow:inset 0 0 0 3px #8c6d18,4px 4px #000;
+  font:900 32px/1 Consolas,monospace;
+}
+.server-support-copy,
+.server-support-actions{
+  position:relative;
+  z-index:1;
+}
+.server-support-copy h2{
+  margin:4px 0 7px;
+  font:700 clamp(25px,3vw,38px)/1 Georgia,serif;
+}
+.server-support-copy p{
+  margin:0;
+  max-width:760px;
+  color:#c8c4b7;
+  line-height:1.5;
+}
+.server-support-actions{
+  min-width:235px;
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+  align-items:stretch;
+}
+.server-support-actions small{
+  color:#938b72;
+  text-align:center;
+  font-size:8px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.mc-button.support-gold{
+  background:linear-gradient(#b48b1d,#765a11);
+  border-color:#e8c552;
+  color:#fff8d1;
+}
+.mc-button.support-gold:hover{
+  filter:brightness(1.12);
+}
+.arrival-actions{
+  display:flex;
+  justify-content:center;
+  gap:9px;
+  flex-wrap:wrap;
+}
+@media(max-width:850px){
+  .server-support{
+    grid-template-columns:62px 1fr;
+  }
+  .server-support-actions{
+    grid-column:1/-1;
+    width:100%;
+  }
+}
+@media(max-width:560px){
+  .server-support{
+    grid-template-columns:1fr;
+    text-align:center;
+  }
+  .server-support-emblem{
+    margin:0 auto;
+  }
+}

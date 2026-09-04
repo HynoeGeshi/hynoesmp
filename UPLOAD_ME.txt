@@ -1,0 +1,7 @@
+HYNOE SMP - SUPPORT SERVER UPDATE
+
+Upload the CONTENTS of this folder to the ROOT of your existing hynoesmp GitHub repository.
+Allow GitHub to replace the matching HTML files and assets/styles.css.
+Do NOT delete data/, scripts/, or .github/.
+
+Support link used: https://streamlabs.com/hynoe_geshi
