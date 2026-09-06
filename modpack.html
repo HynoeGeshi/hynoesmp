@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#090806">
+<meta name="application-name" content="hynoesmp">
+<meta property="og:site_name" content="Hynoe SMP">
+<meta property="og:title" content="Install the Hynoe SMP Modpack">
+<meta property="og:description" content="Install Hynoe SMP with Modrinth in a few simple steps. No manual mods-folder setup required.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="assets/images/favicon.png">
+<link rel="stylesheet" href="assets/styles.css">
+<title>Install Modpack | Hynoe SMP</title>
+
+<style>
+.install-hero{
+  min-height:590px;
+  position:relative;
+  display:grid;
+  place-items:center;
+  padding:120px 24px 70px;
+  overflow:hidden
+}
+.install-hero:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:-3;
+  background:
+    linear-gradient(90deg,rgba(5,5,5,.88),rgba(5,5,5,.52),rgba(5,5,5,.88)),
+    linear-gradient(0deg,#070806 0,transparent 38%),
+    url('assets/images/adventure.png') center/cover
+}
+.install-hero:after{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:-2;
+  background:
+    radial-gradient(circle at 50% 45%,rgba(140,102,255,.20),transparent 34%),
+    repeating-linear-gradient(0deg,rgba(255,255,255,.025) 0 1px,transparent 1px 5px)
+}
+.install-copy{
+  width:min(900px,100%);
+  text-align:center;
+  padding:36px;
+  background:rgba(7,8,6,.90);
+  border:4px solid #4f5148;
+  box-shadow:0 0 0 4px #11140f,0 18px 55px #000
+}
+.install-copy .chapter-number{margin-bottom:10px}
+.install-copy h1{
+  margin:8px 0 14px;
+  font-family:Impact,'Arial Black',sans-serif;
+  font-size:clamp(48px,7vw,88px);
+  font-weight:400;
+  line-height:.94;
+  text-transform:uppercase;
+  text-shadow:5px 5px #000
+}
+.install-copy h1 em{font-style:normal;color:var(--gold2)}
+.install-copy>p{
+  max-width:760px;
+  margin:0 auto 22px;
+  color:#eeeae0;
+  font-size:18px
+}
+.first-time{
+  max-width:760px;
+  margin:24px auto 0;
+  padding:15px 18px;
+  text-align:left;
+  background:#1a160c;
+  border:2px solid #8d6b1c;
+  box-shadow:inset 0 0 0 1px #3c2e11
+}
+.first-time b{display:block;color:var(--gold2);font-size:12px;letter-spacing:.08em}
+.first-time span{display:block;margin-top:4px;color:#eee5cf;font-size:14px}
+.install-road{
+  max-width:1050px;
+  margin:65px auto 85px;
+  padding:0 24px;
+  position:relative;
+  display:grid;
+  gap:15px
+}
+.install-road:before{
+  content:"";
+  position:absolute;
+  left:62px;
+  top:58px;
+  bottom:58px;
+  width:5px;
+  background:repeating-linear-gradient(#69582f 0 18px,#25271f 18px 36px);
+  z-index:-1
+}
+.install-card{
+  display:grid;
+  grid-template-columns:76px 1fr;
+  gap:22px;
+  align-items:start;
+  padding:25px;
+  background:rgba(14,17,12,.94);
+  border:3px solid #3b4337;
+  box-shadow:7px 7px #050605;
+  backdrop-filter:blur(4px)
+}
+.install-num{
+  width:70px;
+  height:70px;
+  display:grid;
+  place-items:center;
+  background:#1d2519;
+  border:4px solid #657755;
+  color:#d8ffc0;
+  font-size:20px;
+  font-weight:900;
+  box-shadow:0 0 0 3px #090a08
+}
+.install-card small{
+  color:var(--gold2);
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.14em
+}
+.install-card h2{
+  margin:4px 0 8px;
+  font:700 clamp(29px,4vw,42px)/1 Georgia,serif
+}
+.install-card p{margin:0 0 14px;color:#dedbd1}
+.install-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.install-note{
+  margin-top:15px;
+  padding:12px 14px;
+  background:#090a08;
+  border-left:4px solid var(--purple);
+  color:#dcd6e8;
+  font-size:13px
+}
+.filename{
+  display:inline-block;
+  margin-top:8px;
+  padding:6px 9px;
+  font:700 12px Consolas,monospace;
+  background:#050604;
+  border:2px solid #34392e;
+  color:#fff4ca
+}
+.windows-help{
+  max-width:1050px;
+  margin:0 auto 70px;
+  padding:0 24px
+}
+.windows-box{
+  padding:27px;
+  background:linear-gradient(135deg,#17130b,#10120e);
+  border:4px solid #6d5623;
+  box-shadow:0 0 0 3px #0a0b08
+}
+.windows-box small{color:var(--gold2);font-weight:900;letter-spacing:.14em}
+.windows-box h2{font:700 clamp(30px,4vw,45px)/1 Georgia,serif;margin:7px 0 10px}
+.windows-box p{color:#e1dccf;margin:0}
+.windows-box strong{color:#fff2bd}
+.ready-box{
+  max-width:900px;
+  margin:0 auto 90px;
+  padding:38px 25px;
+  text-align:center;
+  background:radial-gradient(circle at 50% 0,rgba(227,180,61,.14),transparent 34%),#10130e;
+  border:5px solid #4a5641;
+  box-shadow:0 0 0 4px #0a0c09
+}
+.ready-box img{
+  width:105px;
+  height:105px;
+  object-fit:cover;
+  margin:0 auto 12px;
+  border:3px solid #80642a
+}
+.ready-box small{color:var(--gold2);font-weight:900;letter-spacing:.16em}
+.ready-box h2{font:700 clamp(36px,5vw,58px)/1 Georgia,serif;margin:8px 0}
+.ready-box p{color:#d8d5ca;max-width:650px;margin:0 auto 20px}
+.advanced-link{
+  display:inline-block;
+  margin-top:18px;
+  color:#aaa69c;
+  font-size:11px;
+  text-decoration:underline
+}
+@media(max-width:700px){
+  .install-copy{padding:26px 18px}
+  .install-copy h1{font-size:48px}
+  .install-road{padding:0 18px}
+  .install-road:before{left:47px}
+  .install-card{grid-template-columns:56px 1fr;padding:18px;gap:15px}
+  .install-num{width:54px;height:54px;font-size:16px}
+  .windows-help{padding:0 18px}
+}
+</style>
+</head>
+
+<body data-page="join">
+<header class="world-hud">
+  <a class="hynoe-mark" href="index.html" aria-label="Hynoe SMP world hub">
+    <img src="assets/images/hynoe-logo.png" alt="Hynoe logo">
+    <span><b>HYNOE SMP</b><small>ADVENTURE GUIDE</small></span>
+  </a>
+  <div class="guide-xp" aria-label="World guide progress">
+    <div class="guide-xp-top"><span>WORLD GUIDE XP</span><b id="guide-progress-label">0%</b></div>
+    <div class="guide-xp-track"><i id="guide-progress-fill"></i></div>
+  </div>
+  <div class="hud-actions">
+    <a class="hud-action youtube" href="https://www.youtube.com/@Hynoe/live" target="_blank" rel="noreferrer">● WATCH</a>
+    <a class="hud-action pack" href="modpack.html">↓ PACK</a>
+    <a class="hud-action discord" href="https://discord.gg/wYTePCkXd5" target="_blank" rel="noreferrer">DISCORD</a>
+    <a class="hud-action support" href="https://streamlabs.com/hynoe_geshi" target="_blank" rel="noreferrer">$ SUPPORT</a>
+    <button class="journal-toggle" type="button" data-journal-toggle aria-expanded="false">JOURNAL <span>▣</span></button>
+  </div>
+</header>
+
+<nav class="hotbar" aria-label="Hynoe SMP guide navigation">
+  <a class="hotbar-slot" href="index.html"><span>WORLD</span><b>World Hub</b></a>
+  <a class="hotbar-slot" href="start.html"><span>01</span><b>Start Here</b></a>
+  <a class="hotbar-slot" href="mca.html"><span>02</span><b>Village Life</b></a>
+  <a class="hotbar-slot" href="progression.html"><span>03</span><b>Progression</b></a>
+  <a class="hotbar-slot" href="economy.html"><span>04</span><b>Economy</b></a>
+  <a class="hotbar-slot" href="bosses.html"><span>05</span><b>Bosses</b></a>
+  <a class="hotbar-slot active" href="join.html"><span>06</span><b>Join</b></a>
+</nav>
+
+<aside class="quest-journal" id="quest-journal" aria-hidden="true">
+  <div class="journal-head">
+    <div><small>HYNOE SMP</small><h2>Adventurer's Journal</h2></div>
+    <button type="button" data-journal-toggle aria-label="Close journal">×</button>
+  </div>
+  <p class="journal-intro">Explore the guide like a world. Every chapter you visit fills your Guide XP. No quiz, no grind — just discover the systems before you jump in.</p>
+  <div class="quest-list" id="quest-list"></div>
+  <div class="journal-reward" id="journal-reward">
+    <span>FINAL DISCOVERY</span>
+    <b>Server Ready</b>
+    <p>Visit all six guide chapters to unlock this badge.</p>
+  </div>
+</aside>
+<div class="journal-scrim" data-journal-toggle></div>
+<div class="achievement-toast" id="achievement-toast" role="status" aria-live="polite">
+  <span>ACHIEVEMENT GET!</span><b id="achievement-name">Chapter Discovered</b>
+</div>
+
+<main>
+<section class="install-hero">
+  <div class="install-copy reveal">
+    <div class="chapter-number">HYNOE SMP INSTALLER</div>
+    <span class="eyebrow">NO MODS FOLDER REQUIRED</span>
+    <h1>Install Hynoe SMP <em>the easy way.</em></h1>
+    <p>Use the Modrinth App to install the Hynoe SMP client pack. You do not need to manually move mods into Minecraft folders or configure Fabric yourself.</p>
+    <div class="first-time">
+      <b>FIRST TIME PLAYING?</b>
+      <span>You need the Modrinth App installed before the Hynoe SMP pack can be imported. Follow the steps below in order.</span>
+    </div>
+  </div>
+</section>
+
+<section class="install-road">
+
+  <article class="install-card reveal">
+    <div class="install-num">01</div>
+    <div>
+      <small>INSTALL THE LAUNCHER</small>
+      <h2>Get the Modrinth App</h2>
+      <p>If you do not already have Modrinth, install it first. Modrinth handles the correct Minecraft version, Fabric setup, and the Hynoe SMP pack for you.</p>
+      <div class="install-actions">
+        <a class="mc-button purple big" href="https://modrinth.com/app" target="_blank" rel="noreferrer">GET MODRINTH APP ↗</a>
+      </div>
+      <div class="install-note"><strong>Already have Modrinth?</strong> Skip straight to Step 2.</div>
+    </div>
+  </article>
+
+  <article class="install-card reveal">
+    <div class="install-num">02</div>
+    <div>
+      <small>GET THE HYNOE PACK</small>
+      <h2>Download Hynoe SMP</h2>
+      <p>Download the official Hynoe SMP Modrinth pack. Save it somewhere easy to find, such as your Downloads folder.</p>
+      <span class="filename">Hynoe_SMP_Modrinth.mrpack</span>
+      <div class="install-actions">
+        <a class="mc-button gold big" href="https://github.com/HynoeGeshi/hynoesmp/releases/latest/download/Hynoe_SMP_Modrinth.mrpack">↓ DOWNLOAD HYNOE SMP</a>
+      </div>
+      <div class="install-note"><strong>Important:</strong> Do not try to open the file with Notepad. Import it from inside the Modrinth App in the next step.</div>
+    </div>
+  </article>
+
+  <article class="install-card reveal">
+    <div class="install-num">03</div>
+    <div>
+      <small>IMPORT THE PACK</small>
+      <h2>Open it inside Modrinth</h2>
+      <p>Open the Modrinth App. Create a new instance and choose the option to import from a file. Select <strong>Hynoe_SMP_Modrinth.mrpack</strong> from your Downloads folder.</p>
+      <div class="install-note">
+        <strong>Quick path:</strong><br>
+        Modrinth App → <strong>+ Create Instance</strong> → <strong>From File / Import</strong> → choose the Hynoe SMP <strong>.mrpack</strong>.
+      </div>
+    </div>
+  </article>
+
+  <article class="install-card reveal">
+    <div class="install-num">04</div>
+    <div>
+      <small>ENTER THE WORLD</small>
+      <h2>Launch and play</h2>
+      <p>Once the import finishes, open the new Hynoe SMP instance in Modrinth and press Play. The pack is now installed — no manual mods-folder setup required.</p>
+      <div class="install-actions">
+        <a class="mc-button purple big" href="https://discord.gg/wYTePCkXd5" target="_blank" rel="noreferrer">NEED HELP? JOIN DISCORD →</a>
+        <a class="mc-button stone big" href="join.html">BACK TO JOIN GUIDE</a>
+      </div>
+    </div>
+  </article>
+
+</section>
+
+<section class="windows-help reveal">
+  <div class="windows-box">
+    <small>WINDOWS TROUBLESHOOTING</small>
+    <h2>“Select an app to open this .mrpack file”?</h2>
+    <p>That does <strong>not</strong> mean the download is broken. Close that Windows popup, open the <strong>Modrinth App</strong>, and import the file from inside Modrinth using Step 3 above.</p>
+  </div>
+</section>
+
+<section class="ready-box reveal">
+  <img src="assets/images/hynoe-logo.png" alt="Hynoe">
+  <small>READY TO PLAY</small>
+  <h2>Welcome to Hynoe SMP.</h2>
+  <p>Once the Modrinth instance launches successfully, you are ready to enter the server. Keep Discord joined so you see pack updates and server announcements.</p>
+  <a class="mc-button purple big" href="https://discord.gg/wYTePCkXd5" target="_blank" rel="noreferrer">JOIN HYNOE DISCORD →</a><br>
+  <a class="advanced-link" href="https://github.com/HynoeGeshi/hynoesmp/releases/latest/download/Hynoe_SMP_Client_Pack.zip">Advanced user? Download the manual ZIP instead.</a>
+</section>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-brand">
+    <img src="assets/images/hynoe-logo.png" alt="">
+    <div><strong>HYNOE SMP</strong><span>One long-term world. Progression, community, discovery, and stories worth keeping.</span></div>
+  </div>
+  <div class="footer-links">
+    <a href="start.html">Start Here</a>
+    <a href="mca.html">Village Life</a>
+    <a href="progression.html">Progression</a>
+    <a href="economy.html">Economy</a>
+    <a href="bosses.html">Bosses</a>
+    <a href="https://streamlabs.com/hynoe_geshi" target="_blank" rel="noreferrer">Support</a>
+    <a href="join.html">Join</a>
+  </div>
+  <small>Hynoe SMP is an independent community server and is not affiliated with Mojang or Microsoft.</small>
+</footer>
+
+<script src="assets/common.js"></script>
+</body>
+</html>
