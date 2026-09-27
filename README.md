@@ -13,15 +13,9 @@ Publish from:
 ## Modpack
 The client pack is intentionally **not committed to this repository**.
 
-Website download buttons point to the latest GitHub Release asset named:
+The install guide's primary button points to the latest GitHub Release asset named `Hynoe_SMP_Modrinth.mrpack`. It was verified against the latest v1.0.1 release during the September 27 guide refresh. Keep that asset name for future releases so the one-click download continues to work. A manual ZIP may also be present, but its filename changes; advanced users are sent to the release page.
 
-`Hynoe_SMP_Client_Pack.zip`
-
-Release download URL:
-
-`https://github.com/HynoeGeshi/hynoesmp/releases/latest/download/Hynoe_SMP_Client_Pack.zip`
-
-Keep that asset filename the same for future releases so the website download button always follows the newest release.
+The separate interactive player dashboard remains owner-only and is intentionally not linked from this public site.
 
 ## Community
 Discord: https://discord.gg/wYTePCkXd5
