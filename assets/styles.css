@@ -608,3 +608,17 @@ body[data-page="join"] .server-code,body[data-page="join"] .arrival-screen{backd
     margin:0 auto;
   }
 }
+
+/* September player guide refresh */
+.campaign-roadmap{max-width:var(--max);margin:20px auto 78px;padding:30px 24px;background:linear-gradient(135deg,#141b18,#15120e);border-top:4px solid #67563a;border-bottom:4px solid #3e4b3e}
+.campaign-roadmap-head{max-width:830px}.campaign-roadmap-head h2{font:700 clamp(32px,4vw,50px)/1 Georgia,serif;margin:9px 0 15px}.campaign-roadmap-head p,.campaign-caveat{color:#e2dfd6;font-size:16px}.campaign-roadmap code,.server-address code{color:#f5d17b;font-weight:800}
+.campaign-roadmap-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px;margin:26px 0 18px}
+.campaign-roadmap-grid article{padding:20px;background:#10150f;border:3px solid #48533e;box-shadow:5px 5px #080a08}
+.campaign-roadmap-grid small{color:#eac778;font-weight:900;letter-spacing:.1em}.campaign-roadmap-grid h3{font:700 26px/1.05 Georgia,serif;margin:8px 0 12px}.campaign-roadmap-grid p{color:#e0ddd3;min-height:106px}.campaign-roadmap-grid b{color:#c9eaaa;display:block;margin-top:13px}
+.economy-basics,.server-address,.site-notice{max-width:var(--max);margin:18px auto 65px;padding:24px;background:#141910;border:3px solid #586347;box-shadow:6px 6px #060705}
+.economy-basics h2,.server-address h2,.site-notice h2{font:700 clamp(29px,3.5vw,39px)/1.1 Georgia,serif;margin:5px 0 11px}.economy-basics p,.server-address p,.site-notice p{color:#e1dfd6}
+.economy-basics-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:18px 0}.economy-basics-grid div{padding:14px;background:#22271d;border:2px solid #59634f}.economy-basics-grid b{display:block;font-size:25px;color:#f0cb7d}.economy-basics-grid span{color:#d5ddcc;font-size:14px}
+.site-notice{border-color:#8a663d;background:#241b13}.site-notice strong{color:#f0cb7d}
+.server-address{margin-top:0}.server-address code{display:inline-block;padding:9px 13px;background:#070a06;border:2px solid #847142;font-size:21px;margin:8px 0}
+@media(max-width:1000px){.campaign-roadmap-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.campaign-roadmap-grid p{min-height:0}}
+@media(max-width:650px){.campaign-roadmap,.economy-basics,.server-address,.site-notice{margin-left:18px;margin-right:18px}.campaign-roadmap-grid,.economy-basics-grid{grid-template-columns:1fr}.campaign-roadmap-grid h3{font-size:23px}.economy-basics-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
