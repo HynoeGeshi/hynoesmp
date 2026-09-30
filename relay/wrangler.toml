@@ -1,0 +1,17 @@
+name = "hynoe-campfire"
+main = "worker.mjs"
+compatibility_date = "2026-09-01"
+
+[vars]
+ALLOWED_ORIGINS = "https://hynoesmp.com,https://www.hynoesmp.com"
+BLOOM_SERVER_ID = "75621d38"
+# Switch only after testing a message on the actual Minecraft server.
+CHAT_ENABLED = "false"
+
+[[durable_objects.bindings]]
+name = "CHAT"
+class_name = "ChatRoom"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["ChatRoom"]

@@ -46,3 +46,13 @@ After uploading this version to GitHub:
 4. Wait for the green check
 5. The resulting commit updates `data/stream.json`
 6. GitHub Pages redeploys the updated broadcast automatically
+
+## Watch & Play (September 30 update)
+
+`watch.html` adds the branded viewer outpost with the existing YouTube stream source and a floating mini-player while scrolling. `assets/watch-game.mjs` is the standalone mining game engine: workshop upgrades, auto-production, 5/15/30-minute expeditions, six permanent relics, gold rushes, 12 badges, repeating contracts, and indefinitely repeatable Legacy resets. Autosave, JSON export/import, and up to eight hours offline production keep it usable across streams. Game rewards are browser-only, never server money/Tokens. Browser/local saves are not competitive or cheat-resistant.
+
+All guide headers link to Watch & Play. The original site content, modpack release links, domain, and stream updater remain intact.
+
+Public chat is intentionally disabled until `relay/README.md` setup is complete. `data/chat-config.json` stores only a public relay URL and public Turnstile key. Bloom secrets belong exclusively in the Worker secret store. `chat-admin.html` supplies token-authenticated moderation. No live delivery is claimed without a real Minecraft test.
+
+Run `node --test tests/*.test.mjs` for progression and relay tests. Preview with `python -m http.server 8765` and visit `/watch.html`.
