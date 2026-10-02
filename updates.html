@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#090806"><meta name="application-name" content="hynoesmp"><meta property="og:site_name" content="Hynoe SMP"><link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="assets/images/favicon.png">
+<link rel="stylesheet" href="assets/styles.css">
+<title>October 1 Player Experience Update | Hynoe SMP</title>
+<meta name="description" content="Read the Hynoe SMP October 1 release notes: campaign mission cash, advancement rewards, Assistant command fix, handbook and Fall progress improvements.">
+<link rel="canonical" href="https://hynoesmp.com/updates.html">
+<meta property="og:type" content="website"><meta property="og:title" content="October 1 Player Experience Update | Hynoe SMP"><meta property="og:description" content="Read the Hynoe SMP October 1 release notes: campaign mission cash, advancement rewards, Assistant command fix, handbook and Fall progress improvements."><meta property="og:url" content="https://hynoesmp.com/updates.html"><meta property="og:image" content="https://hynoesmp.com/assets/images/hynoe-logo.png"><meta property="og:image:alt" content="Gold Hynoe logo"><meta name="twitter:card" content="summary">
+</head>
+<body data-page="updates">
+
+<header class="world-hud">
+  <a class="hynoe-mark" href="index.html" aria-label="Hynoe SMP world hub">
+    <img src="assets/images/hynoe-logo.png" alt="Hynoe logo">
+    <span><b>HYNOE SMP</b><small>ADVENTURE GUIDE</small></span>
+  </a>
+  <div class="guide-xp" aria-label="World guide progress">
+    <div class="guide-xp-top"><span>WORLD GUIDE XP</span><b id="guide-progress-label">0%</b></div>
+    <div class="guide-xp-track"><i id="guide-progress-fill"></i></div>
+  </div>
+  <div class="hud-actions">
+      <a class="hud-action youtube" href="watch.html">● WATCH &amp; PLAY</a>
+      <a class="hud-action pack" href="modpack.html">↓ PACK</a>
+      <a class="hud-action discord" href="https://discord.gg/wYTePCkXd5" target="_blank" rel="noreferrer">DISCORD</a>
+      <a class="hud-action support" href="https://streamlabs.com/hynoe_geshi" target="_blank" rel="noreferrer">$ SUPPORT</a>
+      <button class="journal-toggle" type="button" data-journal-toggle aria-expanded="false">JOURNAL <span>▣</span></button>
+    </div>
+</header>
+<nav class="hotbar" aria-label="Hynoe SMP guide navigation">
+  <a class="hotbar-slot" href="index.html"><span>WORLD</span><b>World Hub</b></a><a class="hotbar-slot" href="start.html"><span>01</span><b>Start Here</b></a><a class="hotbar-slot" href="mca.html"><span>02</span><b>Village Life</b></a><a class="hotbar-slot" href="progression.html"><span>03</span><b>Progression</b></a><a class="hotbar-slot" href="economy.html"><span>04</span><b>Economy</b></a><a class="hotbar-slot" href="bosses.html"><span>05</span><b>Bosses</b></a><a class="hotbar-slot" href="join.html"><span>06</span><b>Join</b></a>
+</nav>
+
+
+<aside class="quest-journal" id="quest-journal" aria-hidden="true">
+  <div class="journal-head">
+    <div><small>HYNOE SMP</small><h2>Adventurer's Journal</h2></div>
+    <button type="button" data-journal-toggle aria-label="Close journal">×</button>
+  </div>
+  <p class="journal-intro">Explore the guide like a world. Every chapter you visit fills your Guide XP. No quiz, no grind — just discover the systems before you jump in.</p>
+  <div class="quest-list" id="quest-list"></div>
+  <div class="journal-reward" id="journal-reward">
+    <span>FINAL DISCOVERY</span>
+    <b>Server Ready</b>
+    <p>Visit all six guide chapters to unlock this badge.</p>
+  </div>
+</aside>
+<div class="journal-scrim" data-journal-toggle></div>
+<div class="achievement-toast" id="achievement-toast" role="status" aria-live="polite">
+  <span>ACHIEVEMENT GET!</span><b id="achievement-name">Chapter Discovered</b>
+</div>
+
+<main><section class="october-panel update-cover"><span class="eyebrow">OCTOBER 1, 2026 · PLAYER EXPERIENCE OVERHAUL</span><h1>Your next adventure<br>is easier to find.</h1><p>Campaign v15 · Hynoe Assistant v1.0.1 · Handbook v9 · Fall v2.1</p><p class="rollout-note"><strong>October 1 release notes:</strong> These describe the new server update. Live installation and the Assistant command fix are awaiting confirmation; use the in-game menus and Discord for rollout status.</p><div class="invite-actions"><a class="mc-button gold" href="join.html">JOIN HYNOE SMP</a><a class="mc-button stone" href="#commands">PLAYER COMMANDS</a></div></section>
+<section class="october-panel"><h2>Rewards along the way</h2><div class="october-grid"><article><b>151 mission rewards</b><p>Each tracked campaign requirement gains one-time cash. Together they total $76,150 across all 31 stages. Existing stage payouts remain the larger milestones.</p></article><article><b>31 stage bundles</b><p>Every stage gains a one-time themed or utility item bundle. The new bonus is not repeatedly claimable, including on the repeatable endgame stage.</p></article><article><b>$75 / $150 / $300</b><p>Visible normal and modded advancements pay by category: Task, Goal, and Challenge. Internal Hynoe technical advancements do not pay.</p></article><article><b>Earlier progress counts</b><p>The update backtracks completed stages for new mission cash and scans eligible completed advancements once. Reconnecting or rechecking is not intended to pay the same reward again.</p></article></div></section>
+<section class="october-panel"><h2>Campaign screens that explain themselves</h2><ul><li>Clearer <strong>current / required</strong> progress across all 31 stages.</li><li><strong>TURN IN (CONSUMED)</strong> means the items are handed over when the complete claim succeeds. HAVE, KEEP, and DO requirements are not consumed.</li><li><strong>CHECK + CLAIM STAGE</strong> wording is consistent, including Stage 31.</li><li>An Assistant button on every stage and location guidance for rare-mob objectives.</li></ul><p>Use <code>/quests</code> for actual progress, exact requirements, and available rewards.</p></section>
+<section class="october-panel" id="commands"><h2>Less guessing. More playing.</h2><p>The handbook is a reference when you need it. Start with help or ask a plain-language question. The v1.0.1 follow-up addresses the reported /ask and /next registration problem; the server must restart with the fixed Assistant before those commands can be checked.</p><dl class="command-list"><div><dt><code>/help</code></dt><dd>Open the simple guide.</dd></div><div><dt><code>/ask &lt;question&gt;</code></dt><dd>Ask about server systems or finding a mob. Try “/ask where do I find a Farseer”.</dd></div><div><dt><code>/next</code></dt><dd>Open your current campaign stage.</dd></div><div><dt><code>/quests</code></dt><dd>Check and claim campaign progress.</dd></div><div><dt><code>/season</code></dt><dd>Open the seasonal hub.</dd></div><div><dt><code>/tips off</code> / <code>/tips on</code></dt><dd>Control optional tips that rotate about every five minutes.</dd></div><div><dt><code>/token</code> / <code>/tbal</code></dt><dd>Open the Token Vault or check your Token balance.</dd></div><div><dt><code>/auction</code></dt><dd>Open the Auction House.</dd></div></dl><p>If /ask or /next is unavailable, use /quests and ask for help in Discord while the fixed Assistant rollout is confirmed.</p></section>
+<section class="october-panel"><span class="eyebrow">FALL v2.1</span><h2>Your season, with clearer progress.</h2><p>Harvest and Homecoming turn-ins display live inventory counts. Breeding, kills, biomes, and relic objectives show their live counts too. Hidden hunts gain clearer mob-finding guidance.</p><ol class="season-phases"><li><strong>Harvest</strong></li><li><strong>Longer Nights</strong></li><li><strong>After Dark</strong></li><li><strong>Homecoming</strong></li></ol><p>This is the phase-number key, not a calendar or a claim that all four phases are open. Check <code>/season</code> for the active phase. All eight existing v2.0 claim payouts are unchanged, and the v2.0 Fall resource pack stays the same.</p></section>
+<section class="october-panel"><h2>Returning player?</h2><p>No additional client mod is required for this server-side overhaul. Keep using the Hynoe SMP client pack. Open /quests for your campaign and /season for the current seasonal objectives.</p><p>The website’s mining game has separate browser progress; its rewards do not become server money or Tokens. Minecraft-to-website chat is still awaiting connection.</p><div class="invite-actions"><a class="mc-button gold" href="modpack.html">CLIENT INSTALL GUIDE</a><a class="mc-button purple" href="https://discord.gg/wYTePCkXd5" target="_blank" rel="noreferrer">DISCORD &amp; ROLLOUT UPDATES</a></div></section></main>
+
+<footer class="site-footer">
+  <div class="footer-brand">
+    <img src="assets/images/hynoe-logo.png" alt="">
+    <div><strong>HYNOE SMP</strong><span>One long-term world. Progression, community, discovery, and stories worth keeping.</span></div>
+  </div>
+  <div class="footer-links"><a href="updates.html">Latest Update</a><a href="start.html">Start Here</a><a href="mca.html">Village Life</a><a href="progression.html">Progression</a><a href="economy.html">Economy</a><a href="bosses.html">Bosses</a><a href="https://streamlabs.com/hynoe_geshi" target="_blank" rel="noreferrer">Support</a><a href="join.html">Join</a></div>
+  <small>Hynoe SMP is an independent community server and is not affiliated with Mojang or Microsoft.</small>
+</footer>
+
+<script src="assets/common.js"></script>
+
+</body>
+</html>
