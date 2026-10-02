@@ -631,3 +631,5 @@ body[data-page="join"] .server-code,body[data-page="join"] .arrival-screen{backd
 @media(max-width:700px){.october-panel{margin:24px 16px}.october-grid{grid-template-columns:1fr}.command-list>div{grid-template-columns:1fr;gap:12px}.season-phases{display:block}.season-phases li{margin:10px 0}.october-update .update-strip article{grid-template-columns:1fr;gap:8px}}
 .october-update .update-strip{grid-template-columns:repeat(2,minmax(0,1fr))}
 @media(max-width:800px){.october-update .update-strip{grid-template-columns:1fr}}
+
+body[data-page="updates"] .world-context{display:none}
