@@ -5,14 +5,15 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#090806"><meta name="application-name" content="hynoesmp"><meta property="og:site_name" content="Hynoe SMP"><link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="assets/images/favicon.png">
-<link rel="stylesheet" href="assets/styles.css?v=20261002">
+<link rel="stylesheet" href="assets/styles.css?v=20261003">
 <title>Start Here | Hynoe SMP</title>
 </head>
 <body data-page="start">
+<a class="skip-link" href="#main-content">Skip to content</a>
 
 <header class="world-hud">
   <a class="hynoe-mark" href="index.html" aria-label="Hynoe SMP world hub">
-    <img src="assets/images/hynoe-logo.png" alt="Hynoe logo">
+    <img src="assets/images/hynoe-logo.webp" alt="Hynoe logo" width="640" height="640">
     <span><b>HYNOE SMP</b><small>ADVENTURE GUIDE</small></span>
   </a>
   <div class="guide-xp" aria-label="World guide progress">
@@ -50,8 +51,8 @@
   <span>ACHIEVEMENT GET!</span><b id="achievement-name">Chapter Discovered</b>
 </div>
 
-<main>
-<section class="chapter-hero" style="--hero:url('assets/images/first_day.png')">
+<main id="main-content" tabindex="-1">
+<section class="chapter-hero" style="--hero:url('assets/images/first_day.webp')">
   <div class="chapter-shade"></div>
   <div class="chapter-copy reveal">
     <div class="chapter-number">QUEST 01</div>
@@ -62,7 +63,22 @@
   <div class="pixel-banner">NEW WORLD // FIRST SUNSET</div>
 </section>
 
-<section class="october-panel" id="player-help"><span class="eyebrow">OCTOBER 1 · PLAYER HELP UPDATE</span><h2>Start with /help. Ask when you get stuck.</h2><p class="rollout-note"><strong>October 1 release notes:</strong> These describe the new server update. Live installation and the Assistant command fix are awaiting confirmation; use the in-game menus and Discord for rollout status.</p><p><code>/ask &lt;question&gt;</code> gives plain-language server guidance. <code>/next</code> opens your current campaign stage. Use <code>/quests</code> for campaign progress and <code>/season</code> for seasonal objectives. Turn optional tips off with <code>/tips off</code>.</p><p>The Assistant v1.0.1 follow-up addresses /ask and /next not registering. If either is unavailable, use /quests and Discord for help. <a href="updates.html#commands">See the full command guide.</a></p></section>
+<section class="october-panel" id="player-help" aria-labelledby="player-help-title">
+  <span class="eyebrow">YOUR IN-GAME GUIDE</span>
+  <h2 id="player-help-title">New here? Type /help first.</h2>
+  <p>You do not need to memorize the whole server. Open Minecraft chat and type <code>/help</code> to open the simple guide. When you need an explanation, ask a question. When you need a goal, open your next campaign stage.</p>
+  <dl class="command-list">
+    <div><dt><code>/help</code></dt><dd><strong>Learn where to start.</strong> Open the simple server guide when you first join or need a refresher.</dd></div>
+    <div><dt><code>/ask &lt;question&gt;</code></dt><dd><strong>Get server guidance.</strong> Replace &lt;question&gt; with your own words—do not type the brackets. For example: <code>/ask where do I find a Farseer</code>. Use it for questions about server systems or finding a mob.</dd></div>
+    <div><dt><code>/next</code></dt><dd><strong>Find your next goal.</strong> Open your current campaign stage to see what to work on.</dd></div>
+    <div><dt><code>/quests</code></dt><dd><strong>Check progress and claim rewards.</strong> Review the exact stage requirements, see what is left, and use the campaign menu to check and claim.</dd></div>
+    <div><dt><code>/season</code></dt><dd><strong>Explore the current event.</strong> Open the seasonal hub for the active phase and its objectives.</dd></div>
+    <div><dt><code>/tips off</code><br><code>/tips on</code></dt><dd><strong>Choose how much guidance you see.</strong> Turn optional tips off, or turn them back on when you want reminders.</dd></div>
+  </dl>
+  <p><strong>A simple first-session routine:</strong> <code>/help</code> to get oriented → <code>/next</code> to pick a goal → <code>/ask</code> followed by your question if you get stuck → <code>/quests</code> to check and claim your progress.</p>
+  <p class="rollout-note"><strong>Command not found?</strong> The Assistant v1.0.1 update fixes /ask and /next registration, but its live installation has not been confirmed here. Use <code>/quests</code> for the campaign and <a href="https://discord.gg/wYTePCkXd5" target="_blank" rel="noreferrer">ask in Discord</a> if a command is unavailable.</p>
+  <a class="quest-link" href="updates.html#commands">See the full player command guide →</a>
+</section>
 <section class="adventure-layout">
   <aside class="mission-panel reveal">
     <span>ACTIVE QUEST</span><h2>First Day Foundations</h2>
@@ -84,21 +100,21 @@
 
 <section class="command-workbench reveal">
   <div class="crafting-label">USEFUL FIRST COMMANDS</div>
-  <div class="crafting-grid"><code>/quests</code><code>/rtp</code><code>/tpa &lt;player&gt;</code><code>/tpaccept</code><code>/homes</code><code>/bal</code><code>/token</code><code>/tbal</code><code>/trigger hynoe_server_handbook</code></div>
+  <div class="crafting-grid"><code>/help</code><code>/ask &lt;question&gt;</code><code>/next</code><code>/quests</code><code>/season</code><code>/tips off</code><code>/tips on</code><code>/rtp</code><code>/tpa &lt;player&gt;</code><code>/tpaccept</code><code>/homes</code><code>/bal</code><code>/token</code><code>/tbal</code><code>/trigger hynoe_server_handbook</code></div>
   <a class="next-quest" href="mca.html"><span>NEXT QUEST</span><b>Village Life →</b></a>
 </section>
 </main>
 
 <footer class="site-footer">
   <div class="footer-brand">
-    <img src="assets/images/hynoe-logo.png" alt="">
+    <img src="assets/images/hynoe-logo.webp" alt="">
     <div><strong>HYNOE SMP</strong><span>One long-term world. Progression, community, discovery, and stories worth keeping.</span></div>
   </div>
   <div class="footer-links"><a href="updates.html">Latest Update</a><a href="start.html">Start Here</a><a href="mca.html">Village Life</a><a href="progression.html">Progression</a><a href="economy.html">Economy</a><a href="bosses.html">Bosses</a><a href="https://streamlabs.com/hynoe_geshi" target="_blank" rel="noreferrer">Support</a><a href="join.html">Join</a></div>
   <small>Hynoe SMP is an independent community server and is not affiliated with Mojang or Microsoft.</small>
 </footer>
 
-<script src="assets/common.js"></script>
+<script src="assets/common.js?v=20261003"></script>
 <script src="assets/start.js"></script>
 </body>
 </html>

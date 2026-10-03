@@ -10,7 +10,7 @@
 <meta property="og:description" content="Install Hynoe SMP with Modrinth in a few simple steps. No manual mods-folder setup required.">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="assets/images/favicon.png">
-<link rel="stylesheet" href="assets/styles.css?v=20261002">
+<link rel="stylesheet" href="assets/styles.css?v=20261003">
 <title>Install Modpack | Hynoe SMP</title>
 
 <style>
@@ -30,7 +30,7 @@
   background:
     linear-gradient(90deg,rgba(5,5,5,.88),rgba(5,5,5,.52),rgba(5,5,5,.88)),
     linear-gradient(0deg,#070806 0,transparent 38%),
-    url('assets/images/adventure.png') center/cover
+    url('assets/images/adventure.webp') center/cover
 }
 .install-hero:after{
   content:"";
@@ -201,9 +201,10 @@
 </head>
 
 <body data-page="join">
+<a class="skip-link" href="#main-content">Skip to content</a>
 <header class="world-hud">
   <a class="hynoe-mark" href="index.html" aria-label="Hynoe SMP world hub">
-    <img src="assets/images/hynoe-logo.png" alt="Hynoe logo">
+    <img src="assets/images/hynoe-logo.webp" alt="Hynoe logo" width="640" height="640">
     <span><b>HYNOE SMP</b><small>ADVENTURE GUIDE</small></span>
   </a>
   <div class="guide-xp" aria-label="World guide progress">
@@ -247,7 +248,7 @@
   <span>ACHIEVEMENT GET!</span><b id="achievement-name">Chapter Discovered</b>
 </div>
 
-<main>
+<main id="main-content" tabindex="-1">
 <section class="install-hero">
   <div class="install-copy reveal">
     <div class="chapter-number">HYNOE SMP INSTALLER</div>
@@ -328,7 +329,7 @@
 </section>
 
 <section class="ready-box reveal">
-  <img src="assets/images/hynoe-logo.png" alt="Hynoe">
+  <img src="assets/images/hynoe-logo.webp" alt="Hynoe">
   <small>READY TO PLAY</small>
   <h2>Welcome to Hynoe SMP.</h2>
   <p>Once the Modrinth instance launches successfully, you are ready to enter the server. Keep Discord joined so you see pack updates and server announcements.</p>
@@ -339,7 +340,7 @@
 
 <footer class="site-footer">
   <div class="footer-brand">
-    <img src="assets/images/hynoe-logo.png" alt="">
+    <img src="assets/images/hynoe-logo.webp" alt="">
     <div><strong>HYNOE SMP</strong><span>One long-term world. Progression, community, discovery, and stories worth keeping.</span></div>
   </div>
   <div class="footer-links">
@@ -354,6 +355,6 @@
   <small>Hynoe SMP is an independent community server and is not affiliated with Mojang or Microsoft.</small>
 </footer>
 
-<script src="assets/common.js"></script>
+<script src="assets/common.js?v=20261003"></script>
 </body>
 </html>

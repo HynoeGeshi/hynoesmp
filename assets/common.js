@@ -20,7 +20,7 @@
   try{visited=JSON.parse(localStorage.getItem(key)||'[]'); if(!Array.isArray(visited))visited=[];}catch{visited=[];}
   const isGuide=chapters.some(c=>c[0]===page);
   let newly=false;
-  if(isGuide&&!visited.includes(page)){visited.push(page);newly=true;localStorage.setItem(key,JSON.stringify(visited));}
+  if(isGuide&&!visited.includes(page)){visited.push(page);newly=true;try{localStorage.setItem(key,JSON.stringify(visited));}catch{/* Guide remains usable when storage is unavailable. */}}
   const completeCount=chapters.filter(c=>visited.includes(c[0])).length;
   const pct=Math.round((completeCount/chapters.length)*100);
   const fill=document.getElementById('guide-progress-fill'),label=document.getElementById('guide-progress-label');
@@ -35,15 +35,25 @@
   const reward=document.getElementById('journal-reward');
   if(reward&&completeCount===chapters.length){reward.classList.add('unlocked');reward.querySelector('p').textContent='Unlocked. You have explored the full Hynoe SMP guide.';}
   const journal=document.getElementById('quest-journal'),scrim=document.querySelector('.journal-scrim');
+  let journalTrigger=null;
+  if(journal){journal.inert=true;journal.setAttribute('role','dialog');journal.setAttribute('aria-modal','true');journal.setAttribute('aria-label',"Adventurer's Journal");}
   function setJournal(open){
     if(!journal||!scrim)return;
+    if(open)journalTrigger=document.activeElement;
+    journal.inert=!open;
+    document.body.classList.toggle('journal-open',open);
     journal.classList.toggle('open',open);scrim.classList.toggle('open',open);journal.setAttribute('aria-hidden',String(!open));
     document.querySelectorAll('[data-journal-toggle]').forEach(b=>b.setAttribute('aria-expanded',String(open)));
+    if(open)journal.querySelector('button').focus();else if(journalTrigger)journalTrigger.focus();
   }
-  document.querySelectorAll('[data-journal-toggle]').forEach(b=>b.addEventListener('click',()=>setJournal(!journal.classList.contains('open'))));
-  document.addEventListener('keydown',e=>{if(e.key==='Escape')setJournal(false);});
-  const obs=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target);}}),{threshold:.08});
+  document.querySelectorAll('[data-journal-toggle]').forEach(b=>b.addEventListener('click',()=>{if(journal)setJournal(!journal.classList.contains('open'));}));
+  document.addEventListener('keydown',e=>{if(!journal?.classList.contains('open'))return;
+    if(e.key==='Escape')setJournal(false);
+    if(e.key==='Tab'){const items=[...journal.querySelectorAll('a[href],button')];const first=items[0],last=items.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}});
+  const obs='IntersectionObserver' in window ? new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target);}}),{threshold:.08}) : {observe:el=>el.classList.add('visible')};
+  document.documentElement.classList.add('reveal-ready');
   document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+  document.querySelectorAll('.hotbar a').forEach(a=>{if(a.getAttribute('href')===(location.pathname.split('/').pop()||'index.html')){a.classList.add('active');a.setAttribute('aria-current','page');}});
   const tabs=document.querySelectorAll('.vault-tabs button');
   if(tabs.length){tabs.forEach(btn=>btn.addEventListener('click',()=>{tabs.forEach(b=>b.classList.remove('active'));btn.classList.add('active');const tier=btn.dataset.tier;document.querySelectorAll('#vault-grid article').forEach(card=>card.classList.toggle('hidden',tier!=='all'&&card.dataset.tier!==tier));}));}
   if(newly){
