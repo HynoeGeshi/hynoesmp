@@ -3,7 +3,7 @@
 Official website and player guide for **Hynoe SMP**.
 
 ## Website
-This repository is the production source for the Hynoe SMP website.
+This repository is the production source for the Hynoe SMP website. It is proprietary, not open source. Public visibility does not grant permission to copy, rehost, redistribute, or build another product from the code or assets. See [COPYRIGHT.md](COPYRIGHT.md).
 
 ## GitHub Pages
 Publish from:
@@ -49,7 +49,7 @@ After uploading this version to GitHub:
 
 ## Watch & Play (September 30 update)
 
-`watch.html` adds the branded viewer outpost with the existing YouTube stream source and a floating mini-player while scrolling. `assets/watch-game.mjs` is the standalone mining game engine: workshop upgrades, auto-production, 5/15/30-minute expeditions, six permanent relics, gold rushes, 12 badges, repeating contracts, and indefinitely repeatable Legacy resets. Autosave, JSON export/import, and up to eight hours offline production keep it usable across streams. Game rewards are browser-only, never server money/Tokens. Browser/local saves are not competitive or cheat-resistant.
+`watch.html` adds the branded viewer outpost with the existing YouTube stream source and a floating mini-player while scrolling. `assets/watch-game.mjs` is the standalone mining game engine: workshop upgrades, auto-production, action-based expeditions, six permanent relics, gold rushes, 12 badges, repeating contracts, and indefinitely repeatable Legacy resets. Autosave and up to eight hours of offline production keep it usable across streams. Game rewards are browser-only, never server money/Tokens.
 
 All guide headers link to Watch & Play. The original site content, modpack release links, domain, and stream updater remain intact.
 

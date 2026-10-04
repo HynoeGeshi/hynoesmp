@@ -1,3 +1,4 @@
+/*! Copyright © 2026 Hynoe. All rights reserved. See /COPYRIGHT.md. */
 import * as P from './watch-progression.mjs?v=20261004h';
 export * from './watch-progression.mjs?v=20261004h';
 export const BIOMES=['Autumn Outpost','Copper Caverns','Amethyst Hollow','Obsidian Depths','Ender Wilds','Astral Vault'];

@@ -1,3 +1,4 @@
+/*! Copyright © 2026 Hynoe. All rights reserved. See /COPYRIGHT.md. */
 import * as G from './watch-game.mjs?v=20261004h';
 const $=id=>document.getElementById(id),KEY='hynoeDeepDeeperV1',fmt=n=>new Intl.NumberFormat('en',{notation:n>=10000?'compact':'standard',maximumFractionDigits:1}).format(n);
 let state;try{state=G.restore(localStorage.getItem(KEY));}catch{state=G.fresh();}

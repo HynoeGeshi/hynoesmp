@@ -1,3 +1,4 @@
+/*! Copyright © 2026 Hynoe. All rights reserved. See /COPYRIGHT.md. */
 // Permanent progression. Pure rules shared by the browser and pacing tests.
 export const MATERIALS=['coal','copper','gold','amethyst','diamond','ender','astral'];
 export const RESEARCH=[
