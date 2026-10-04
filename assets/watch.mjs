@@ -4,7 +4,7 @@ let state;try{state=G.restore(localStorage.getItem(KEY));}catch{state=G.fresh();
 let last=Date.now(),toastTimer,saveOk=true,buyCount=1;
 G.ensureVeins(state);
 const activityLog=[];
-function activity(text){activityLog.unshift(text);activityLog.length=3;$('activity-feed').replaceChildren(...activityLog.map((entry,i)=>{const b=document.createElement('b');b.textContent=(i?'• ':'')+entry;return b;}));}
+function activity(text){activityLog.unshift(text);if(activityLog.length>3)activityLog.length=3;$('activity-feed').replaceChildren(...activityLog.map((entry,i)=>{const b=document.createElement('b');b.textContent=(i?'• ':'')+entry;return b;}));}
 function toast(text){activity(text);$('toast').textContent=text;$('toast').classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').classList.remove('show'),4500);}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(state));saveOk=true;$('save-status').textContent='Saved on this device · 8h offline mining cap';}catch{saveOk=false;$('save-status').textContent='Browser storage unavailable. Progress cannot be saved in this session.';}}
 for(const u of G.UPGRADES){const row=document.createElement('div');row.className='upgrade';row.innerHTML=`<span class="icon">${u.icon}</span><div class="details"><strong>${u.name}</strong><small>${u.desc} · <span id="owned-${u.id}">0 owned</span></small></div><button id="buy-${u.id}">Buy</button>`;$('upgrade-list').append(row);$('buy-'+u.id).onclick=()=>{if(G.bulkBuy(state,u.id,buyCount)){activity('Workshop built '+buyCount+'× '+u.name+'.');save();render();}};}
