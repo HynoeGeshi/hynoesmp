@@ -3,6 +3,7 @@ import re
 
 html_path=Path('watch.html')
 css_path=Path('assets/watch.css')
+test_path=Path('tests/game.test.mjs')
 html=html_path.read_text()
 css=css_path.read_text()
 
@@ -44,10 +45,19 @@ if marker not in css:
     css += r'''
 
 /* NAV ACCESS FIX 2026-10-05 */
-.site-pages{max-width:1440px;margin:0 auto;padding:8px 28px;display:flex;gap:6px;overflow-x:auto;white-space:nowrap;border-bottom:1px solid var(--line);background:#12110e}.site-pages a{flex:0 0 auto;text-decoration:none;color:#cfc7b6;font-size:11px;font-weight:700;padding:8px 11px;border:1px solid transparent;border-radius:6px}.site-pages a:hover,.site-pages a:focus-visible{color:var(--gold);border-color:#554a36;background:#262118}.tabs{display:flex!important;gap:4px;padding:8px 10px;overflow-x:auto;white-space:nowrap;background:#181713;border-top:1px solid var(--line);border-bottom:1px solid var(--line);scrollbar-width:thin}.tabs button{flex:0 0 auto;padding:11px 12px;border:1px solid transparent;border-radius:7px;background:transparent;color:#aaa08d;font-size:11px}.tabs button:hover{background:#29251d;color:#f0d6a4}.tabs button[aria-selected=true]{background:#3a301f;color:var(--gold);border-color:#6e5933}.tabs .mine-tab{color:#d7ccb6}.tabs .mine-tab:before{content:''}.stream-run{margin-top:16px}.simple-hub{display:none!important}
+.site-pages{max-width:1440px;margin:0 auto;padding:8px 28px;display:flex;gap:6px;overflow-x:auto;white-space:nowrap;border-bottom:1px solid var(--line);background:#12110e}.site-pages a{flex:0 0 auto;text-decoration:none;color:#cfc7b6;font-size:11px;font-weight:700;padding:8px 11px;border:1px solid transparent;border-radius:6px}.site-pages a:hover,.site-pages a:focus-visible{color:var(--gold);border-color:#554a36;background:#262118}.tabs{display:flex!important;gap:4px;padding:8px 10px;overflow-x:auto;white-space:nowrap;background:#181713;border-top:1px solid var(--line);border-bottom:1px solid var(--line);scrollbar-width:thin}.tabs button{flex:0 0 auto;padding:11px 12px;border:1px solid transparent;border-radius:7px;background:transparent;color:#aaa08d;font-size:11px}.tabs button:hover{background:#29251d;color:#f0d6a4}.tabs button[aria-selected=true]{background:#3a301f;color:var(--gold);border-color:#6e5933}.tabs .mine-tab{color:#d7ccb6}.stream-run{margin-top:16px}.simple-hub{display:none!important}
 @media(max-width:730px){.site-pages{padding-inline:12px}.tabs{padding-inline:8px}.tabs button{padding:10px;font-size:10px}}
 '''
 css_path.write_text(css)
+
+# Replace the old test that required the now-removed duplicate simple hub.
+tests=test_path.read_text()
+pattern=r"test\('simplified game hub keeps every system reachable'.*?\);\n?$"
+replacement="""test('game navigation keeps every system reachable without duplicate hub buttons',()=>{const html=readFileSync(new URL('../watch.html',import.meta.url),'utf8'),ui=readFileSync(new URL('../assets/watch.mjs',import.meta.url),'utf8'),css=readFileSync(new URL('../assets/watch.css',import.meta.url),'utf8');assert.doesNotMatch(html,/id=\"simple-hub-title\"/);assert.match(html,/class=\"site-pages\"/);assert.match(html,/class=\"mine-tab\"/);for(const id of ['stream-run','watch-progress','watch-missions'])assert.match(html,new RegExp(`id=\\\"${id}\\\"`));for(const tab of ['tab-operations','tab-leaderboard','tab-frontier','tab-crew','tab-research','tab-upgrades','tab-expeditions','tab-journal'])assert.match(html,new RegExp(`id=\\\"${tab}\\\"`));assert.match(ui,/watch-session\\.mjs/);assert.match(css,/NAV ACCESS FIX 2026-10-05/);});\n"""
+new_tests,n=re.subn(pattern,replacement,tests,count=1,flags=re.S)
+if n!=1 and "test('game navigation keeps every system reachable without duplicate hub buttons'" not in tests:
+    raise SystemExit('Could not replace obsolete simple-hub test')
+test_path.write_text(new_tests if n else tests)
 
 # Static assertions so we do not hide navigation again.
 check_html=html_path.read_text()
