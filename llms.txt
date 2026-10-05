@@ -1,0 +1,34 @@
+# Hynoe SMP
+
+Hynoe SMP is a long-term modded Minecraft Java survival server focused on progression, community, exploration, village life, economy, bosses, and rare gear.
+
+Canonical site: https://hynoesmp.com/
+Server address: hynoesmp.com
+Edition: Minecraft Java
+Loader/client: Fabric; the Hynoe SMP client pack is required
+Join guide: https://hynoesmp.com/join.html
+Modpack guide: https://hynoesmp.com/modpack.html
+Progression guide: https://hynoesmp.com/progression.html
+Village life guide: https://hynoesmp.com/mca.html
+Economy guide: https://hynoesmp.com/economy.html
+Boss guide: https://hynoesmp.com/bosses.html
+Updates: https://hynoesmp.com/updates.html
+Watch and play: https://hynoesmp.com/watch.html
+Discovery page: https://hynoesmp.com/modded-minecraft-server.html
+Discord: https://discord.gg/wYTePCkXd5
+
+## Core systems
+- 31-stage Campaign connecting major server systems.
+- Genesis Ages gate important tools, armor, dimensions, and power behind play and accomplishments.
+- Minecraft Comes Alive village life with relationships, homes, work, marriage, children, guards, and generations.
+- Player economy, jobs, trading, and server selling systems.
+- Bosses, exploration, structures, rare gear, and long-term progression.
+- Waystones and exploration systems help players move through a large persistent world.
+
+## Joining
+1. Open the modpack guide and install/import the Hynoe SMP pack with Modrinth.
+2. Launch the pack in Minecraft Java.
+3. Add `hynoesmp.com` in Multiplayer.
+4. Use the Discord for current announcements, rollout status, and support.
+
+Last reviewed: 2026-10-05
