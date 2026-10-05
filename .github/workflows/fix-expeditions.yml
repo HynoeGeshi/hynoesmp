@@ -1,0 +1,84 @@
+name: Fix expedition UX
+
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-expeditions.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    if: "!contains(github.event.head_commit.message || '', '[expedition-ui-fixed]')"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Patch expedition UI
+        shell: python
+        run: |
+          from pathlib import Path
+
+          ui_path = Path('assets/watch.mjs')
+          ui = ui_path.read_text()
+
+          toast_anchor = "function toast(text){activity(text);$('toast').textContent=text;$('toast').classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').classList.remove('show'),4500);}\n"
+          helper = """function expeditionBlockers(minutes){const q=G.expeditionPlan(state,minutes),blockers=[];if(state.expedition)blockers.push('another relic hunt is already active');if(state.progress.run)blockers.push('finish or extract from the active cave run');if(state.ore<q.cost)blockers.push(fmt(Math.ceil(q.cost-state.ore))+' more ore');if(state.progress.bag.coal<q.coal)blockers.push(Math.ceil(q.coal-state.progress.bag.coal)+' more coal');if(q.crewPower<q.required)blockers.push(Math.ceil(q.required-q.crewPower)+' more crew power');return {q,blockers};}\n"""
+          if 'function expeditionBlockers(minutes)' not in ui:
+              if toast_anchor not in ui:
+                  raise SystemExit('Could not find toast anchor in assets/watch.mjs')
+              ui = ui.replace(toast_anchor, toast_anchor + helper, 1)
+
+          old_render = "document.querySelectorAll('[data-trip]').forEach(b=>{const q=G.expeditionPlan(state,Number(b.dataset.trip));b.disabled=!q.ready;b.querySelector('small').textContent=Math.ceil(q.duration/60)+' min · '+q.cost+' ore + '+q.coal+' coal · '+q.required+' power';});const trip=state.expedition"
+          new_render = "document.querySelectorAll('[data-trip]').forEach(b=>{const {q,blockers}=expeditionBlockers(Number(b.dataset.trip)),hardLocked=!!state.expedition||!!state.progress.run;b.disabled=hardLocked;b.setAttribute('aria-disabled',String(!q.ready));b.classList.toggle('locked',!q.ready);b.dataset.ready=String(q.ready);b.querySelector('small').textContent=(q.ready?'READY · ':'LOCKED · '+(blockers.length?'Need '+blockers.join(' · '):'Requirements not met')+' · ')+Math.ceil(q.duration/60)+' min · '+q.cost+' ore + '+q.coal+' coal · '+q.required+' power';b.title=q.ready?'Ready to dispatch':blockers.join(' · ');});const trip=state.expedition"
+          if old_render in ui:
+              ui = ui.replace(old_render, new_render, 1)
+          elif "b.dataset.ready=String(q.ready)" not in ui:
+              raise SystemExit('Could not find expedition render block in assets/watch.mjs')
+
+          old_status = "$('trip-status').textContent=!trip?'Active crew power: '+G.crewBonuses(state.progress).power+'. Your lineup is reserved until the dispatch returns. Timers continue while away.'"
+          new_status = "$('trip-status').textContent=!trip?'Ready check · '+fmt(state.ore)+' ore · '+fmt(state.progress.bag.coal)+' coal · '+G.crewBonuses(state.progress).power+' crew power. Tap any hunt to see exactly what it still needs.'"
+          if old_status in ui:
+              ui = ui.replace(old_status, new_status, 1)
+          elif "Ready check · " not in ui:
+              raise SystemExit('Could not find expedition status copy in assets/watch.mjs')
+
+          old_click = "document.querySelectorAll('[data-trip]').forEach(b=>b.onclick=()=>{if(G.startExpedition(state,Number(b.dataset.trip))){activity('Relic hunt started: '+b.firstChild.textContent.trim()+'.');save();render();}});$('collect').onclick=()=>{if(G.collectExpedition(state)){toast('Relic hunt complete. Welcome back, crew.');save();render();}};"
+          new_click = "document.querySelectorAll('[data-trip]').forEach(b=>b.onclick=()=>{const minutes=Number(b.dataset.trip),{q,blockers}=expeditionBlockers(minutes);if(!q.ready){toast('Relic hunt locked: '+(blockers.join(' · ')||'requirements not met')+'.');return;}if(G.startExpedition(state,minutes)){activity('Relic hunt started: '+b.firstChild.textContent.trim()+'.');toast('Crew dispatched for '+Math.ceil(q.duration/60)+' minutes.');save();render();}});$('collect').onclick=()=>{if(G.collectExpedition(state)){toast('Relic hunt complete. Welcome back, crew.');save();render();}};"
+          if old_click in ui:
+              ui = ui.replace(old_click, new_click, 1)
+          elif "Relic hunt locked:" not in ui:
+              raise SystemExit('Could not find expedition click handler in assets/watch.mjs')
+
+          ui_path.write_text(ui)
+
+          html_path = Path('watch.html')
+          html = html_path.read_text()
+          html = html.replace('assets/watch.mjs?v=20261005a', 'assets/watch.mjs?v=20261005b')
+          html_path.write_text(html)
+
+          test_path = Path('tests/game.test.mjs')
+          tests = test_path.read_text()
+          marker = "test('expedition UI explains locked requirements instead of acting broken'"
+          if marker not in tests:
+              tests += "\n" + "test('expedition UI explains locked requirements instead of acting broken',()=>{const ui=readFileSync(new URL('../assets/watch.mjs',import.meta.url),'utf8');assert.match(ui,/function expeditionBlockers\\(minutes\\)/);assert.match(ui,/Relic hunt locked:/);assert.match(ui,/Ready check · /);assert.match(ui,/b\\.disabled=hardLocked/);assert.doesNotMatch(ui,/b\\.disabled=!q\\.ready/);});" + "\n"
+              test_path.write_text(tests)
+
+      - name: Run game tests
+        run: node --test tests/game.test.mjs tests/mini-player.test.mjs
+
+      - name: Commit expedition repair
+        run: |
+          if git diff --quiet; then
+            echo "No changes required."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/watch.mjs watch.html tests/game.test.mjs
+          git commit -m "Fix relic hunt requirement feedback [expedition-ui-fixed]"
+          git push origin HEAD:main
