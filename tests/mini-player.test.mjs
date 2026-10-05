@@ -1,0 +1,21 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import vm from 'node:vm';
+test('mini-player follows both directions, preserves its iframe, dismisses, restores and handles layout changes',()=>{
+ const source=readFileSync(new URL('../assets/watch.mjs',import.meta.url),'utf8').split('// Keep the original video slot')[1];
+ let rect={top:100,bottom:500,height:400},iframe=null,docked=false,button,queued,mutate,resize;
+ const events={},originalIframe={id:'same-playing-frame'};
+ const video={getBoundingClientRect:()=>rect,querySelector:()=>iframe,classList:{toggle:(k,v)=>docked=v,remove:()=>docked=false}};
+ const context={$:()=>video,document:{createElement:()=>button={},body:{append(){}}},window:{innerHeight:800,addEventListener:(k,v)=>events[k]=v},requestAnimationFrame:f=>{queued=f;return 1},MutationObserver:class{constructor(f){mutate=f}observe(){}},ResizeObserver:class{constructor(f){resize=f}observe(){}}};
+ vm.runInNewContext('// Keep the original video slot'+source,context);
+ const flush=()=>{if(queued){const f=queued;queued=null;f();}};
+ flush();assert.equal(docked,false);
+ iframe=originalIframe;mutate();flush();assert.equal(docked,false);
+ rect={top:-500,bottom:-100,height:400};events.scroll();flush();assert.equal(docked,true);assert.equal(button.hidden,false);
+ rect={top:900,bottom:1300,height:400};events.scroll();flush();assert.equal(docked,true);assert.equal(iframe,originalIframe);
+ button.onclick();assert.equal(docked,false);events.scroll();flush();assert.equal(docked,false);
+ rect={top:100,bottom:500,height:400};events.scroll();flush();assert.equal(docked,false);
+ rect={top:900,bottom:1300,height:400};resize();flush();assert.equal(docked,true);
+ rect={top:0,bottom:0,height:0};events.resize();flush();assert.equal(docked,false);
+});
