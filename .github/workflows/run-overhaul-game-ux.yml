@@ -1,0 +1,38 @@
+name: Run game UX overhaul
+
+on:
+  push:
+    paths:
+      - '.github/workflows/run-overhaul-game-ux.yml'
+      - '.github/scripts/overhaul-game-ux.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  overhaul:
+    if: "!contains(github.event.head_commit.message || '', '[game-ux-overhauled]')"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply overhaul
+        run: python .github/scripts/overhaul-game-ux.py
+      - name: Validate game code
+        run: |
+          node --check assets/watch.mjs
+          node --check assets/watch-session.mjs
+          node --test tests/game.test.mjs tests/mini-player.test.mjs tests/watch-session.test.mjs
+      - name: Commit overhaul
+        run: |
+          if git diff --quiet; then
+            echo "No changes required."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/watch.mjs assets/watch-session.mjs assets/watch.css watch.html tests/game.test.mjs tests/watch-session.test.mjs
+          git commit -m "Overhaul game clarity and stream retention [game-ux-overhauled]"
+          git push origin HEAD:main
