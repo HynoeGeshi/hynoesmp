@@ -1,0 +1,31 @@
+{
+  "name": "Hynoe SMP",
+  "canonicalUrl": "https://hynoesmp.com/",
+  "serverAddress": "hynoesmp.com",
+  "edition": "Java",
+  "loader": "Fabric",
+  "clientRequirement": "Hynoe SMP client pack required",
+  "joinUrl": "https://hynoesmp.com/join.html",
+  "modpackUrl": "https://hynoesmp.com/modpack.html",
+  "discoveryUrl": "https://hynoesmp.com/modded-minecraft-server.html",
+  "discordUrl": "https://discord.gg/wYTePCkXd5",
+  "categoryTags": [
+    "modded survival",
+    "SMP",
+    "campaign progression",
+    "economy",
+    "village life",
+    "bosses",
+    "exploration"
+  ],
+  "features": [
+    "31-stage campaign",
+    "Genesis Ages progression gates",
+    "Minecraft Comes Alive village life",
+    "player economy and jobs",
+    "bosses and rare gear",
+    "Waystones and exploration"
+  ],
+  "positioning": "Long-term modded survival built for progression, community and discovery rather than a short endgame rush.",
+  "lastReviewed": "2026-10-05"
+}
