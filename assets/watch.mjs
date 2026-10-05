@@ -102,7 +102,22 @@ function showMessages(messages){const feed=$('chat-feed'),atBottom=feed.scrollHe
 async function poll(){if(!endpoint||document.hidden||pollBusy)return;pollBusy=true;try{const d=await api('/messages');ready=d.enabled;$('connection').textContent=ready?'● RELAY READY':'● CHAT PAUSED';$('connection').classList.toggle('online',ready);showMessages(d.messages);if(!ready)$('chat-status').textContent='Chat is paused by the owner.';}catch{ready=false;$('connection').textContent='● OFFLINE';$('connection').classList.remove('online');$('chat-status').textContent='Relay unavailable. Messages cannot be sent right now.';}finally{pollBusy=false;controls();}}
 $('chat-form').onsubmit=async e=>{e.preventDefault();if($('send').disabled)return;sending=true;controls();try{await api('/messages',{name:$('nickname').value,text:$('message').value,consent:true,token});$('message').value='';$('char-count').textContent='0 / 240';waitUntil=Date.now()+15000;$('chat-status').textContent='Accepted by the Minecraft console. In-game display depends on the server.';await poll();}catch(err){$('chat-status').textContent=err.message;}finally{sending=false;token='';window.turnstile?.reset(widget);controls();}};
 fetch('data/chat-config.json',{cache:'no-store'}).then(r=>r.json()).then(c=>{if(!c.relayUrl||!c.turnstileSiteKey)return;const url=new URL(c.relayUrl);if(url.protocol!=='https:')return;endpoint=url.href.replace(/\/$/,'');const script=document.createElement('script');script.src='https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';script.onload=()=>{widget=window.turnstile.render('#turnstile',{sitekey:c.turnstileSiteKey,theme:'dark',callback:t=>{token=t;controls();},'expired-callback':()=>{token='';controls();},'error-callback':()=>{token='';$('chat-status').textContent='Verification unavailable. Try reloading the page.';controls();}});};script.onerror=()=>$('chat-status').textContent='Verification could not load. Check your connection.';document.head.append(script);$('chat-status').textContent='Accept the rules and complete verification to chat.';poll();setInterval(poll,15000);}).catch(()=>{});setInterval(controls,1000);
-// Keep the broadcast visible while viewers scroll through their side quest.
-const dockToggle=document.createElement('button');dockToggle.className='dock-toggle';dockToggle.textContent='Hide mini-player';dockToggle.hidden=true;document.body.append(dockToggle);let dockDismissed=false;
-dockToggle.onclick=()=>{dockDismissed=true;$('video').classList.remove('docked');dockToggle.hidden=true;};
-new IntersectionObserver(entries=>{const past=entries[0].boundingClientRect.bottom<0;if(entries[0].isIntersecting)dockDismissed=false;const dock=past&&!dockDismissed&&!!$('video').querySelector('iframe');$('video').classList.toggle('docked',dock);dockToggle.hidden=!dock;},{threshold:0}).observe($('video'));
+// Keep the original video slot in the layout; only its iframe floats.
+const dockVideo=$('video');
+const dockToggle=document.createElement('button');
+dockToggle.type='button';dockToggle.className='dock-toggle';dockToggle.textContent='Hide mini-player';dockToggle.hidden=true;document.body.append(dockToggle);
+let dockDismissed=false,dockFrame=0;
+function updateDock(){
+  dockFrame=0;
+  const rect=dockVideo.getBoundingClientRect();
+  const visible=rect.bottom>80&&rect.top<window.innerHeight&&rect.height>0;
+  if(visible)dockDismissed=false;
+  const dock=!visible&&!dockDismissed&&!!dockVideo.querySelector('iframe')&&rect.height>0;
+  dockVideo.classList.toggle('docked',dock);dockToggle.hidden=!dock;
+}
+function scheduleDock(){if(!dockFrame)dockFrame=requestAnimationFrame(updateDock);}
+dockToggle.onclick=()=>{dockDismissed=true;dockVideo.classList.remove('docked');dockToggle.hidden=true;};
+window.addEventListener('scroll',scheduleDock,{passive:true});
+window.addEventListener('resize',scheduleDock);
+new MutationObserver(scheduleDock).observe(dockVideo,{childList:true});
+scheduleDock();
