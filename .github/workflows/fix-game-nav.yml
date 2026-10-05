@@ -1,0 +1,46 @@
+name: Fix game navigation
+
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-game-nav.yml'
+      - '.github/scripts/fix-game-nav.py'
+      - 'tests/navigation.test.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    if: "!contains(github.event.head_commit.message || '', '[game-nav-fixed]')"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Confirm navigation regression
+        run: |
+          if node --test tests/navigation.test.mjs; then
+            echo "Regression test unexpectedly already passes."
+            exit 1
+          else
+            echo "Confirmed: current page hides or omits required navigation."
+          fi
+      - name: Apply navigation repair
+        run: python .github/scripts/fix-game-nav.py
+      - name: Verify navigation and game
+        run: |
+          node --check assets/watch.mjs
+          node --test tests/navigation.test.mjs tests/game.test.mjs tests/mini-player.test.mjs tests/watch-session.test.mjs
+      - name: Commit repair
+        run: |
+          if git diff --quiet; then
+            echo "No changes required."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add watch.html assets/watch.css
+          git commit -m "Restore game and site navigation [game-nav-fixed]"
+          git push origin HEAD:main
