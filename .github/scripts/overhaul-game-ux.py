@@ -1,0 +1,124 @@
+from pathlib import Path
+
+session_module = r'''/*! Copyright © 2026 Hynoe. All rights reserved. See /COPYRIGHT.md. */
+export const MILESTONES=[
+ {seconds:600,label:'10 MIN',text:'+100 ore',reward:{ore:100}},
+ {seconds:1500,label:'25 MIN',text:'+1 Insight',reward:{insight:1}},
+ {seconds:2700,label:'45 MIN',text:'+1 Recruitment Mark',reward:{marks:1}},
+ {seconds:3600,label:'60 MIN',text:'+250 ore + 1 Insight',reward:{ore:250,insight:1}}
+];
+export function todayKey(now=Date.now()){const d=new Date(now),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');return d.getFullYear()+'-'+m+'-'+day;}
+const clean=n=>Number.isFinite(n)&&n>=0?Math.floor(n):0;
+const upgradeTotal=s=>['pick','crew','drill','forge'].reduce((sum,id)=>sum+clean(s?.[id]),0);
+const activityTotal=s=>clean(s?.opsRuns)+clean(s?.progress?.surveys);
+const snapshot=s=>({blocks:clean(s?.blocks),upgrades:upgradeTotal(s),activity:activityTotal(s)});
+function previousDay(day){const d=new Date(day+'T12:00:00');d.setDate(d.getDate()-1);return todayKey(d.getTime());}
+export function fresh(day,state,carry={}){const base=snapshot(state);return {version:1,day,seconds:0,claimed:[],missionClaimed:false,base,streak:clean(carry.streak),lastCompleted:typeof carry.lastCompleted==='string'?carry.lastCompleted:''};}
+export function restore(raw,day,state){let p;try{p=typeof raw==='string'?JSON.parse(raw):raw;}catch{}if(!p||p.version!==1)return fresh(day,state);if(p.day!==day)return fresh(day,state,{streak:p.lastCompleted===previousDay(day)?clean(p.streak):0,lastCompleted:p.lastCompleted});const base=p.base&&typeof p.base==='object'?{blocks:clean(p.base.blocks),upgrades:clean(p.base.upgrades),activity:clean(p.base.activity)}:snapshot(state);return {version:1,day,seconds:Math.min(86400,clean(p.seconds)),claimed:Array.isArray(p.claimed)?[...new Set(p.claimed.filter(i=>Number.isInteger(i)&&i>=0&&i<MILESTONES.length))]:[],missionClaimed:!!p.missionClaimed,base,streak:clean(p.streak),lastCompleted:typeof p.lastCompleted==='string'?p.lastCompleted:''};}
+export function missions(session,state){return [
+ {id:'mine',label:'Open 5 veins',progress:Math.max(0,clean(state?.blocks)-session.base.blocks),target:5},
+ {id:'build',label:'Buy 1 upgrade',progress:Math.max(0,upgradeTotal(state)-session.base.upgrades),target:1},
+ {id:'explore',label:'Finish 1 operation or cave',progress:Math.max(0,activityTotal(state)-session.base.activity),target:1}
+].map(x=>({...x,done:x.progress>=x.target}));}
+function award(state,reward){const ore=clean(reward.ore),insight=clean(reward.insight),marks=clean(reward.marks);if(ore){state.ore+=ore;state.total+=ore;}if(insight)state.progress.insight+=insight;if(marks)state.progress.command.marks+=marks;}
+export function tick(session,state,elapsed,visible=true){const events=[];if(!visible)return events;session.seconds=Math.min(86400,session.seconds+Math.min(5,Math.max(0,Number(elapsed)||0)));MILESTONES.forEach((m,i)=>{if(session.seconds>=m.seconds&&!session.claimed.includes(i)){session.claimed.push(i);award(state,m.reward);events.push({type:'drop',text:'Stream Run drop unlocked: '+m.text+'.'});}});const ms=missions(session,state);if(!session.missionClaimed&&ms.every(x=>x.done)){session.missionClaimed=true;award(state,{ore:75,insight:1});events.push({type:'mission',text:'Stream Run play bonus: +75 ore + 1 Insight.'});}if(session.seconds>=600&&session.lastCompleted!==session.day){session.streak=session.lastCompleted===previousDay(session.day)?session.streak+1:1;session.lastCompleted=session.day;events.push({type:'streak',text:'Stream-day streak: '+session.streak+'.'});}return events;}
+export function view(session,state){const next=MILESTONES.find((_,i)=>!session.claimed.includes(i))||null,ms=missions(session,state);return {next,missions:ms,seconds:session.seconds,streak:session.streak,missionClaimed:session.missionClaimed,complete:!next};}
+'''
+Path('assets/watch-session.mjs').write_text(session_module)
+
+ui_path=Path('assets/watch.mjs')
+ui=ui_path.read_text()
+if "import * as S from './watch-session.mjs" not in ui:
+    ui=ui.replace("import * as G from './watch-game.mjs?v=20261005a';\n","import * as G from './watch-game.mjs?v=20261005a';\nimport * as S from './watch-session.mjs?v=20261005a';\n",1)
+state_anchor="let state;try{state=G.restore(localStorage.getItem(KEY));}catch{state=G.fresh();}\n"
+state_insert="""let state;try{state=G.restore(localStorage.getItem(KEY));}catch{state=G.fresh();}\nconst SESSION_KEY='hynoeStreamRunV1',SESSION_DAY=S.todayKey();\nlet streamRun;try{streamRun=S.restore(localStorage.getItem(SESSION_KEY),SESSION_DAY,state);}catch{streamRun=S.fresh(SESSION_DAY,state);}\n"""
+if "SESSION_KEY='hynoeStreamRunV1'" not in ui:
+    if state_anchor not in ui: raise SystemExit('state anchor missing')
+    ui=ui.replace(state_anchor,state_insert,1)
+helper_anchor="function leaderboardPayload()"
+helpers="""function saveStreamRun(){try{localStorage.setItem(SESSION_KEY,JSON.stringify(streamRun));}catch{}}\nfunction renderStreamRun(){const root=$('stream-run');if(!root)return;const v=S.view(streamRun,state),next=v.next,max=next?next.seconds:3600;$('watch-time').textContent=Math.floor(v.seconds/60)+'m';$('watch-streak').textContent=v.streak?'🔥 '+v.streak+' stream-day streak':'Stay 10 min to start your stream-day streak';$('watch-progress').max=max;$('watch-progress').value=Math.min(v.seconds,max);$('watch-next').textContent=next?'Next drop in '+Math.max(1,Math.ceil((next.seconds-v.seconds)/60))+' min · '+next.text:'All timed drops unlocked for this session';const milestoneNodes=S.MILESTONES.map((m,i)=>{const e=document.createElement('span');e.className=streamRun.claimed.includes(i)?'claimed':next===m?'active':'';e.innerHTML='<b>'+m.label+'</b><small>'+m.text+'</small>';return e;});$('watch-milestones').replaceChildren(...milestoneNodes);const missionNodes=v.missions.map(m=>{const e=document.createElement('span');e.className=m.done?'done':'';e.innerHTML='<b>'+(m.done?'✓ ':'')+m.label+'</b><small>'+Math.min(m.progress,m.target)+' / '+m.target+'</small>';return e;});$('watch-missions').replaceChildren(...missionNodes);$('watch-mission-bonus').textContent=v.missionClaimed?'PLAY BONUS CLAIMED · +75 ore + 1 Insight':'Finish all 3 play goals · +75 ore + 1 Insight';}\n"""
+if 'function renderStreamRun()' not in ui:
+    if helper_anchor not in ui: raise SystemExit('helper anchor missing')
+    ui=ui.replace(helper_anchor,helpers+helper_anchor,1)
+if "function render(){const now=Date.now();renderStreamRun();" not in ui:
+    ui=ui.replace("function render(){const now=Date.now();","function render(){const now=Date.now();renderStreamRun();",1)
+old_timers="setInterval(()=>{let now=Date.now();const badges=G.tick(state,(now-last)/1000,now);last=now;if(badges.length)toast('Achievement unlocked: '+badges.join(', '));render();},1000);setInterval(save,10000);setInterval(()=>syncLeaderboard(),30000);document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else syncLeaderboard();});window.addEventListener('pagehide',save);render();connectLeaderboard();"
+new_timers="setInterval(()=>{let now=Date.now(),elapsed=(now-last)/1000;const badges=G.tick(state,elapsed,now),sessionEvents=S.tick(streamRun,state,elapsed,!document.hidden);last=now;if(badges.length)toast('Achievement unlocked: '+badges.join(', '));if(sessionEvents.length){toast(sessionEvents.map(e=>e.text).join(' '));save();saveStreamRun();}render();},1000);setInterval(()=>{save();saveStreamRun();},10000);setInterval(()=>syncLeaderboard(),30000);document.addEventListener('visibilitychange',()=>{if(document.hidden){save();saveStreamRun();}else syncLeaderboard();});window.addEventListener('pagehide',()=>{save();saveStreamRun();});render();connectLeaderboard();"
+if old_timers in ui:
+    ui=ui.replace(old_timers,new_timers,1)
+elif 'sessionEvents=S.tick(streamRun' not in ui:
+    raise SystemExit('timer block missing')
+ui_path.write_text(ui)
+
+html_path=Path('watch.html')
+html=html_path.read_text()
+insertion_anchor='</div><button id="next-action">Do this now →</button></div>\n<nav class="game-loop"'
+overhaul='''</div><button id="next-action">Do this now →</button></div>
+<section class="simple-hub" aria-labelledby="simple-hub-title">
+  <div class="simple-hub-head"><div><span>THE WHOLE GAME IN 4 MOVES</span><h2 id="simple-hub-title">Mine → Build → Crew → Explore</h2><p>Everything else supports these four moves. Start with the highlighted next move above.</p></div><strong>NO MENU HUNTING</strong></div>
+  <div class="simple-actions">
+    <button data-go="mine"><span>1</span><b>Mine</b><small>Get ore + materials</small></button>
+    <button data-go="upgrades"><span>2</span><b>Build</b><small>Make every minute stronger</small></button>
+    <button data-go="crew"><span>3</span><b>Crew</b><small>Collect cards + team bonuses</small></button>
+    <button data-go="frontier"><span>4</span><b>Explore</b><small>Risk runs for permanent progress</small></button>
+  </div>
+  <details class="more-systems"><summary>More systems when you’re ready</summary><div class="advanced-actions">
+    <button data-go="operations"><b>Drill Ops</b><small>Quick reward choices</small></button>
+    <button data-go="research"><b>Research</b><small>Permanent specialties</small></button>
+    <button data-go="expeditions"><b>Relic Hunts</b><small>Timed crew dispatches</small></button>
+    <button data-go="leaderboard"><b>Hall of Legends</b><small>Your global score</small></button>
+    <button data-go="journal"><b>Legacy</b><small>Restart stronger</small></button>
+  </div></details>
+</section>
+<section class="stream-run" id="stream-run" aria-labelledby="stream-run-title">
+  <div class="stream-run-head"><div><span>WATCH + PLAY LOOP</span><h2 id="stream-run-title">Stream Run</h2><p>Keep this Watch & Play page visible while the stream is on. Timed drops unlock automatically, and playing gives a separate bonus.</p></div><a href="#video">▶ Stream stays with you</a></div>
+  <div class="stream-run-meter"><div><strong id="watch-time">0m</strong><span id="watch-streak">Stay 10 min to start your streak</span></div><progress id="watch-progress" max="600" value="0"></progress><small id="watch-next">Next drop in 10 min · +100 ore</small></div>
+  <div class="watch-milestones" id="watch-milestones" aria-label="Stream Run timed drops"></div>
+  <div class="watch-play-goals"><div><span>PLAY WHILE YOU WATCH</span><strong id="watch-mission-bonus">Finish all 3 play goals · +75 ore + 1 Insight</strong></div><div class="watch-missions" id="watch-missions"></div></div>
+</section>
+<nav class="game-loop"'''
+if 'id="stream-run"' not in html:
+    if insertion_anchor not in html: raise SystemExit('HTML insertion anchor missing')
+    html=html.replace(insertion_anchor,overhaul,1)
+html=html.replace('Your ore, crew cards, and relics belong to this browser game. They do not pay out Minecraft money or Tokens.','This game saves in your browser. It does not change Minecraft money or Tokens.')
+old_cave='Three crossings. Inspect each hazard and weigh the haul against the damage. Engineers counter collapses, Guards counter ambushes, and Scouts counter lost routes. Bring a Scout for a third ration; Prepared camp cards add more, up to five. Field medics improve healing. Stars strengthen protection. Your equipped lineup locks for the run. Retreat saves 40% of discovered supplies, improved by Rescue line cards; defeat loses the haul.'
+new_cave='Three choices matter: Scout is safer, Mine pays more but hurts more, and Fortify spends a ration to heal. The screen shows the next hazard, its counter-role, and the damage range before you choose. Extract early to save part of your haul.'
+html=html.replace(old_cave,new_cave)
+html=html.replace('assets/watch.css?v=20261005a','assets/watch.css?v=20261005b')
+html=html.replace('assets/watch.mjs?v=20261005c','assets/watch.mjs?v=20261005d')
+html_path.write_text(html)
+
+css_path=Path('assets/watch.css')
+css=css_path.read_text()
+marker='/* UX OVERHAUL 2026-10-05 */'
+if marker not in css:
+    css += r'''
+
+/* UX OVERHAUL 2026-10-05 */
+.game-loop,.room-grid,.tabs,.system-atlas{display:none!important}.outpost-hub .hub-heading{display:none}.outpost-panorama{margin-top:18px}.simple-hub{margin:16px 22px 18px;padding:18px;border:1px solid #725d37;border-radius:14px;background:linear-gradient(145deg,#2c271e,#1c1a16);box-shadow:inset 0 1px #ffffff08}.simple-hub-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:14px}.simple-hub-head span,.stream-run-head span,.watch-play-goals>div:first-child>span{font-size:9px;letter-spacing:1.7px;color:var(--gold);font-weight:800}.simple-hub-head h2{font-size:30px;margin:3px 0 4px}.simple-hub-head p{margin:0;color:var(--muted);font-size:12px;max-width:650px}.simple-hub-head>strong{font-size:10px;color:#d8c498;border:1px solid #5e5137;border-radius:999px;padding:6px 9px;white-space:nowrap}.simple-actions{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}.simple-actions button{text-align:left;min-height:90px;padding:13px;display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;column-gap:10px;align-items:center;background:#29251d}.simple-actions button>span{grid-row:1/3;width:30px;height:30px;display:grid;place-items:center;border-radius:50%;background:#4b3c22;color:#ffd88d;font:800 15px 'Barlow Condensed',sans-serif}.simple-actions b{font:700 20px 'Barlow Condensed',sans-serif}.simple-actions small,.advanced-actions small{display:block;color:var(--muted);font-size:10px}.more-systems{margin-top:10px;border-top:1px solid #3f382a;padding-top:10px}.more-systems summary{cursor:pointer;color:#dbc38f;font-size:11px;font-weight:700;letter-spacing:.4px}.advanced-actions{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:10px}.advanced-actions button{text-align:left;padding:11px 10px;background:#211f1a;border-color:#454033}.advanced-actions b{display:block;font-size:12px}.stream-run{margin:0 22px 20px;padding:18px;border:1px solid #4c6654;border-radius:14px;background:radial-gradient(circle at 90% 0,#29433266,transparent 32%),linear-gradient(145deg,#1f2922,#181b18);box-shadow:0 10px 30px #0002}.stream-run-head{display:flex;justify-content:space-between;gap:18px;align-items:flex-start}.stream-run-head h2{font-size:28px;margin:2px 0 4px}.stream-run-head p{margin:0;color:#b8c7ba;font-size:12px;max-width:620px}.stream-run-head a{font-size:11px;text-decoration:none;padding:8px 10px;border:1px solid #4f6d57;border-radius:7px;white-space:nowrap}.stream-run-meter{margin-top:14px;padding:12px 13px;border:1px solid #314638;border-radius:10px;background:#11171399}.stream-run-meter>div{display:flex;justify-content:space-between;gap:12px;align-items:end}.stream-run-meter strong{font:800 27px 'Barlow Condensed',sans-serif;color:#b8e4bd}.stream-run-meter span,.stream-run-meter small{font-size:10px;color:#9fb3a2}.stream-run-meter progress{margin:7px 0 3px;accent-color:#8fc99b}.watch-milestones{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:9px}.watch-milestones span{padding:9px;border:1px solid #354a3a;border-radius:8px;background:#182019}.watch-milestones b,.watch-milestones small{display:block}.watch-milestones b{font-size:10px;color:#9bb7a0}.watch-milestones small{font-size:9px;color:#758b79}.watch-milestones span.claimed{border-color:#6f9978;background:#213128}.watch-milestones span.claimed b,.watch-milestones span.claimed small{color:#b9e4c0}.watch-milestones span.active{box-shadow:inset 0 0 0 1px #a8d5af}.watch-play-goals{margin-top:10px;display:grid;grid-template-columns:210px 1fr;gap:10px;align-items:center}.watch-play-goals>div:first-child{padding:10px 12px;border:1px solid #3a4b3d;border-radius:8px}.watch-play-goals strong{display:block;font-size:10px;color:#c8d7ca;margin-top:3px}.watch-missions{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.watch-missions span{padding:8px 10px;border:1px solid #343d35;border-radius:8px}.watch-missions b,.watch-missions small{display:block}.watch-missions b{font-size:10px}.watch-missions small{font-size:9px;color:#869088}.watch-missions span.done{background:#203127;border-color:#5b8465}.watch-missions span.done b{color:#b9e5c1}.tab-content{padding-top:18px}.tab-content>h3:first-of-type{font-size:27px}.tab-content>p,.panel-copy{max-width:760px}.campaign-strip,.next-goal{margin-inline:22px}.starter-path{margin-top:18px}.starter-path.complete{opacity:.68}.starter-path.complete .starter-steps{display:none}.game-note{padding:8px 10px;border:1px solid #3c372d;border-radius:8px;background:#191815}.stats{grid-template-columns:repeat(4,1fr)}
+@media(max-width:950px){.simple-actions{grid-template-columns:repeat(2,1fr)}.advanced-actions{grid-template-columns:repeat(3,1fr)}.watch-play-goals{grid-template-columns:1fr}.watch-milestones{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:730px){.simple-hub,.stream-run{margin-inline:12px;padding:14px}.simple-hub-head,.stream-run-head{display:block}.simple-hub-head>strong,.stream-run-head a{display:inline-block;margin-top:9px}.simple-actions{grid-template-columns:1fr 1fr}.advanced-actions{grid-template-columns:1fr 1fr}.watch-missions{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}.simple-hub-head h2{font-size:26px}}
+'''
+    css_path.write_text(css)
+
+ui=ui_path.read_text()
+starter_anchor="const cache=G.crewCacheStatus(state),guardianNeedNow=Math.max(0,(state.guardianBase||0)+15-state.blocks),starter=G.starterStatus(state);"
+starter_new=starter_anchor+"document.querySelector('.starter-path')?.classList.toggle('complete',starter.completed===starter.steps.length);"
+if "starter-path')?.classList.toggle('complete'" not in ui:
+    if starter_anchor not in ui: raise SystemExit('starter anchor missing')
+    ui=ui.replace(starter_anchor,starter_new,1)
+ui_path.write_text(ui)
+
+Path('tests/watch-session.test.mjs').write_text(r'''import {test} from 'node:test';import assert from 'node:assert/strict';import * as S from '../assets/watch-session.mjs';
+const state=()=>({ore:0,total:0,blocks:0,pick:0,crew:0,drill:0,forge:0,opsRuns:0,progress:{surveys:0,insight:0,command:{marks:0}}});
+test('stream time only advances while visible and drops pay once',()=>{const s=state(),p=S.fresh('2026-10-05',s);S.tick(p,s,599,false);assert.equal(p.seconds,0);for(let i=0;i<120;i++)S.tick(p,s,5,true);assert.equal(p.seconds,600);assert.equal(s.ore,100);const ore=s.ore;S.tick(p,s,5,true);assert.equal(s.ore,ore);});
+test('play mission rewards mining building and exploration once',()=>{const s=state(),p=S.fresh('2026-10-05',s);s.blocks=5;s.pick=1;s.opsRuns=1;const events=S.tick(p,s,1,true);assert.equal(p.missionClaimed,true);assert.equal(s.ore,75);assert.equal(s.progress.insight,1);assert.ok(events.some(e=>e.type==='mission'));S.tick(p,s,1,true);assert.equal(s.ore,75);});
+test('daily restore keeps a consecutive streak but resets session progress',()=>{const s=state(),p=S.fresh('2026-10-04',s);p.streak=3;p.lastCompleted='2026-10-04';p.seconds=2400;p.claimed=[0,1];const n=S.restore(p,'2026-10-05',s);assert.equal(n.streak,3);assert.equal(n.seconds,0);assert.deepEqual(n.claimed,[]);});
+''')
+
+game_tests=Path('tests/game.test.mjs')
+tests=game_tests.read_text()
+marker="test('simplified game hub keeps every system reachable'"
+if marker not in tests:
+    tests += "\n"+"test('simplified game hub keeps every system reachable',()=>{const html=readFileSync(new URL('../watch.html',import.meta.url),'utf8'),ui=readFileSync(new URL('../assets/watch.mjs',import.meta.url),'utf8'),css=readFileSync(new URL('../assets/watch.css',import.meta.url),'utf8');for(const id of ['simple-hub-title','stream-run','watch-progress','watch-missions'])assert.match(html,new RegExp(`id=\\\"${id}\\\"`));for(const room of ['mine','upgrades','crew','frontier','operations','research','expeditions','leaderboard','journal'])assert.match(html,new RegExp(`data-go=\\\"${room}\\\"`));assert.match(ui,/watch-session\\.mjs/);assert.match(css,/UX OVERHAUL 2026-10-05/);});\n"
+    game_tests.write_text(tests)
