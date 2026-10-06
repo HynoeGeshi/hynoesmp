@@ -12,6 +12,11 @@ const phoneViewports=[
   {width:430,height:932},
 ];
 const extraViewports=[{width:768,height:1024},{width:1024,height:768},{width:844,height:390}];
+const publicPages=[
+  'index.html','start.html','mca.html','progression.html','economy.html','bosses.html','join.html',
+  'modpack.html','updates.html','modded-minecraft-server.html','watch.html',
+  'privacy.html','terms.html','data-deletion.html','community-rules.html',
+];
 const browser=await chromium.launch({headless:true});
 await mkdir('test-artifacts',{recursive:true});
 
@@ -55,6 +60,38 @@ async function tapsLeft(locator){
   return match?Number(match[1]):null;
 }
 
+async function assertVeinsFullyVisible(page,label){
+  const result=await page.evaluate(()=>{
+    const scene=document.querySelector('.mine-scene.mine-v2');
+    const sceneBox=scene?.getBoundingClientRect();
+    const cards=[...document.querySelectorAll('.vein')].map(card=>{
+      const box=card.getBoundingClientRect();
+      const strong=card.querySelector('strong');
+      const small=card.querySelector('small');
+      const strongBox=strong?.getBoundingClientRect();
+      const smallBox=small?.getBoundingClientRect();
+      const strongStyle=strong?getComputedStyle(strong):null;
+      const smallStyle=small?getComputedStyle(small):null;
+      return {
+        top:box.top,bottom:box.bottom,left:box.left,right:box.right,
+        strong:strong?.textContent?.trim()||'',small:small?.textContent?.trim()||'',
+        strongHeight:strongBox?.height||0,smallHeight:smallBox?.height||0,
+        strongVisible:!!strongStyle&&strongStyle.display!=='none'&&strongStyle.visibility!=='hidden'&&Number(strongStyle.opacity)>0,
+        smallVisible:!!smallStyle&&smallStyle.display!=='none'&&smallStyle.visibility!=='hidden'&&Number(smallStyle.opacity)>0,
+      };
+    });
+    return {scene:sceneBox?{top:sceneBox.top,bottom:sceneBox.bottom,left:sceneBox.left,right:sceneBox.right}:null,cards};
+  });
+  assert.ok(result.scene,`${label}: mine scene missing`);
+  assert.equal(result.cards.length,12,`${label}: expected 12 mine cards`);
+  for(const [index,card] of result.cards.entries()){
+    assert.ok(card.bottom<=result.scene.bottom+1,`${label}: vein ${index} is clipped below the mine scene`);
+    assert.ok(card.left>=result.scene.left-1&&card.right<=result.scene.right+1,`${label}: vein ${index} is clipped horizontally`);
+    assert.ok(card.strong&&card.small,`${label}: vein ${index} missing label text`);
+    assert.ok(card.strongVisible&&card.smallVisible&&card.strongHeight>0&&card.smallHeight>0,`${label}: vein ${index} label text is not visible`);
+  }
+}
+
 for(const viewport of [...phoneViewports,...extraViewports]){
   const isMobile=viewport.width<900;
   const context=await browser.newContext({viewport,hasTouch:isMobile,isMobile});
@@ -72,6 +109,7 @@ for(const viewport of [...phoneViewports,...extraViewports]){
 
   const minVeinHeight=await page.locator('#vein-0').evaluate(el=>el.getBoundingClientRect().height);
   assert.ok(minVeinHeight>=88,`${label}: vein target only ${minVeinHeight}px tall`);
+  await assertVeinsFullyVisible(page,label);
 
   const tabs=page.locator('.game .tabs');
   assert.ok(await tabs.isVisible(),`${label}: game tabs are not visible`);
@@ -93,6 +131,17 @@ for(const viewport of [...phoneViewports,...extraViewports]){
     await page.waitForTimeout(100);
     const afterKeyboard=await tapsLeft(vein);
     assert.equal(afterKeyboard,afterTouch-1,`${label}: keyboard activation must still mine exactly once`);
+  }
+
+  if(viewport.width===390){
+    const beforeUrl=page.url();
+    const play=page.locator('#video .play-broadcast');
+    assert.ok(await play.isVisible(),`${label}: on-site stream play button is missing`);
+    await play.click();
+    await page.waitForSelector('#video iframe',{timeout:4000});
+    const frameSrc=await page.locator('#video iframe').getAttribute('src');
+    assert.match(frameSrc||'',/youtube-nocookie\.com\/embed\//,`${label}: stream iframe is not privacy-enhanced YouTube embed`);
+    assert.equal(new URL(page.url()).pathname,new URL(beforeUrl).pathname,`${label}: primary stream button navigated away from Hynoe`);
   }
 
   if(viewport.width===390||viewport.width===1024){
@@ -126,16 +175,22 @@ for(const viewport of [{width:320,height:800},{width:390,height:844},{width:430,
   await context.close();
 }
 
-for(const pageName of ['privacy.html','terms.html','data-deletion.html','community-rules.html']){
+for(const pageName of publicPages){
   const context=await browser.newContext({viewport:{width:390,height:844},hasTouch:true,isMobile:true});
   const page=await context.newPage();
-  const errors=captureErrors(page,pageName);
+  const label=`sitewide ${pageName}`;
+  const errors=captureErrors(page,label);
   await page.goto(`${base}/${pageName}`,{waitUntil:'domcontentloaded'});
-  await page.waitForSelector('main.legal-shell');
-  await assertNoHorizontalOverflow(page,pageName);
-  assert.deepEqual(errors,[],`${pageName}: browser errors detected\n${errors.join('\n')}`);
+  await page.waitForSelector('main');
+  await page.waitForTimeout(150);
+  await assertNoHorizontalOverflow(page,label);
+  assert.equal(await page.locator('link[href*="site-refresh.css?v=20261006b"]').count(),1,`${label}: shared refresh stylesheet missing`);
+  const content=await page.locator('main').evaluate(el=>({text:el.innerText.trim(),height:el.getBoundingClientRect().height,display:getComputedStyle(el).display,visibility:getComputedStyle(el).visibility}));
+  assert.ok(content.text.length>80,`${label}: main text did not render`);
+  assert.ok(content.height>120&&content.display!=='none'&&content.visibility!=='hidden',`${label}: main content is not visible`);
+  assert.deepEqual(errors,[],`${label}: browser errors detected\n${errors.join('\n')}`);
   await context.close();
 }
 
 await browser.close();
-console.log('Browser verification passed for mobile mining, onboarding, homepage, legal pages, touch input, keyboard input, and overflow.');
+console.log('Browser verification passed for mobile mining, visible labels, on-site stream playback, all public pages, touch/keyboard input, and overflow.');
