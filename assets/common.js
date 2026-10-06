@@ -3,9 +3,9 @@
   const body=document.body;
   const hotbar=document.querySelector('.hotbar');
   if(hotbar&&!hotbar.querySelector('[data-outpost-link]')){
-    const link=document.createElement('a');link.href='watch.html';link.className='hotbar-slot outpost-slot';link.dataset.outpostLink='true';link.innerHTML='<span>▶</span><b>Watch, Play<br>& Chat</b>';hotbar.insertBefore(link,hotbar.children[1]||null);
+    const link=document.createElement('a');link.href='watch.html';link.className='hotbar-slot outpost-slot';link.dataset.outpostLink='true';link.innerHTML='<span>▶</span><b>Hynoe<br>Community</b>';hotbar.insertBefore(link,hotbar.children[1]||null);
   }
-  document.querySelectorAll('.hud-action.youtube').forEach(a=>{a.textContent='▶ WATCH, PLAY & CHAT';});
+  document.querySelectorAll('.hud-action.youtube').forEach(a=>{a.textContent='✦ HYNOE COMMUNITY';});
   const page=body.dataset.page||'home';
   const chapters=[
     ['start','Start Here','First-Day Foundations'],

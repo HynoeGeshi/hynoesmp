@@ -1,5 +1,5 @@
 /*! Copyright © 2026 Hynoe. All rights reserved. See /COPYRIGHT.md. */
-import {recoveryResult} from './save-recovery.mjs?v=20261006d';
+import {recoveryResult} from './save-recovery.mjs?v=20261006e';
 
 if(recoveryResult.recovered){
   try{

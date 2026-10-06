@@ -204,7 +204,7 @@ for(const pageName of publicPages){
   await page.waitForSelector('main');
   await page.waitForTimeout(150);
   await assertNoHorizontalOverflow(page,label);
-  assert.equal(await page.locator('link[href*="site-refresh.css?v=20261006d"]').count(),1,`${label}: shared refresh stylesheet missing`);
+  assert.equal(await page.locator('link[href*="site-refresh.css?v=20261006e"]').count(),1,`${label}: shared refresh stylesheet missing`);
   const content=await page.locator('main').evaluate(el=>({text:el.innerText.trim(),height:el.getBoundingClientRect().height,display:getComputedStyle(el).display,visibility:getComputedStyle(el).visibility}));
   assert.ok(content.text.length>80,`${label}: main text did not render`);
   assert.ok(content.height>120&&content.display!=='none'&&content.visibility!=='hidden',`${label}: main content is not visible`);
