@@ -11,15 +11,18 @@ const cssPath = path.join(root, 'creatorops', 'creatorops.css');
 const jsPath = path.join(root, 'creatorops', 'creatorops.js');
 const privacyPath = path.join(root, 'creatorops', 'privacy.html');
 const termsPath = path.join(root, 'creatorops', 'terms.html');
+const reportPath = path.join(root, 'creatorops', 'report.html');
+const reportJsPath = path.join(root, 'creatorops', 'report.js');
 
 function read(file) { return fs.readFileSync(file, 'utf8'); }
 
 test('CreatorOps MVP ships a secure, monetizable creator funnel', () => {
-  for (const file of [pagePath, cssPath, jsPath, privacyPath, termsPath]) assert.ok(fs.existsSync(file), `${file} must exist`);
+  for (const file of [pagePath, cssPath, jsPath, privacyPath, termsPath, reportPath, reportJsPath]) assert.ok(fs.existsSync(file), `${file} must exist`);
 
   const html = read(pagePath);
   const css = read(cssPath);
   const js = read(jsPath);
+  const reportJs = read(reportJsPath);
   const all = `${html}\n${js}`.toLowerCase();
 
   assert.match(html, /Hynoe CreatorOps/i);
@@ -27,9 +30,7 @@ test('CreatorOps MVP ships a secure, monetizable creator funnel', () => {
   assert.match(html, /\$499/);
   assert.match(html, /\$750/);
   assert.match(html, /per month|\/month/i);
-  assert.match(html, /544/);
   assert.match(html, /Subscribers/i);
-  assert.match(html, /2,235/);
   assert.match(html, /Views/i);
 
   assert.match(html, /<form[^>]+id="creator-audit-form"/i);
@@ -56,6 +57,33 @@ test('CreatorOps MVP ships a secure, monetizable creator funnel', () => {
   assert.match(js, /privacy\.html/i);
   assert.match(js, /terms\.html/i);
   assert.match(js, /application summary|copy/i);
+  assert.doesNotMatch(reportJs, /innerHTML\s*=/i, 'private report renderer must not inject dynamic innerHTML');
+});
+
+test('CreatorOps proof is hydrated from the fixed verified-metrics API instead of hardcoded numbers', () => {
+  const html = read(pagePath);
+  const js = read(jsPath);
+
+  for (const id of ['metric-views','metric-subscribers','metric-watch-hours','metric-likes','metric-comments','metric-shares','metric-source']) {
+    assert.match(html, new RegExp(`id="${id}"`, 'i'), `missing metric hook ${id}`);
+  }
+  for (const literal of ['2,235','~209h','116','21','2,349','~212.7h','122','23','544']) {
+    assert.doesNotMatch(html, new RegExp(literal.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i'), `metric literal ${literal} must not be hardcoded into HTML`);
+  }
+  assert.match(js, /\/api\/public\/metrics\/hynoe-youtube/);
+  assert.match(js, /stale_verified_snapshot/);
+  assert.match(js, /verified_snapshot/);
+  assert.match(js, /Verified metrics temporarily unavailable/i);
+  assert.match(js, /as of/i);
+  assert.doesNotMatch(js, /real-time|realtime|\blive metrics\b/i);
+});
+
+test('successful intake surfaces the private Starter Creator Audit instead of ending at review queue', () => {
+  const js = read(jsPath);
+  assert.match(js, /Your Starter Creator Audit is ready\./i);
+  assert.match(js, /View my audit/i);
+  assert.match(js, /result\.report\.url/);
+  assert.doesNotMatch(js, /Your Creator Audit is now in the review queue\./i);
 });
 
 test('CreatorOps presents a premium Hynoe command-center visual system', () => {
