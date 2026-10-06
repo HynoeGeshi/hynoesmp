@@ -1,4 +1,6 @@
 {
-  "relayUrl": "",
-  "turnstileSiteKey": ""
+  "communityUrl": "",
+  "turnstileSiteKey": "",
+  "globalChatEnabled": false,
+  "askHynoeEnabled": true
 }
