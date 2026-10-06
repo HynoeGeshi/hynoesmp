@@ -1,0 +1,31 @@
+name: Import verified Ask Hynoe source
+on:
+  push:
+    branches: [feature/site-help-global-chat]
+    paths: ['.github/workflows/import-ask-hynoe-source.yml']
+permissions:
+  contents: write
+jobs:
+  import-source:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/site-help-global-chat
+      - name: Import exact verified source
+        shell: bash
+        run: |
+          set -euo pipefail
+          base='https://temporary-rushing-crater-aq4j3nt.vercel.app'
+          mkdir -p supabase/functions/ask-hynoe supabase/functions/_shared
+          curl -fsSL "$base/ask-hynoe/index.ts" -o supabase/functions/ask-hynoe/index.ts
+          curl -fsSL "$base/ask-hynoe/deno.json" -o supabase/functions/ask-hynoe/deno.json
+          for f in ask-hynoe-core.mjs ask-hynoe-engine.mjs help-provider.mjs help-retrieval.mjs site-chat-core.mjs; do
+            curl -fsSL "$base/_shared/$f" -o "supabase/functions/_shared/$f"
+          done
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add supabase/functions/ask-hynoe supabase/functions/_shared
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'feat: sync verified Ask Hynoe function source'
+          git push origin HEAD:feature/site-help-global-chat
