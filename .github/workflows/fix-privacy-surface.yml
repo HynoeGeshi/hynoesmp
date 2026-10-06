@@ -1,0 +1,49 @@
+name: Fix Hynoe global privacy surface
+
+on:
+  push:
+    branches:
+      - hynoe-outpost-overhaul-2026-10-05
+    paths:
+      - '.github/workflows/fix-privacy-surface.yml'
+      - '.github/scripts/fix-privacy-surface.py'
+      - 'tests/privacy-surface.test.mjs'
+      - 'privacy.html'
+      - 'terms.html'
+      - 'data-deletion.html'
+      - 'community-rules.html'
+      - 'assets/legal.css'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    if: "!contains(github.event.head_commit.message || '', '[privacy-surface-fixed]')"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Apply privacy hold and legal navigation
+        run: python .github/scripts/fix-privacy-surface.py
+      - name: Verify privacy surface and full suite
+        run: |
+          node --check assets/watch.mjs
+          node --test tests/privacy-surface.test.mjs
+          node --test tests/*.test.mjs
+      - name: Commit privacy safety changes
+        run: |
+          if git diff --quiet; then
+            echo "No generated changes required."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html watch.html assets/watch.mjs
+          git commit -m "privacy: pause global uploads and publish legal routes [privacy-surface-fixed]"
+          git push origin HEAD:hynoe-outpost-overhaul-2026-10-05
