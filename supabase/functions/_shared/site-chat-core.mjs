@@ -43,6 +43,7 @@ export function validateReplyTarget(reply) {
 const SITE_ORIGINS = new Set([
   'https://hynoesmp.com',
   'https://www.hynoesmp.com',
+  'https://hynoesmp-social-preview.onrender.com',
 ]);
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
