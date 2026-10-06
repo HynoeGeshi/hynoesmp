@@ -2,6 +2,52 @@ import { createClient } from './vendor/supabase.mjs';
 import { normalizeDisplayName, validateDisplayName, validateClientMessage, validateReaction, validateReport, isAnnouncementActive } from './site-social-core.mjs';
 
 export const SITE_SOCIAL_CONFIG_PATH = '/data/site-social-config.json';
+const SESSION_RESTORE_TIMEOUT_MS = 3500;
+const AUTH_ACTION_TIMEOUT_MS = 7000;
+
+function boundedTimeout(value, fallback, max = 15000) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.max(10, Math.min(max, parsed));
+}
+
+async function racePromise(promise, timeoutMs, timeoutValue) {
+  let timer;
+  try {
+    return await Promise.race([
+      Promise.resolve(promise),
+      new Promise((resolve) => { timer = setTimeout(() => resolve(timeoutValue), timeoutMs); }),
+    ]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
+
+async function raceGetSession(getSession, timeoutMs = SESSION_RESTORE_TIMEOUT_MS) {
+  const timedOut = Symbol('session-timeout');
+  const result = await racePromise(getSession(), boundedTimeout(timeoutMs, SESSION_RESTORE_TIMEOUT_MS), timedOut);
+  if (result === timedOut) return { session: null, timedOut: true };
+  if (result?.error) throw new Error('Could not restore the site session.');
+  return { session: result?.data?.session ?? null, timedOut: false };
+}
+
+export function clearSiteAuthStorage(config, storage) {
+  let projectRef = '';
+  try { projectRef = new URL(String(config?.supabaseUrl ?? '')).hostname.split('.')[0] || ''; } catch {}
+  if (!projectRef) return '';
+  const key = `sb-${projectRef}-auth-token`;
+  let target = storage;
+  if (target === undefined) {
+    try { target = globalThis.localStorage; } catch { target = null; }
+  }
+  try { target?.removeItem?.(key); } catch {}
+  return key;
+}
+
+export async function restoreSiteSession(client, { timeoutMs = SESSION_RESTORE_TIMEOUT_MS } = {}) {
+  if (!client?.auth?.getSession) throw new Error('Site authentication is unavailable.');
+  return raceGetSession(client.auth.getSession.bind(client.auth), timeoutMs);
+}
 
 export async function loadSiteSocialConfig(fetchImpl = globalThis.fetch) {
   if (typeof fetchImpl !== 'function') throw new Error('Site social configuration cannot be loaded.');
@@ -27,28 +73,48 @@ export async function loadSiteSocialConfig(fetchImpl = globalThis.fetch) {
 
 export function createSiteSocialClient(config, options = {}) {
   if (!config?.enabled) throw new Error('Site social features are disabled.');
-  return createClient(config.supabaseUrl, config.supabasePublishableKey, {
+  const { auth: authOptions = {}, ...clientOptions } = options;
+  const client = createClient(config.supabaseUrl, config.supabasePublishableKey, {
+    ...clientOptions,
     auth: {
       persistSession: true,
       autoRefreshToken: true,
       detectSessionInUrl: false,
-      ...options.auth,
+      ...authOptions,
     },
-    ...options,
   });
+
+  // Supabase session restoration can be held by a stale browser auth lock. Keep the
+  // community panel recoverable: after a short bound, discard only this project's
+  // local auth token and present a clean guest session instead of hanging forever.
+  if (client?.auth?.getSession) {
+    const originalGetSession = client.auth.getSession.bind(client.auth);
+    client.auth.getSession = async () => {
+      const restored = await raceGetSession(originalGetSession, SESSION_RESTORE_TIMEOUT_MS);
+      if (restored.timedOut) {
+        clearSiteAuthStorage(config);
+        return { data: { session: null }, error: null };
+      }
+      return { data: { session: restored.session }, error: null };
+    };
+  }
+  return client;
 }
 
 export async function ensureSiteSession(client, captchaToken) {
   if (!client?.auth?.getSession) throw new Error('Site authentication is unavailable.');
-  const { data: current, error: sessionError } = await client.auth.getSession();
-  if (sessionError) throw new Error('Could not restore the site session.');
-  if (current?.session) return current.session;
+  const current = await restoreSiteSession(client);
+  if (current.session) return current.session;
   if (!client.auth.signInAnonymously) throw new Error('Anonymous site authentication is unavailable.');
 
   const token = String(captchaToken ?? '').trim();
-  const { data, error } = token
-    ? await client.auth.signInAnonymously({ options: { captchaToken: token } })
-    : await client.auth.signInAnonymously();
+  const signIn = token
+    ? client.auth.signInAnonymously({ options: { captchaToken: token } })
+    : client.auth.signInAnonymously();
+  const timeout = Symbol('anonymous-auth-timeout');
+  const result = await racePromise(signIn, AUTH_ACTION_TIMEOUT_MS, timeout);
+  if (result === timeout) throw new Error('Site sign-in timed out. Please try joining again.');
+  const { data, error } = result ?? {};
   if (error || !data?.session) throw new Error('Site sign-in failed. Please complete verification again.');
   return data.session;
 }
