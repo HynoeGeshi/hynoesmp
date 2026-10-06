@@ -32,7 +32,7 @@ jobs:
           exit 1
       - name: Probe fresh iPhone-like load in WebKit
         run: |
-          cat > /tmp/probe.mjs <<'EOF'
+          cat > tests/debug-webkit-probe.mjs <<'EOF'
           import {webkit} from 'playwright';
           import fs from 'node:fs';
           fs.mkdirSync('test-artifacts',{recursive:true});
@@ -65,19 +65,20 @@ jobs:
               readyState:document.readyState
             };
           });
-          console.log('WEBKIT_STATE '+JSON.stringify(state));
-          console.log('WEBKIT_ERRORS '+JSON.stringify(errors));
+          const report='WEBKIT_STATE '+JSON.stringify(state)+'\nWEBKIT_ERRORS '+JSON.stringify(errors)+'\n';
+          console.log(report);
+          fs.writeFileSync('test-artifacts/webkit-probe.txt',report);
           await page.screenshot({path:'test-artifacts/webkit-watch.png',fullPage:false});
           if(state.veinCount!==12) throw new Error('Expected 12 veins');
           if(!state.strongText||!state.smallText||!state.oreVar||!state.fillWidth) throw new Error('Mine initialized incompletely: '+JSON.stringify(state));
           if(errors.length) throw new Error(errors.join('\n'));
           await browser.close();
           EOF
-          node /tmp/probe.mjs
-      - name: Upload screenshot
+          node tests/debug-webkit-probe.mjs
+      - name: Upload evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: ios-webkit-mine-debug
-          path: test-artifacts/*.png
+          path: test-artifacts/*
           if-no-files-found: ignore
