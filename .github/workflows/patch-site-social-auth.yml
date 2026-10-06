@@ -1,0 +1,56 @@
+name: Patch site social auth branch
+
+on:
+  push:
+    branches: [main]
+    paths: [.github/workflows/patch-site-social-auth.yml]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Patch verified feature branch
+        run: |
+          git fetch origin feature/site-help-global-chat-final
+          git checkout -B site-social-fix origin/feature/site-help-global-chat-final
+          python3 - <<'PY'
+          from pathlib import Path
+
+          p = Path('assets/site-social.mjs')
+          s = p.read_text()
+          s = s.replace("  if (!turnstileSiteKey) throw new Error('A Turnstile site key is required.');\n\n", "")
+          s = s.replace("  if (!String(captchaToken ?? '').trim()) throw new Error('Human verification is required.');\n", "")
+          old = """  const { data, error } = await client.auth.signInAnonymously({
+    options: { captchaToken: String(captchaToken).trim() },
+  });
+"""
+          new = """  const token = String(captchaToken ?? '').trim();
+  const { data, error } = token
+    ? await client.auth.signInAnonymously({ options: { captchaToken: token } })
+    : await client.auth.signInAnonymously();
+"""
+          if old not in s:
+              raise SystemExit('anonymous sign-in block not found')
+          p.write_text(s.replace(old, new))
+
+          p = Path('assets/site-social-panel.mjs')
+          s = p.read_text()
+          old = "joinButton.disabled = !state.client || (!state.session && !state.captchaToken);"
+          if old not in s:
+              raise SystemExit('join button gate not found')
+          p.write_text(s.replace(old, "joinButton.disabled = !state.client;"))
+          PY
+          npm ci
+          npm test
+          python3 -m unittest discover -s tests -p 'test_*.py'
+          git config user.name "Hynoe Build Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add assets/site-social.mjs assets/site-social-panel.mjs
+          git commit -m "feat: make Turnstile optional for guest auth"
+          git push origin HEAD:feature/site-help-global-chat-final
