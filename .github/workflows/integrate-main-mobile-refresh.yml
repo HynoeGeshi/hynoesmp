@@ -83,8 +83,19 @@ jobs:
             const block="  assert.ok(minVeinHeight>=88,`${label}: vein target only ${minVeinHeight}px tall`);\n  const miningArtwork=await page.locator('#vein-0 .ore-crystal svg').evaluate(el=>{const box=el.getBoundingClientRect(),style=getComputedStyle(el),face=el.querySelector('.gem-face');return {width:box.width,height:box.height,display:style.display,visibility:style.visibility,opacity:Number(style.opacity),fill:face?getComputedStyle(face).fill:''};});\n  assert.ok(miningArtwork.width>=40&&miningArtwork.height>=30,`${label}: mining artwork has no rendered geometry (${miningArtwork.width}x${miningArtwork.height})`);\n  assert.notEqual(miningArtwork.display,'none',`${label}: mining artwork is display:none`);\n  assert.notEqual(miningArtwork.visibility,'hidden',`${label}: mining artwork is hidden`);\n  assert.ok(miningArtwork.opacity>0,`${label}: mining artwork is transparent`);\n  assert.ok(miningArtwork.fill&&miningArtwork.fill!=='none',`${label}: mining artwork gem face has no fill`);\n";
             if(!browser.includes(needle))throw new Error('Could not inject mining artwork browser assertion');
             browser=browser.replace(needle,block);
-            fs.writeFileSync('tests/browser-mobile.mjs',browser);
           }
+          if(!browser.includes("const leaderboardOrigin='https://hynoe-global-leaderboard.rellyoukno.chatgpt.site';")){
+            const baseNeedle="const base='http://127.0.0.1:4173';\n";
+            const leaderboardSetup="const base='http://127.0.0.1:4173';\nconst leaderboardOrigin='https://hynoe-global-leaderboard.rellyoukno.chatgpt.site';\nconst mockBoard={players:[{playerId:'11111111-1111-4111-8111-111111111111',callsign:'ALPHA',score:1200,depth:55,legacy:1,rank:1},{playerId:'22222222-2222-4222-8222-222222222222',callsign:'BRAVO',score:800,depth:34,legacy:0,rank:2}],me:null,total:2,generatedAt:Date.now()};\n";
+            if(!browser.includes(baseNeedle))throw new Error('Could not inject leaderboard mock constants');
+            browser=browser.replace(baseNeedle,leaderboardSetup);
+            const captureNeedle='function captureErrors(page,label){\n';
+            const mockHelper="async function mockLeaderboard(page){\n  await page.route(`${leaderboardOrigin}/**`,async route=>{\n    await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(mockBoard)});\n  });\n}\n\nfunction captureErrors(page,label){\n";
+            if(!browser.includes(captureNeedle))throw new Error('Could not inject leaderboard mock helper');
+            browser=browser.replace(captureNeedle,mockHelper);
+            browser=browser.replaceAll('  const page=await context.newPage();\n','  const page=await context.newPage();\n  await mockLeaderboard(page);\n');
+          }
+          fs.writeFileSync('tests/browser-mobile.mjs',browser);
           NODE
       - name: Remove temporary integration workflows before verification
         run: |
