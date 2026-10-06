@@ -8,6 +8,7 @@
     "start": "next start",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:domain": "rm -rf .tmp/domain .tmp/logic && tsc -p tsconfig.domain.json && tsc -p tsconfig.logic.json && node --test tests/node/*.test.mjs tests/node/*.test.cjs",
     "test:e2e": "playwright test"
   },
   "dependencies": {

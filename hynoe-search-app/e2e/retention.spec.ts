@@ -18,6 +18,10 @@ test('device-local search, recent Page, save, and follow create a useful return 
   await expect(page.getByRole('button', { name: 'Saved' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Following' })).toBeVisible();
 
+  await page.reload();
+  await expect(page.getByRole('button', { name: 'Saved' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Following' })).toBeVisible();
+
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Pick up where you left off' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Hynoe SMP' }).first()).toBeVisible();

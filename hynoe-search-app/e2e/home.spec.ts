@@ -18,3 +18,25 @@ test('homepage disables decorative motion when reduced motion is requested', asy
   const animationDuration = await page.locator('[data-decorative-motion]').evaluate((element) => getComputedStyle(element).animationDuration);
   expect(animationDuration).not.toBe('8s');
 });
+
+test('homepage search reaches a real Hynoe Page and keyboard focus stays visible', async ({ page }) => {
+  await page.goto('/');
+  const search = page.getByRole('textbox', { name: 'Search Hynoe' });
+  await search.focus();
+  const outlineStyle = await search.evaluate((element) => getComputedStyle(element).outlineStyle);
+  expect(outlineStyle).not.toBe('none');
+
+  await search.fill('minecraft');
+  await page.getByRole('button', { name: 'Search' }).click();
+  await expect(page).toHaveURL(/\/search\?q=minecraft/);
+  await page.getByRole('link', { name: 'Hynoe SMP' }).first().click();
+  await expect(page.getByRole('heading', { name: 'Hynoe SMP' })).toBeVisible();
+});
+
+test('core and premium Hynoe brand assets are actually served', async ({ page }) => {
+  await page.goto('/');
+  const core = await page.request.get('/brand/hynoe-core-mark.png');
+  const premium = await page.request.get('/brand/hynoe-premium-mark.png');
+  expect(core.ok()).toBe(true);
+  expect(premium.ok()).toBe(true);
+});
