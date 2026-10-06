@@ -34,4 +34,13 @@ describe('Hynoe sign-in page', () => {
 
     expect(screen.getByText(/that sign-in link is invalid or expired/i)).toBeInTheDocument();
   });
+
+  it('shows a generic send failure without exposing provider details', async () => {
+    const { default: SignInPage } = await import('@/app/sign-in/page');
+    const view = await SignInPage({ searchParams: Promise.resolve({ error: 'send-failed' }) });
+    render(view);
+
+    expect(screen.getByText(/we could not send a sign-in link/i)).toBeInTheDocument();
+    expect(screen.queryByText(/provider/i)).not.toBeInTheDocument();
+  });
 });
