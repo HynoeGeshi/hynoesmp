@@ -4,30 +4,15 @@ import re
 ROOT=Path(__file__).resolve().parents[2]
 PAGES=['index.html','start.html','mca.html','progression.html','economy.html','bosses.html','join.html','modpack.html','updates.html','modded-minecraft-server.html','watch.html','privacy.html','terms.html','data-deletion.html','community-rules.html']
 TOKEN='20261006e'
+CSP="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https://i.ytimg.com; connect-src 'self' https://hynoe-global-leaderboard.rellyoukno.chatgpt.site https://*.workers.dev https://challenges.cloudflare.com; frame-src https://www.youtube-nocookie.com https://challenges.cloudflare.com; form-action 'self'; manifest-src 'self'; upgrade-insecure-requests"
 
 def patch_csp(html:str)->str:
-    m=re.search(r'<meta\s+http-equiv=["\']Content-Security-Policy["\']\s+content=["\']([^"\']*)["\']',html,re.I)
+    pattern=re.compile(r'(<meta\s+http-equiv=["\']Content-Security-Policy["\']\s+content=)(["\'])(.*?)(\2)',re.I|re.S)
+    m=pattern.search(html)
     if not m:
         return html
-    value=m.group(1)
-    directives={}
-    order=[]
-    for part in value.split(';'):
-        part=part.strip()
-        if not part: continue
-        bits=part.split()
-        directives[bits[0]]=bits[1:]
-        order.append(bits[0])
-    def add(name,*sources):
-        if name not in directives:
-            directives[name]=[]; order.append(name)
-        for source in sources:
-            if source not in directives[name]: directives[name].append(source)
-    add('script-src',"'self'",'https://challenges.cloudflare.com')
-    add('connect-src',"'self'",'https://*.workers.dev','https://challenges.cloudflare.com')
-    add('frame-src','https://challenges.cloudflare.com')
-    rebuilt='; '.join(name+' '+' '.join(directives[name]) for name in order).strip()+';'
-    return html[:m.start(1)]+rebuilt+html[m.end(1):]
+    replacement=m.group(1)+m.group(2)+CSP+m.group(2)
+    return html[:m.start()]+replacement+html[m.end():]
 
 def patch_page(path:Path):
     html=path.read_text(encoding='utf-8')
