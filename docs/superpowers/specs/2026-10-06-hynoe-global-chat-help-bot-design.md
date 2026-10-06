@@ -330,7 +330,7 @@ Requirements:
 - raw email is not collected for guest chat;
 - raw IP is not persisted in application storage;
 - guest data retention is bounded;
-- bot conversation history stays local by default unless a future account-backed feature explicitly changes that policy;
+- bot conversation history stays in memory for the current page session only and is not persisted to browser storage unless a future account-backed feature explicitly changes that policy;
 - external bot/search provider configuration is optional and server-side;
 - official Hynoe answers must never be silently overwritten by uncertain external information.
 

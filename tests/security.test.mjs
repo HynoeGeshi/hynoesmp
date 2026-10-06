@@ -29,7 +29,7 @@ test('new-tab links do not send opener access', async () => {
 });
 
 test('public service configuration uses HTTPS and contains no private tokens', async () => {
-  for (const name of ['data/leaderboard-config.json', 'data/chat-config.json']) {
+  for (const name of ['data/leaderboard-config.json', 'data/site-social-config.json']) {
     const raw = await readFile(new URL(name, root), 'utf8');
     const value = JSON.parse(raw);
     for (const [key, entry] of Object.entries(value)) {
