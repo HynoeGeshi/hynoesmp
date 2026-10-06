@@ -1,7 +1,7 @@
 /*! Copyright © 2026 Hynoe. All rights reserved. See /COPYRIGHT.md. */
-import {mountCommand} from './watch-command.mjs?v=20261005a';
-import * as G from './watch-game.mjs?v=20261005a';
-import * as S from './watch-session.mjs?v=20261005a';
+import {mountCommand} from './watch-command.mjs?v=20261006a';
+import * as G from './watch-game.mjs?v=20261006a';
+import * as S from './watch-session.mjs?v=20261006a';
 const $=id=>document.getElementById(id),KEY='hynoeOutpostV1',LEGACY_KEY='hynoeDeepDeeperV1',fmt=n=>new Intl.NumberFormat('en',{notation:n>=10000?'compact':'standard',maximumFractionDigits:1}).format(n);
 let state;try{const current=localStorage.getItem(KEY),legacy=current?null:localStorage.getItem(LEGACY_KEY);state=G.restore(current||legacy);if(!current&&legacy)localStorage.setItem(KEY,JSON.stringify(state));}catch{state=G.fresh();}
 const SESSION_KEY='hynoeStreamRunV1',SESSION_DAY=S.todayKey();
