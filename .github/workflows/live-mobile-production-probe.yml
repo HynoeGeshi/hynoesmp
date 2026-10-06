@@ -1,0 +1,101 @@
+name: Live mobile production probe
+
+on:
+  push:
+    branches:
+      - debug/live-mobile-production-20261006
+    paths:
+      - '.github/workflows/live-mobile-production-probe.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser runtime
+        run: |
+          npm install --no-save --no-package-lock playwright@1.63.0
+          npx playwright install --with-deps chromium
+      - name: Probe live production on real phone viewports
+        run: |
+          cat > /tmp/live-probe.mjs <<'EOF'
+          import { chromium } from 'playwright';
+          import fs from 'node:fs';
+          const browser=await chromium.launch({headless:true});
+          fs.mkdirSync('live-probe',{recursive:true});
+          const widths=[320,360,375,390,412,430];
+          const report=[];
+          for(const width of widths){
+            const height=844;
+            const context=await browser.newContext({viewport:{width,height},isMobile:true,hasTouch:true,deviceScaleFactor:1});
+            const page=await context.newPage();
+            const errors=[];
+            page.on('pageerror',e=>errors.push('pageerror: '+e.message));
+            page.on('console',m=>{if(m.type()==='error')errors.push('console: '+m.text())});
+            await page.goto(`https://hynoesmp.com/watch.html?liveprobe=${Date.now()}-${width}`,{waitUntil:'networkidle',timeout:60000});
+            await page.waitForTimeout(1200);
+            const initial=await page.evaluate(()=>{
+              const d=document.querySelector('#how-to-play');
+              const v=document.querySelector('#vein-0');
+              const svg=v?.querySelector('.ore-crystal svg');
+              const face=v?.querySelector('.gem-face');
+              const base=v?.querySelector('.rock-base');
+              const rect=v?.getBoundingClientRect();
+              const style=e=>e?getComputedStyle(e):null;
+              const center=rect?document.elementsFromPoint(rect.left+rect.width/2,Math.max(0,Math.min(innerHeight-1,rect.top+rect.height/2))).slice(0,8).map(e=>`${e.tagName.toLowerCase()}#${e.id}.${e.className}`):[];
+              const huge=[...document.querySelectorAll('body *')].map(e=>{const r=e.getBoundingClientRect(),s=getComputedStyle(e);return {tag:e.tagName.toLowerCase(),id:e.id,cls:String(e.className),pos:s.position,z:s.zIndex,pe:s.pointerEvents,w:r.width,h:r.height,area:r.width*r.height}}).filter(x=>(x.pos==='fixed'||x.pos==='sticky')&&x.w>=innerWidth*.8&&x.h>=innerHeight*.6&&x.pe!=='none').slice(0,20);
+              return {
+                dialog:{exists:!!d,open:!!d?.open,attr:d?.hasAttribute('open'),rect:d?{...d.getBoundingClientRect().toJSON()}:null,display:style(d)?.display,z:style(d)?.zIndex},
+                vein:{rect:rect?{...rect.toJSON()}:null,pointerEvents:style(v)?.pointerEvents,z:style(v)?.zIndex,disabled:v?.disabled,topAtCenter:center},
+                svg:{display:style(svg)?.display,visibility:style(svg)?.visibility,opacity:style(svg)?.opacity,width:svg?.getBoundingClientRect().width,height:svg?.getBoundingClientRect().height},
+                colors:{ore:v?.style.getPropertyValue('--ore'),faceFill:style(face)?.fill,faceStroke:style(face)?.stroke,baseFill:style(base)?.fill,baseStroke:style(base)?.stroke},
+                hugeOverlays:huge,
+                oreText:document.querySelector('#ore')?.textContent
+              };
+            });
+            await page.screenshot({path:`live-probe/watch-${width}-initial.png`,fullPage:true});
+            let tapResult={};
+            const dialog=page.locator('#how-to-play');
+            if(await dialog.count() && await dialog.evaluate(el=>el.open)){
+              await page.evaluate(()=>document.querySelector('#how-to-play')?.close());
+              await page.waitForTimeout(100);
+            }
+            const vein=page.locator('#vein-0');
+            await vein.scrollIntoViewIfNeeded();
+            await page.waitForTimeout(100);
+            const before=await page.locator('#ore').textContent();
+            const box=await vein.boundingBox();
+            let tapError='';
+            try{if(box)await page.touchscreen.tap(box.x+box.width/2,box.y+box.height/2);else tapError='no bounding box';}catch(e){tapError=e.message;}
+            await page.waitForTimeout(250);
+            const after=await page.locator('#ore').textContent();
+            tapResult={before,after,tapError,changed:Number(String(after).replace(/[^0-9.]/g,''))>Number(String(before).replace(/[^0-9.]/g,''))};
+            await page.screenshot({path:`live-probe/watch-${width}-after-close-tap.png`,fullPage:false});
+
+            await page.goto(`https://hynoesmp.com/?liveprobe=${Date.now()}-${width}`,{waitUntil:'networkidle',timeout:60000});
+            await page.waitForTimeout(700);
+            const home=await page.evaluate(()=>{
+              const huge=[...document.querySelectorAll('body *')].map(e=>{const r=e.getBoundingClientRect(),s=getComputedStyle(e);return {tag:e.tagName.toLowerCase(),id:e.id,cls:String(e.className),pos:s.position,z:s.zIndex,pe:s.pointerEvents,w:r.width,h:r.height,display:s.display,visibility:s.visibility,opacity:s.opacity}}).filter(x=>(x.pos==='fixed'||x.pos==='sticky')&&x.w>=innerWidth*.8&&x.h>=innerHeight*.6&&x.pe!=='none'&&x.display!=='none'&&x.visibility!=='hidden'&&Number(x.opacity)!==0).slice(0,20);
+              const center=document.elementsFromPoint(innerWidth/2,innerHeight/2).slice(0,10).map(e=>`${e.tagName.toLowerCase()}#${e.id}.${e.className}`);
+              return {hugeOverlays:huge,centerStack:center,scrollWidth:document.documentElement.scrollWidth,innerWidth};
+            });
+            await page.screenshot({path:`live-probe/home-${width}.png`,fullPage:false});
+            report.push({width,initial,tapResult,home,errors});
+            await context.close();
+          }
+          await browser.close();
+          fs.writeFileSync('live-probe/report.json',JSON.stringify(report,null,2));
+          console.log(JSON.stringify(report,null,2));
+          EOF
+          node /tmp/live-probe.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: live-mobile-production-probe
+          path: live-probe/
+          retention-days: 3
