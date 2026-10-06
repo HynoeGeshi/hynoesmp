@@ -1,0 +1,4 @@
+{
+  "compilerOptions": {"target":"ES2022","module":"CommonJS","moduleResolution":"Node","strict":true,"skipLibCheck":true,"outDir":".tmp/logic","rootDir":"src"},
+  "include": ["src/domain/**/*.ts","src/data/**/*.ts","src/lib/host-routing.ts"]
+}
