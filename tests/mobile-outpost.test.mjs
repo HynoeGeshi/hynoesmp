@@ -61,5 +61,5 @@ test('Outpost browser asset graph uses one fresh release token', () => {
   ];
   const versionRefs = sources.flatMap(source => [...source.matchAll(/(?:assets\/|\.\/)(?:watch(?:-mobile|-command|-game|-session|-progression)?\.(?:css|mjs)|save-recovery\.mjs)\?v=([0-9a-z]+)/g)]);
   assert.ok(versionRefs.length >= 10, 'the full Outpost entry graph must stay explicitly versioned');
-  assert.deepEqual([...new Set(versionRefs.map(match => match[1]))], ['20261006c']);
+  assert.deepEqual([...new Set(versionRefs.map(match => match[1]))], ['20261006d']);
 });
