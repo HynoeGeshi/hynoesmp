@@ -1,0 +1,92 @@
+name: Apply Hynoe Community sitewide integration
+
+on:
+  push:
+    branches:
+      - feature/hynoe-community-20261006-final
+    paths:
+      - .github/workflows/apply-community-sitewide.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/hynoe-community-20261006-final
+      - name: Apply sitewide community shell and remove legacy relay UI
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+
+          pages = [
+            'index.html','start.html','mca.html','progression.html','economy.html','bosses.html','join.html','modpack.html',
+            'updates.html','modded-minecraft-server.html','watch.html','privacy.html','terms.html','data-deletion.html','community-rules.html'
+          ]
+          css = '<link rel="stylesheet" href="assets/community.css?v=20261006e">'
+          script = '<script type="module" src="assets/community-shell.mjs?v=20261006e"></script>'
+          for name in pages:
+            p = Path(name)
+            text = p.read_text()
+            text = text.replace('20261006d','20261006e')
+            if css not in text:
+              text = text.replace('</head>', css + '\n</head>', 1)
+            if script not in text:
+              text = text.replace('</body>', script + '\n</body>', 1)
+            if "Content-Security-Policy" in text and "script-src" not in text.split('>',1)[0]:
+              text = text.replace("object-src 'none';", "object-src 'none'; script-src 'self' https://challenges.cloudflare.com; connect-src 'self' https://*.workers.dev https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com;")
+            p.write_text(text)
+
+          watch = Path('watch.html')
+          text = watch.read_text()
+          text = text.replace('<a href="#campfire">☏ Server chat <small>SETUP PENDING</small></a>', '<button type="button" data-open-community>✦ Hynoe Community <small>GLOBAL CHAT + HELP</small></button>')
+          replacement = '''<aside class="panel chat community-card" id="community-card"><div class="panel-head"><div><p class="eyebrow">HYNOE COMMUNITY</p><h2>Chat + get help without leaving Outpost</h2></div><span class="connection online">● SITE-WIDE</span></div><p class="chat-explain">Global Chat is shared across Hynoe's website and Hynoe Outpost only. It is not connected to Minecraft or Bloom. Ask Hynoe is private and uses official Hynoe information first.</p><button type="button" class="primary" data-open-community>Open Hynoe Community</button><p class="privacy">Public chat is moderated before publication. Guest identity is pseudonymous and does not require an email account.</p></aside>'''
+          text, count = re.subn(r'<aside class="panel chat" id="campfire">.*?</aside>', replacement, text, flags=re.S)
+          if count != 1:
+            raise SystemExit(f'expected one legacy campfire panel, found {count}')
+          watch.write_text(text)
+
+          privacy = Path('privacy.html')
+          text = privacy.read_text()
+          new_chat = '''<div class="legal-card"><h3>Website Global Chat</h3><p>Hynoe Global Chat is a site-only public community feature for hynoesmp.com and Hynoe Outpost. It is not connected to Minecraft or Bloom. Reading does not require an account. Posting uses a pseudonymous guest session, moderation, bounded message retention, and anti-abuse controls. Hynoe does not require an email address or full date of birth for guest chat.</p><p>Public messages may be reported or removed by moderators. Do not share personal information in Global Chat. Ask Hynoe conversations are separate from public chat and stay local to the browser by default.</p></div>'''
+          text = re.sub(r'<div class="legal-card"><h3>Website chat</h3>.*?</div>', new_chat, text, count=1, flags=re.S)
+          privacy.write_text(text)
+
+          wm = Path('assets/watch.mjs')
+          text = wm.read_text().replace('20261006d','20261006e')
+          text, count = re.subn(r"\nlet endpoint='',ready=false,token='',widget,waitUntil=0,sending=false,pollBusy=false;.*?setInterval\(controls,1000\);\n", '\n', text, count=1, flags=re.S)
+          if count != 1:
+            raise SystemExit(f'expected one legacy chat runtime block, found {count}')
+          wm.write_text(text)
+
+          for file in ['assets/watch-mobile.mjs','assets/watch-game.mjs']:
+            p=Path(file);p.write_text(p.read_text().replace('20261006d','20261006e'))
+          for p in Path('tests').glob('*.mjs'):
+            p.write_text(p.read_text().replace('20261006d','20261006e'))
+
+          common=Path('assets/common.js')
+          text=common.read_text().replace('Watch, Play<br>& Chat','Hynoe<br>Community').replace('▶ WATCH, PLAY & CHAT','✦ HYNOE COMMUNITY')
+          common.write_text(text)
+
+          shell=Path('assets/community-shell.mjs')
+          text=shell.read_text()
+          needle="launcher.addEventListener('click',open);"
+          insert="document.querySelectorAll('[data-open-community]').forEach(control=>control.addEventListener('click',event=>{event.preventDefault();open();}));"+needle
+          if insert not in text:
+            text=text.replace(needle,insert)
+          shell.write_text(text)
+      - name: Commit generated integration
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html start.html mca.html progression.html economy.html bosses.html join.html modpack.html updates.html modded-minecraft-server.html watch.html privacy.html terms.html data-deletion.html community-rules.html assets/common.js assets/watch.mjs assets/watch-mobile.mjs assets/watch-game.mjs assets/community-shell.mjs tests
+          if git diff --cached --quiet; then
+            echo "No generated changes"
+          else
+            git commit -m "feat: integrate Hynoe Community across site"
+            git push origin HEAD:feature/hynoe-community-20261006-final
+          fi
