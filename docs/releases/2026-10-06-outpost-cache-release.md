@@ -12,4 +12,4 @@ A regression test requires these references to stay on one release token so futu
 
 ## Leaderboard scope
 
-Global leaderboard transmission remains disabled under the existing privacy hold. Local Legend scoring remains available. This cache release does not re-enable external player-ID or score uploads.
+The Hall of Legends now loads public site-wide rankings again. Publishing this browser’s own callsign and bounded gameplay metrics is optional, off by default, and requires the explicit in-game opt-in control. Turning that control off stops future score uploads; the Data Deletion page provides the private request route for existing server-side leaderboard records.

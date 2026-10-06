@@ -91,3 +91,8 @@
   .tabs,.site-pages{scroll-behavior:auto}
   .vein,.video.docked iframe{transition:none!important}
 }
+/* Production mobile artwork guard: never let a stale/inherited rule collapse mine SVGs. */
+@media(max-width:899px){
+  .vein .ore-crystal{display:block!important;visibility:visible!important;opacity:1!important;flex:0 0 auto}
+  .vein .ore-crystal svg{display:block!important;width:100%!important;height:100%!important;visibility:visible!important;opacity:1!important}
+}
