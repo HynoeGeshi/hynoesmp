@@ -19,6 +19,10 @@ test('send-site-message enforces explicit origin and has no caller-supplied auth
   assert.match(source, /author_id", userId/);
 });
 
+test('send-site-message allows Supabase browser client headers through CORS', () => {
+  assert.match(source, /Access-Control-Allow-Headers[^\n]*x-client-info/i);
+});
+
 test('send-site-message has retry idempotency and atomic cooldown claim', () => {
   assert.match(source, /request_id/);
   assert.match(source, /claim_site_chat_post_slot/);
