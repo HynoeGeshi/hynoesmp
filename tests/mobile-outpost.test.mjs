@@ -27,16 +27,15 @@ test('mobile stylesheet gives phones usable mine grids, controls, tabs and mini-
   assert.match(css, /prefers-reduced-motion:\s*reduce/);
 });
 
-test('touch input layer prevents one touch from becoming two mines while preserving keyboard clicks', () => {
+test('mobile interaction layer leaves activation to the native click path and only handles recovery', () => {
   assert.ok(existsSync(new URL('../assets/watch-mobile.mjs', import.meta.url)), 'watch-mobile.mjs must exist');
   const js = read('assets/watch-mobile.mjs');
-  assert.match(js, /pointerup/);
-  assert.match(js, /pointerType\s*===\s*['"]touch['"]/);
-  assert.match(js, /pointerType\s*===\s*['"]pen['"]/);
-  assert.match(js, /isPrimary/);
-  assert.match(js, /detail\s*===\s*0/);
-  assert.match(js, /MutationObserver/);
-  assert.match(js, /dataset\.pointerMining/);
+  assert.match(js, /save-recovery\.mjs/);
+  assert.match(js, /recoveryResult\.recovered/);
+  assert.doesNotMatch(js, /pointerup/);
+  assert.doesNotMatch(js, /pointerType/);
+  assert.doesNotMatch(js, /MutationObserver/);
+  assert.doesNotMatch(js, /dataset\.pointerMining/);
 });
 
 test('Hynoe Outpost save key migrates the legacy Deep and Deeper local save', () => {
@@ -62,5 +61,5 @@ test('Outpost browser asset graph uses one fresh release token', () => {
   ];
   const versionRefs = sources.flatMap(source => [...source.matchAll(/(?:assets\/|\.\/)(?:watch(?:-mobile|-command|-game|-session|-progression)?\.(?:css|mjs)|save-recovery\.mjs)\?v=([0-9a-z]+)/g)]);
   assert.ok(versionRefs.length >= 10, 'the full Outpost entry graph must stay explicitly versioned');
-  assert.deepEqual([...new Set(versionRefs.map(match => match[1]))], ['20261006a']);
+  assert.deepEqual([...new Set(versionRefs.map(match => match[1]))], ['20261006b']);
 });
