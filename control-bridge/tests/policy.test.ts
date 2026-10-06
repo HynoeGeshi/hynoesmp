@@ -10,8 +10,8 @@ import {
 import { normalizeAllowedFilePath } from '../src/policy/file-policy';
 import { assertAllowedCommand, assertAllowedPowerSignal } from '../src/policy/command-policy';
 
-const legacyConfig = { bloomServerId: 'srv-1', discordAllowedChannelIds: ['10', '20'], discordGuildManagementEnabled: false } as AppConfig;
-const guildConfig = { bloomServerId: 'srv-1', discordAllowedChannelIds: [], discordGuildManagementEnabled: true } as AppConfig;
+const legacyConfig = { bloomServerId: 'srv-1', discordAllowedChannelIds: ['10', '20'], discordGuildManagementEnabled: false } as unknown as AppConfig;
+const guildConfig = { bloomServerId: 'srv-1', discordAllowedChannelIds: [], discordGuildManagementEnabled: true } as unknown as AppConfig;
 
 describe('bridge policies', () => {
   it('accepts only the configured Bloom server', () => {
