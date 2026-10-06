@@ -11,78 +11,62 @@ permissions:
 
 jobs:
   webkit:
-    strategy:
-      fail-fast: false
-      matrix:
-        playwright: ['1.55.0','1.63.0']
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Install WebKit runtime
+      - name: Install iOS-era WebKit runtime
         run: |
-          npm install --no-save --no-package-lock playwright@${{ matrix.playwright }}
+          npm install --no-save --no-package-lock playwright@1.55.0
           npx playwright install --with-deps webkit
-      - name: Probe live iPhone-like load in WebKit
-        env:
-          PW_VERSION: ${{ matrix.playwright }}
+      - name: Probe saved-state matrix on live site
         run: |
-          cat > tests/debug-webkit-probe.mjs <<'EOF'
+          cat > tests/debug-webkit-state-matrix.mjs <<'EOF'
           import {webkit} from 'playwright';
-          import fs from 'node:fs';
-          fs.mkdirSync('test-artifacts',{recursive:true});
+          import * as G from '../assets/watch-game.mjs';
+          const now=Date.now();
+          const base=G.fresh(now);
+          G.ensureVeins(base);
+          const rich=G.fresh(now);
+          rich.ore=500000; rich.total=1000000; rich.run=900000; rich.blocks=4200; rich.strikes=9000; rich.prestige=5; rich.bossWins=20; rich.opsRuns=30;
+          rich.progress.chapter=12; rich.progress.insight=500; rich.progress.surveys=75; rich.progress.mastery=8; rich.progress.sectorWins=[20,18,15,12,9,6];
+          for(const r of G.RESEARCH) rich.progress.research[r.id]=Math.min(r.max,6);
+          for(const g of G.GEAR) rich.progress.gear[g.id]=10;
+          for(const m of G.MATERIALS) rich.progress.bag[m]=1000;
+          for(const c of G.CREW_CARDS.slice(0,24)) rich.progress.crewDeck.cards[c.id]={stars:Math.min(5,1+(Object.keys(rich.progress.crewDeck.cards).length%5)),shards:3};
+          rich.progress.crewDeck.active=G.CREW_CARDS.slice(0,3).map(c=>c.id); rich.progress.crewDeck.caches=40;
+          G.ensureVeins(rich);
+          const active=JSON.parse(JSON.stringify(rich)); active.progress.chapter=8; active.progress.run=null; active.expedition=null; active.ore=999999; G.startSurvey(active,2);
+          const legacyTrip={version:1,ore:4000,total:8000,run:5000,blocks:100,progress:{schema:1,chapter:4,insight:12,research:{precision:2,industry:1,survey:1},gear:{chisel:1,engine:1,lens:0},bag:{coal:50,copper:20,gold:10,amethyst:5,diamond:0,ender:0,astral:0},surveys:3,sectorWins:[3,1,0,0,0,0],trip:{sector:1,amount:33},crewDeck:{cards:{coalhand:{stars:1,shards:0}},active:['coalhand'],caches:2}}};
+          const odd={version:1,ore:1,total:1,run:0,blocks:0,progress:{schema:4,chapter:0,command:{stations:null,works:null},crewDeck:{cards:null,active:'bad',caches:'bad'},bag:null,research:null,gear:null,sectorWins:null}};
+          const stream={version:1,day:new Date().toISOString().slice(0,10),seconds:3599,claimed:[0,1],missionClaimed:false,base:{blocks:0,upgrades:0,activity:0},streak:12,lastCompleted:''};
+          const scenarios=[
+            ['fresh-current',{current:JSON.stringify(base)}],
+            ['rich-current',{current:JSON.stringify(rich)}],
+            ['active-run',{current:JSON.stringify(active)}],
+            ['legacy-trip-current',{current:JSON.stringify(legacyTrip)}],
+            ['odd-current',{current:JSON.stringify(odd)}],
+            ['legacy-recovery',{legacy:JSON.stringify(rich)}],
+            ['stream-session',{current:JSON.stringify(base),session:JSON.stringify(stream)}]
+          ];
           const browser=await webkit.launch({headless:true});
-          const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 18_6_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.6 Mobile/15E148 Safari/604.1'});
-          const page=await context.newPage();
-          const errors=[];
-          page.on('pageerror',e=>errors.push('PAGEERROR '+e.stack));
-          page.on('console',m=>{if(m.type()==='error')errors.push('CONSOLE '+m.text());});
-          await page.goto('https://hynoesmp.com/watch.html?webkit='+Date.now(),{waitUntil:'domcontentloaded'});
-          await page.waitForTimeout(2200);
-          const state=await page.evaluate(()=>{
-            const b=document.querySelector('#vein-0');
-            const face=b?.querySelector('.gem-face');
-            const strong=b?.querySelector('strong');
-            const small=b?.querySelector('small');
-            const fill=b?.querySelector('.vein-health i');
-            return {
-              href:location.href,
-              veinCount:document.querySelectorAll('.vein').length,
-              oreText:document.querySelector('#ore')?.textContent,
-              strongText:strong?.textContent,
-              smallText:small?.textContent,
-              oreVar:b?.style.getPropertyValue('--ore'),
-              faceFill:face?getComputedStyle(face).fill:null,
-              fillWidth:fill?.style.width,
-              strongDisplay:strong?getComputedStyle(strong).display:null,
-              strongColor:strong?getComputedStyle(strong).color:null,
-              smallDisplay:small?getComputedStyle(small).display:null,
-              smallColor:small?getComputedStyle(small).color:null,
-              readyState:document.readyState
-            };
-          });
-          const report='PLAYWRIGHT '+process.env.PW_VERSION+'\nWEBKIT_STATE '+JSON.stringify(state)+'\nWEBKIT_ERRORS '+JSON.stringify(errors)+'\n';
-          console.log(report);
-          fs.writeFileSync(`test-artifacts/webkit-${process.env.PW_VERSION}-probe.txt`,report);
-          await page.locator('#vein-0').scrollIntoViewIfNeeded().catch(()=>{});
-          await page.screenshot({path:`test-artifacts/webkit-${process.env.PW_VERSION}-watch.png`,fullPage:false});
-          if(state.veinCount!==12) throw new Error('Expected 12 veins');
-          if(!state.strongText||!state.smallText||!state.oreVar||!state.fillWidth) throw new Error('Mine initialized incompletely: '+JSON.stringify(state));
-          const before=Number((await page.locator('#ore').textContent())||0);
-          await page.locator('#vein-0').tap();
-          await page.waitForTimeout(150);
-          const after=Number((await page.locator('#ore').textContent())||0);
-          if(!(after>before)) throw new Error('Tap failed '+before+' -> '+after);
-          if(errors.some(e=>e.startsWith('PAGEERROR'))) throw new Error(errors.join('\n'));
+          let failed=[];
+          for(const [name,data] of scenarios){
+            const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 18_6_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.6 Mobile/15E148 Safari/604.1'});
+            const page=await context.newPage(); const errors=[];
+            page.on('pageerror',e=>errors.push(String(e)));
+            await page.addInitScript(({current,legacy,session})=>{try{localStorage.clear();sessionStorage.clear();if(current)localStorage.setItem('hynoeOutpostV1',current);if(legacy)localStorage.setItem('hynoeDeepDeeperV1',legacy);if(session)localStorage.setItem('hynoeStreamRunV1',session);}catch{}},data);
+            await page.goto('https://hynoesmp.com/watch.html?state='+name+'-'+Date.now(),{waitUntil:'domcontentloaded'});
+            await page.waitForTimeout(2500);
+            const state=await page.evaluate(()=>{const b=document.querySelector('#vein-0'),strong=b?.querySelector('strong'),small=b?.querySelector('small'),fill=b?.querySelector('.vein-health i');return {count:document.querySelectorAll('.vein').length,strong:strong?.textContent,small:small?.textContent,ore:b?.style.getPropertyValue('--ore'),width:fill?.style.width};});
+            console.log(name,JSON.stringify(state),errors);
+            if(state.count!==12||!state.strong||!state.small||!state.ore||!state.width||errors.length)failed.push({name,state,errors});
+            await context.close();
+          }
           await browser.close();
+          if(failed.length)throw new Error('State failures: '+JSON.stringify(failed));
+          console.log('STATE MATRIX PASS');
           EOF
-          node tests/debug-webkit-probe.mjs
-      - name: Upload evidence
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: ios-webkit-mine-debug-${{ matrix.playwright }}
-          path: test-artifacts/*
-          if-no-files-found: ignore
+          node tests/debug-webkit-state-matrix.mjs
