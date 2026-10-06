@@ -37,6 +37,14 @@ test('shared panel exposes explicit Global Chat and Ask Hynoe tabs with accessib
   assert.match(source, /textContent/);
 });
 
+test('Global Chat sends on Enter while Shift+Enter keeps a line break', async () => {
+  const source = await text('assets/site-social-panel.mjs');
+  assert.match(source, /messageInput\.addEventListener\(['"]keydown['"]/);
+  assert.match(source, /event\.key\s*===\s*['"]Enter['"]/);
+  assert.match(source, /!event\.shiftKey/);
+  assert.match(source, /composer\.requestSubmit\(\)/);
+});
+
 test('social panel CSS supports mobile bottom sheet, visible composer, and reduced motion', async () => {
   const css = await text('assets/site-social.css');
   assert.match(css, /position\s*:\s*fixed/i);
