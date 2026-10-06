@@ -2,6 +2,10 @@ import { chromium, webkit } from 'playwright';
 import * as G from '../assets/watch-game.mjs';
 
 const base = 'http://127.0.0.1:4173';
+const requestedEngine = (process.env.RESTORED_RUN_ENGINE || 'chromium').toLowerCase();
+const engines = requestedEngine === 'webkit'
+  ? [['WebKit', webkit]]
+  : [['Chromium', chromium]];
 
 function restoredRunState() {
   const s = G.fresh(Date.now());
@@ -18,7 +22,7 @@ function restoredRunState() {
 }
 
 const saved = JSON.stringify(restoredRunState());
-for (const [engineName, engine] of [['Chromium', chromium], ['WebKit', webkit]]) {
+for (const [engineName, engine] of engines) {
   const browser = await engine.launch({ headless: true });
   const errors = [];
   const context = await browser.newContext({
