@@ -47,3 +47,5 @@ jobs:
           path: test-artifacts/*.png
           if-no-files-found: ignore
           retention-days: 7
+
+# Verification rerun after the guide hero URL repair.
