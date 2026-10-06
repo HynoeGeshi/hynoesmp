@@ -1,10 +1,11 @@
 import { FilterBar } from './filter-bar';
+import styles from './mobile-filter-panel.module.css';
 
 export function MobileFilterPanel({ query, activeType }: { query: string; activeType?: string }) {
   return (
-    <details className="mobile-filter-panel">
-      <summary>Filters</summary>
-      <div className="mobile-filter-panel__body">
+    <details className={styles.panel}>
+      <summary className={styles.summary}>Filters</summary>
+      <div className={styles.body}>
         <FilterBar query={query} activeType={activeType} />
       </div>
     </details>
