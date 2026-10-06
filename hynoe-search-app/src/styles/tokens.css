@@ -1,0 +1,27 @@
+:root {
+  --hynoe-ink-950: #07080b;
+  --hynoe-ink-900: #0b0d12;
+  --hynoe-ink-800: #121621;
+  --hynoe-surface-dark: #10131a;
+  --hynoe-surface-raised: #171b25;
+  --hynoe-surface-light: #f7f4ee;
+  --hynoe-text-primary: #f7f6f2;
+  --hynoe-text-muted: #a9afbb;
+  --hynoe-gold-500: #d7aa45;
+  --hynoe-gold-400: #f0c96a;
+  --hynoe-purple-500: #6d4aff;
+  --hynoe-blue-500: #3e8cff;
+  --hynoe-border: rgba(255, 255, 255, 0.1);
+  --hynoe-focus: #78a7ff;
+  --hynoe-radius-sm: 12px;
+  --hynoe-radius-md: 18px;
+  --hynoe-radius-lg: 24px;
+  --hynoe-shadow-soft: 0 18px 60px rgba(0, 0, 0, 0.24);
+  --hynoe-space-1: 0.25rem;
+  --hynoe-space-2: 0.5rem;
+  --hynoe-space-3: 0.75rem;
+  --hynoe-space-4: 1rem;
+  --hynoe-space-6: 1.5rem;
+  --hynoe-space-8: 2rem;
+  --hynoe-space-12: 3rem;
+}
