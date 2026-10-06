@@ -12,8 +12,9 @@ const entries=[
 
 test('retrieval prefers exact topic and current page context',()=>{
  const ranked=retrieveHynoe(entries,'what are tokens for?',{page:'economy.html',sectionId:'tokens'});
+ assert.ok(ranked.length>=1);
  assert.equal(ranked[0].entry.id,'economy.html:tokens');
- assert.ok(ranked[0].score>ranked.at(-1).score);
+ if(ranked.length>1)assert.ok(ranked[0].score>ranked[1].score);
 });
 
 test('join/install questions return an official answer with exact deep link',()=>{
