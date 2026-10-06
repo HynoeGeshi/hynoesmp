@@ -2,6 +2,13 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { resolveHostRoute } from '@/lib/host-routing';
 import { updateSupabaseSession } from '@/lib/supabase/proxy';
 
+function isSupabaseConfigured() {
+  return Boolean(
+    process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() &&
+      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim(),
+  );
+}
+
 export async function proxy(request: NextRequest) {
   const decision = resolveHostRoute(
     request.headers.get('host') ?? '',
@@ -14,6 +21,10 @@ export async function proxy(request: NextRequest) {
 
   if (decision.action === 'reject') {
     return new NextResponse('Unknown host', { status: 421 });
+  }
+
+  if (!isSupabaseConfigured()) {
+    return NextResponse.next();
   }
 
   return updateSupabaseSession(request);
