@@ -29,21 +29,36 @@ jobs:
           old="""try{if(!localStorage.getItem('hynoeDeepDeeperGuideV3')){localStorage.setItem('hynoeDeepDeeperGuideV3','seen');setTimeout(()=>{if(!guide.open)guide.showModal();},450);}}catch{}"""
           if old not in s:
               raise SystemExit('expected forced guide block not found')
-          s=s.replace(old,'')
-          p.write_text(s)
+          p.write_text(s.replace(old,''))
 
-          graph=['watch.html','assets/watch.mjs','assets/watch-mobile.mjs','assets/watch-game.mjs','assets/watch-command.mjs','assets/watch-session.mjs','assets/watch-video.mjs','assets/leaderboard-live.mjs','tests/mobile-outpost.test.mjs']
-          changed=[]
+          graph=['watch.html','assets/watch.mjs','assets/watch-mobile.mjs','assets/watch-game.mjs','tests/mobile-outpost.test.mjs']
           for name in graph:
               q=Path(name)
-              if not q.exists():
-                  continue
               text=q.read_text()
-              newer=text.replace('20261006b','20261006c')
-              if newer!=text:
-                  q.write_text(newer)
-                  changed.append(name)
-          print('release-bumped:', ', '.join(changed))
+              q.write_text(text.replace('20261006b','20261006c'))
+
+          # The shared site shell itself did not change; keep its site-wide release token consistent.
+          q=Path('watch.html')
+          q.write_text(q.read_text().replace('assets/site-refresh.css?v=20261006c','assets/site-refresh.css?v=20261006b'))
+          PY
+      - name: Update regressions for manual-only Help and c release
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+          p=Path('tests/game.test.mjs')
+          s=p.read_text()
+          old="assert.match(ui,/hynoeDeepDeeperGuideV3/);"
+          if old not in s: raise SystemExit('old guide regression not found')
+          p.write_text(s.replace(old,"assert.doesNotMatch(ui,/hynoeDeepDeeperGuideV3/);"))
+
+          p=Path('tests/live-mobile-leaderboard-repair.test.mjs')
+          p.write_text(p.read_text().replace('20261006b','20261006c'))
+
+          p=Path('tests/sitewide-mobile-refresh.test.mjs')
+          s=p.read_text()
+          s=s.replace('watch-mobile-v2\\.css\\?v=20261006b','watch-mobile-v2\\.css\\?v=20261006c')
+          s=s.replace('watch-video\\.mjs\\?v=20261006b','watch-video\\.mjs\\?v=20261006c')
+          p.write_text(s)
           PY
       - name: Strengthen repeated touch test
         run: |
@@ -53,8 +68,7 @@ jobs:
           s=p.read_text()
           needle="""    assert.ok(after>before,`${label}: first physical tap did not register (${before} -> ${after})`);\n\n    await page.locator('#open-help').click();"""
           repl="""    assert.ok(after>before,`${label}: first physical tap did not register (${before} -> ${after})`);\n\n    const repeatedBefore=after;\n    for(let i=0;i<20;i++){\n      await vein.tap({timeout:3000});\n      await page.waitForTimeout(18);\n    }\n    await page.waitForTimeout(150);\n    const repeatedAfter=Number((await page.locator('#ore').textContent())||0);\n    assert.ok(repeatedAfter>=repeatedBefore+20,`${label}: repeated physical taps were lost or blocked (${repeatedBefore} -> ${repeatedAfter})`);\n\n    await page.locator('#open-help').click();"""
-          if needle not in s:
-              raise SystemExit('tap test insertion point not found')
+          if needle not in s: raise SystemExit('tap test insertion point not found')
           p.write_text(s.replace(needle,repl))
           PY
       - name: Verify syntax and full Node suite
