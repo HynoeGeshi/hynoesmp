@@ -54,6 +54,11 @@ test('social panel CSS supports mobile bottom sheet, visible composer, and reduc
   assert.match(css, /prefers-reduced-motion\s*:\s*reduce/i);
 });
 
+test('hidden community elements stay hidden even when their component class sets display', async () => {
+  const css = await text('assets/site-social.css');
+  assert.match(css, /\.site-social-panel\s+\[hidden\]\s*\{\s*display\s*:\s*none\s*!important\s*;?\s*\}/i);
+});
+
 test('Watch no longer contains or loads the retired Minecraft relay chat', async () => {
   const html = await text('watch.html');
   const js = await text('assets/watch.mjs');
