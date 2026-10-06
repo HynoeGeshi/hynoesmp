@@ -1,5 +1,6 @@
 (() => {
   const root = document.querySelector('#applications');
+  const paymentsRoot = document.querySelector('#payments');
   const statusEl = document.querySelector('#admin-status');
   const esc = (s = '') => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[c]));
 
@@ -14,18 +15,28 @@
     </article>`;
   }
 
+  function paymentCard(p) {
+    const amount = Number.isFinite(Number(p.amount_total)) ? `${(Number(p.amount_total) / 100).toFixed(2)} ${(p.currency || '').toUpperCase()}` : 'Amount unavailable';
+    return `<article class="admin-card"><div class="admin-card-head"><div><span class="eyebrow">${esc(p.payment_status || p.event_type)}</span><h3>${esc(p.product)}</h3></div><small>${esc(new Date(p.created_at).toLocaleString())}</small></div><p><strong>${esc(amount)}</strong></p><p>Event: ${esc(p.event_type)}</p><p>Session: ${esc(p.stripe_session_id || '—')}</p><p>Subscription: ${esc(p.stripe_subscription_id || '—')}</p></article>`;
+  }
+
   async function load() {
     statusEl.textContent = 'Loading…';
-    const response = await fetch('/api/admin/applications', { credentials: 'same-origin', cache: 'no-store' });
-    if (!response.ok) { statusEl.textContent = 'Unable to load applications.'; return; }
-    const json = await response.json();
-    const apps = json.applications || [];
+    const [appsResponse, paymentsResponse] = await Promise.all([
+      fetch('/api/admin/applications', { credentials: 'same-origin', cache: 'no-store' }),
+      fetch('/api/admin/payments', { credentials: 'same-origin', cache: 'no-store' })
+    ]);
+    if (!appsResponse.ok || !paymentsResponse.ok) { statusEl.textContent = 'Unable to load the full dashboard.'; return; }
+    const [appsJson, paymentsJson] = await Promise.all([appsResponse.json(), paymentsResponse.json()]);
+    const apps = appsJson.applications || [];
+    const payments = paymentsJson.payments || [];
     root.innerHTML = apps.map(card).join('') || '<p class="muted">No applications yet.</p>';
+    paymentsRoot.innerHTML = payments.map(paymentCard).join('') || '<p class="muted">No payment events yet.</p>';
     root.querySelectorAll('select[data-id]').forEach((el) => el.addEventListener('change', async () => {
       const r = await fetch('/api/admin/status', { method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id: el.dataset.id, status: el.value }) });
       statusEl.textContent = r.ok ? 'Status updated.' : 'Status update failed.';
     }));
-    statusEl.textContent = `${apps.length} application(s)`;
+    statusEl.textContent = `${apps.length} application(s) · ${payments.length} payment event(s)`;
   }
 
   document.querySelector('#refresh')?.addEventListener('click', load);
