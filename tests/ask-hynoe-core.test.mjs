@@ -6,6 +6,7 @@ import {
   shouldUseProvider,
   buildFeedbackRow,
 } from '../supabase/functions/_shared/ask-hynoe-core.mjs';
+import { answerAskHynoe } from '../supabase/functions/_shared/ask-hynoe-engine.mjs';
 
 test('question is required, bounded, and control characters are rejected', () => {
   assert.equal(validateAskPayload({question:''}).ok,false);
@@ -40,6 +41,25 @@ test('provider is used only with sufficient non-conflicting evidence and configu
   assert.equal(confidenceNumber('high'),0.9);
   assert.equal(confidenceNumber('medium'),0.65);
   assert.equal(confidenceNumber('low'),0.25);
+});
+
+test('live server status answers player-count and online-status questions without static knowledge', async () => {
+  const count = await answerAskHynoe({
+    question: 'how many players are there right now?',
+    chunks: [],
+    liveServerStatus: { online: true, players: { online: 7, max: 100 } },
+  });
+  assert.equal(count.mode, 'live');
+  assert.match(count.answer, /7/);
+  assert.match(count.answer, /100/);
+
+  const status = await answerAskHynoe({
+    question: 'is the minecraft server online?',
+    chunks: [],
+    liveServerStatus: { online: false, players: { online: 0, max: 100 } },
+  });
+  assert.equal(status.mode, 'live');
+  assert.match(status.answer, /offline/i);
 });
 
 test('feedback row is server-owned and bounded', () => {
