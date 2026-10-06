@@ -3,7 +3,7 @@ import type { AppConfig } from '../src/config';
 import type { DiscordClient } from '../src/discord/types';
 import { createDiscordTools } from '../src/tools/discord';
 
-const config = { discordGuildId: 'guild', discordAllowedChannelIds: [], discordGuildManagementEnabled: true } as AppConfig;
+const config = { discordGuildId: 'guild', discordAllowedChannelIds: [], discordGuildManagementEnabled: true } as unknown as AppConfig;
 
 function makeClient(): DiscordClient {
   return {
