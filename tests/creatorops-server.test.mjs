@@ -31,6 +31,15 @@ async function start(server) {
     assert.equal(js.status, 200);
     assert.match(js.headers.get('content-type') || '', /javascript/);
 
+    // index.html is also served at /, where its relative assets resolve to these root paths.
+    const rootCss = await fetch(`${base}/creatorops.css`);
+    assert.equal(rootCss.status, 200);
+    assert.match(rootCss.headers.get('content-type') || '', /text\/css/);
+
+    const rootJs = await fetch(`${base}/creatorops.js`);
+    assert.equal(rootJs.status, 200);
+    assert.match(rootJs.headers.get('content-type') || '', /javascript/);
+
     const admin = await fetch(`${base}/admin`);
     assert.equal(admin.status, 401);
     assert.match(admin.headers.get('www-authenticate') || '', /Basic/);
