@@ -1,0 +1,103 @@
+name: Integrate main into mobile refresh
+
+on:
+  push:
+    branches:
+      - fix/mobile-sitewide-refresh-20261006
+    paths:
+      - '.github/workflows/integrate-main-mobile-refresh.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Preserve refresh-side regression files
+        run: |
+          cp tests/browser-mobile.mjs /tmp/browser-mobile-refresh.mjs
+          cp tests/mobile-outpost.test.mjs /tmp/mobile-outpost-refresh.test.mjs
+      - name: Merge current main without overwriting latest Hall of Legends behavior
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git fetch origin main
+          git merge origin/main -X theirs --no-edit
+      - name: Reapply final mobile refresh behavior
+        run: |
+          cat > assets/watch-mobile.mjs <<'EOF'
+          /*! Copyright © 2026 Hynoe. All rights reserved. See /COPYRIGHT.md. */
+          import {recoveryResult} from './save-recovery.mjs?v=20261006b';
+
+          if(recoveryResult.recovered){
+            try{
+              const key='hynoeSaveRecoveryReloadedV1';
+              if(sessionStorage.getItem(key)!=='1'){
+                sessionStorage.setItem(key,'1');
+                location.reload();
+              }
+            }catch{}
+          }
+          EOF
+          cp /tmp/browser-mobile-refresh.mjs tests/browser-mobile.mjs
+          cp /tmp/mobile-outpost-refresh.test.mjs tests/mobile-outpost.test.mjs
+          node <<'NODE'
+          const fs=require('fs');
+          const pages=['index.html','start.html','mca.html','progression.html','economy.html','bosses.html','join.html','modpack.html','updates.html','modded-minecraft-server.html','watch.html','privacy.html','terms.html','data-deletion.html','community-rules.html'];
+          for(const page of pages){
+            let html=fs.readFileSync(page,'utf8');
+            if(!html.includes('assets/site-refresh.css?v=20261006b')){
+              const marker=html.match(/<link rel="stylesheet" href="assets\/[^"]+\.css\?v=[^"]+">/);
+              if(!marker)throw new Error(`No stylesheet marker in ${page}`);
+              html=html.replace(marker[0],marker[0]+'<link rel="stylesheet" href="assets/site-refresh.css?v=20261006b">');
+            }
+            if(page==='watch.html'){
+              if(!html.includes('assets/watch-mobile-v2.css?v=20261006b')){
+                html=html.replace(/<link rel="stylesheet" href="assets\/watch-mobile\.css\?v=[^"]+">/,'$&<link rel="stylesheet" href="assets/watch-mobile-v2.css?v=20261006b">');
+              }
+              if(!html.includes('assets/watch-video.mjs?v=20261006b')){
+                html=html.replace(/<script type="module" src="assets\/watch-mobile\.mjs\?v=[^"]+"><\/script>/,'$&<script type="module" src="assets/watch-video.mjs?v=20261006b"></script>');
+              }
+              html=html.replace(/assets\/watch\.mjs\?v=[0-9a-z]+/g,'assets/watch.mjs?v=20261006b');
+              html=html.replace(/assets\/watch-mobile\.mjs\?v=[0-9a-z]+/g,'assets/watch-mobile.mjs?v=20261006b');
+              html=html.replace(/assets\/watch-mobile\.css\?v=[0-9a-z]+/g,'assets/watch-mobile.css?v=20261006b');
+              html=html.replace(/assets\/watch\.css\?v=[0-9a-z]+/g,'assets/watch.css?v=20261006b');
+            }
+            fs.writeFileSync(page,html);
+          }
+          for(const file of ['assets/watch.mjs','assets/watch-game.mjs']){
+            let text=fs.readFileSync(file,'utf8');
+            text=text.replace(/v=20261006a/g,'v=20261006b');
+            fs.writeFileSync(file,text);
+          }
+          NODE
+      - name: Remove temporary integration workflows before verification
+        run: |
+          rm -f .github/workflows/integrate-main-mobile-refresh.yml
+          rm -f .github/workflows/mobile-final-verify.yml
+      - name: Verify merged production tree
+        run: |
+          node --check assets/watch.mjs
+          node --check assets/watch-mobile.mjs
+          node --check assets/watch-video.mjs
+          node --test tests/*.test.mjs
+          npm install --no-save --no-package-lock playwright@1.63.0
+          npx playwright install --with-deps chromium
+          python3 -m http.server 4173 --bind 127.0.0.1 > /tmp/hynoe-http.log 2>&1 &
+          for i in {1..20}; do
+            if curl -fsS http://127.0.0.1:4173/watch.html >/dev/null; then break; fi
+            sleep 1
+          done
+          node tests/browser-mobile.mjs
+      - name: Commit and push resolved integration
+        run: |
+          git add -A
+          git commit -m 'fix: integrate mobile refresh with live leaderboard release'
+          git push origin HEAD:fix/mobile-sitewide-refresh-20261006
