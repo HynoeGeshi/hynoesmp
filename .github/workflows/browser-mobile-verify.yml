@@ -1,10 +1,23 @@
 name: Browser mobile verification
 
-# This browser gate intentionally runs against the committed branch head after generated repair commits.
 on:
   push:
     branches:
+      - main
       - hynoe-outpost-overhaul-2026-10-05
+    paths:
+      - 'index.html'
+      - 'watch.html'
+      - 'assets/**'
+      - 'privacy.html'
+      - 'terms.html'
+      - 'data-deletion.html'
+      - 'community-rules.html'
+      - 'tests/browser-mobile.mjs'
+      - '.github/workflows/browser-mobile-verify.yml'
+  pull_request:
+    branches:
+      - main
     paths:
       - 'index.html'
       - 'watch.html'

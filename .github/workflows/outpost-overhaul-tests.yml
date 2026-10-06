@@ -1,9 +1,13 @@
-name: Hynoe Outpost overhaul tests
+name: Hynoe site regression tests
 
 on:
   push:
     branches:
+      - main
       - hynoe-outpost-overhaul-2026-10-05
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
