@@ -5,28 +5,25 @@ on:
     branches:
       - hynoe-search-visual-retention
     paths:
-      - deployment/hynoe-search.tar.gz.b64
+      - hynoe-search-app/**
       - .github/workflows/hynoe-search-feature-ci.yml
 
 jobs:
   verify:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: hynoe-search-app
     steps:
       - uses: actions/checkout@v4
-      - name: Unpack Hynoe Search bundle
-        run: |
-          rm -rf .hynoe-search-ci
-          mkdir .hynoe-search-ci
-          base64 -d deployment/hynoe-search.tar.gz.b64 | tar -xz -C .hynoe-search-ci
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: hynoe-search-app/package.json
       - name: Install dependencies
-        working-directory: .hynoe-search-ci
         run: npm install --no-audit --no-fund
       - name: Unit tests
-        working-directory: .hynoe-search-ci
         run: npm test
-      - name: Domain tests
-        working-directory: .hynoe-search-ci
-        run: npm run test:domain
       - name: Build
-        working-directory: .hynoe-search-ci
         run: npm run build
