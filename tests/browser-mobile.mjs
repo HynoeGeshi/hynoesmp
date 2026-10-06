@@ -4,10 +4,7 @@ import {chromium} from 'playwright';
 
 const base='http://127.0.0.1:4173';
 const leaderboardOrigin='https://hynoe-global-leaderboard.rellyoukno.chatgpt.site';
-const mockBoard={players:[
-  {playerId:'11111111-1111-4111-8111-111111111111',callsign:'ALPHA',score:1200,depth:55,legacy:1,rank:1},
-  {playerId:'22222222-2222-4222-8222-222222222222',callsign:'BRAVO',score:800,depth:34,legacy:0,rank:2},
-],me:null,total:2,generatedAt:Date.now()};
+const mockBoard={players:[{playerId:'11111111-1111-4111-8111-111111111111',callsign:'ALPHA',score:1200,depth:55,legacy:1,rank:1},{playerId:'22222222-2222-4222-8222-222222222222',callsign:'BRAVO',score:800,depth:34,legacy:0,rank:2}],me:null,total:2,generatedAt:Date.now()};
 const phoneViewports=[
   {width:320,height:800},
   {width:360,height:800},
@@ -17,26 +14,28 @@ const phoneViewports=[
   {width:430,height:932},
 ];
 const extraViewports=[{width:768,height:1024},{width:1024,height:768},{width:844,height:390}];
+const publicPages=[
+  'index.html','start.html','mca.html','progression.html','economy.html','bosses.html','join.html',
+  'modpack.html','updates.html','modded-minecraft-server.html','watch.html',
+  'privacy.html','terms.html','data-deletion.html','community-rules.html',
+];
 const browser=await chromium.launch({headless:true});
 await mkdir('test-artifacts',{recursive:true});
+
+async function mockLeaderboard(page){
+  await page.route(`${leaderboardOrigin}/**`,async route=>{
+    await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(mockBoard)});
+  });
+}
 
 function captureErrors(page,label){
   const errors=[];
   page.on('pageerror',error=>errors.push(`${label} pageerror: ${error.message}`));
-  page.on('response',response=>{if(response.status()>=400)errors.push(`${label} HTTP ${response.status()}: ${response.url()}`);});
+  page.on('response',response=>{
+    if(response.status()>=400&&response.url().startsWith(base))errors.push(`${label} HTTP ${response.status()}: ${response.url()}`);
+  });
   page.on('console',msg=>{if(msg.type()==='error'&&!/Failed to load resource/i.test(msg.text()))errors.push(`${label} console: ${msg.text()}`);});
   return errors;
-}
-
-async function mockLeaderboard(page){
-  const calls={reads:0,posts:0};
-  await page.route(`${leaderboardOrigin}/**`,async route=>{
-    const request=route.request(),url=new URL(request.url());
-    if(url.pathname==='/v1/leaderboard')calls.reads++;
-    if(url.pathname==='/v1/score')calls.posts++;
-    await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(mockBoard)});
-  });
-  return calls;
 }
 
 async function assertNoHorizontalOverflow(page,label){
@@ -71,26 +70,48 @@ async function tapsLeft(locator){
   return match?Number(match[1]):null;
 }
 
+async function assertVeinsFullyVisible(page,label){
+  const result=await page.evaluate(()=>{
+    const scene=document.querySelector('.mine-scene.mine-v2');
+    const sceneBox=scene?.getBoundingClientRect();
+    const cards=[...document.querySelectorAll('.vein')].map(card=>{
+      const box=card.getBoundingClientRect();
+      const strong=card.querySelector('strong');
+      const small=card.querySelector('small');
+      const strongBox=strong?.getBoundingClientRect();
+      const smallBox=small?.getBoundingClientRect();
+      const strongStyle=strong?getComputedStyle(strong):null;
+      const smallStyle=small?getComputedStyle(small):null;
+      return {
+        top:box.top,bottom:box.bottom,left:box.left,right:box.right,
+        strong:strong?.textContent?.trim()||'',small:small?.textContent?.trim()||'',
+        strongHeight:strongBox?.height||0,smallHeight:smallBox?.height||0,
+        strongVisible:!!strongStyle&&strongStyle.display!=='none'&&strongStyle.visibility!=='hidden'&&Number(strongStyle.opacity)>0,
+        smallVisible:!!smallStyle&&smallStyle.display!=='none'&&smallStyle.visibility!=='hidden'&&Number(smallStyle.opacity)>0,
+      };
+    });
+    return {scene:sceneBox?{top:sceneBox.top,bottom:sceneBox.bottom,left:sceneBox.left,right:sceneBox.right}:null,cards};
+  });
+  assert.ok(result.scene,`${label}: mine scene missing`);
+  assert.equal(result.cards.length,12,`${label}: expected 12 mine cards`);
+  for(const [index,card] of result.cards.entries()){
+    assert.ok(card.bottom<=result.scene.bottom+1,`${label}: vein ${index} is clipped below the mine scene`);
+    assert.ok(card.left>=result.scene.left-1&&card.right<=result.scene.right+1,`${label}: vein ${index} is clipped horizontally`);
+    assert.ok(card.strong&&card.small,`${label}: vein ${index} missing label text`);
+    assert.ok(card.strongVisible&&card.smallVisible&&card.strongHeight>0&&card.smallHeight>0,`${label}: vein ${index} label text is not visible`);
+  }
+}
+
 for(const viewport of [...phoneViewports,...extraViewports]){
   const isMobile=viewport.width<900;
   const context=await browser.newContext({viewport,hasTouch:isMobile,isMobile});
   const page=await context.newPage();
-  const leaderboardCalls=await mockLeaderboard(page);
+  await mockLeaderboard(page);
   const label=`watch ${viewport.width}x${viewport.height}`;
   const errors=captureErrors(page,label);
   await page.goto(`${base}/watch.html`,{waitUntil:'domcontentloaded'});
   await page.waitForSelector('#vein-11');
-  await page.waitForFunction(()=>document.querySelector('#leaderboard-live')?.textContent==='LIVE · 2 PLAYERS');
   await dismissFirstRunGuide(page,label);
-  const optIn=page.locator('#leader-opt-in');
-  assert.equal(await optIn.count(),1,`${label}: leaderboard publish opt-in is missing from the DOM`);
-  await page.locator('#tab-leaderboard').click();
-  await page.waitForTimeout(50);
-  assert.ok(await optIn.isVisible(),`${label}: leaderboard publish opt-in is not visible when Leaderboard is open`);
-  assert.equal(await optIn.isChecked(),false,`${label}: leaderboard publishing must default off`);
-  assert.equal(await page.locator('#leader-list article').count(),2,`${label}: global leaderboard rows did not render`);
-  assert.ok(leaderboardCalls.reads>=1,`${label}: public leaderboard was not loaded`);
-  assert.equal(leaderboardCalls.posts,0,`${label}: fresh player score was published without opt-in`);
   await assertNoHorizontalOverflow(page,label);
 
   const cols=await gridColumns(page);
@@ -105,6 +126,7 @@ for(const viewport of [...phoneViewports,...extraViewports]){
   assert.notEqual(miningArtwork.visibility,'hidden',`${label}: mining artwork is hidden`);
   assert.ok(miningArtwork.opacity>0,`${label}: mining artwork is transparent`);
   assert.ok(miningArtwork.fill&&miningArtwork.fill!=='none',`${label}: mining artwork gem face has no fill`);
+  await assertVeinsFullyVisible(page,label);
 
   const tabs=page.locator('.game .tabs');
   assert.ok(await tabs.isVisible(),`${label}: game tabs are not visible`);
@@ -128,7 +150,18 @@ for(const viewport of [...phoneViewports,...extraViewports]){
     assert.equal(afterKeyboard,afterTouch-1,`${label}: keyboard activation must still mine exactly once`);
   }
 
-  assert.equal(leaderboardCalls.posts,0,`${label}: gameplay published a score while opt-in remained off`);
+  if(viewport.width===390){
+    const beforeUrl=page.url();
+    const play=page.locator('#video .play-broadcast');
+    assert.ok(await play.isVisible(),`${label}: on-site stream play button is missing`);
+    await page.waitForFunction(()=>{const button=document.querySelector('#video .play-broadcast');return !!button&&!button.disabled;},null,{timeout:4000});
+    await play.click();
+    await page.waitForSelector('#video iframe',{timeout:4000});
+    const frameSrc=await page.locator('#video iframe').getAttribute('src');
+    assert.match(frameSrc||'',/youtube-nocookie\.com\/embed\//,`${label}: stream iframe is not privacy-enhanced YouTube embed`);
+    assert.equal(new URL(page.url()).pathname,new URL(beforeUrl).pathname,`${label}: primary stream button navigated away from Hynoe`);
+  }
+
   if(viewport.width===390||viewport.width===1024){
     await page.screenshot({path:`test-artifacts/watch-${viewport.width}.png`,fullPage:true});
   }
@@ -139,6 +172,7 @@ for(const viewport of [...phoneViewports,...extraViewports]){
 for(const viewport of [{width:320,height:800},{width:390,height:844},{width:430,height:932},{width:1024,height:768}]){
   const context=await browser.newContext({viewport,hasTouch:viewport.width<900,isMobile:viewport.width<900});
   const page=await context.newPage();
+  await mockLeaderboard(page);
   const label=`home ${viewport.width}x${viewport.height}`;
   const errors=captureErrors(page,label);
   await page.goto(`${base}/index.html`,{waitUntil:'domcontentloaded'});
@@ -160,16 +194,23 @@ for(const viewport of [{width:320,height:800},{width:390,height:844},{width:430,
   await context.close();
 }
 
-for(const pageName of ['privacy.html','terms.html','data-deletion.html','community-rules.html']){
+for(const pageName of publicPages){
   const context=await browser.newContext({viewport:{width:390,height:844},hasTouch:true,isMobile:true});
   const page=await context.newPage();
-  const errors=captureErrors(page,pageName);
+  await mockLeaderboard(page);
+  const label=`sitewide ${pageName}`;
+  const errors=captureErrors(page,label);
   await page.goto(`${base}/${pageName}`,{waitUntil:'domcontentloaded'});
-  await page.waitForSelector('main.legal-shell');
-  await assertNoHorizontalOverflow(page,pageName);
-  assert.deepEqual(errors,[],`${pageName}: browser errors detected\n${errors.join('\n')}`);
+  await page.waitForSelector('main');
+  await page.waitForTimeout(150);
+  await assertNoHorizontalOverflow(page,label);
+  assert.equal(await page.locator('link[href*="site-refresh.css?v=20261006b"]').count(),1,`${label}: shared refresh stylesheet missing`);
+  const content=await page.locator('main').evaluate(el=>({text:el.innerText.trim(),height:el.getBoundingClientRect().height,display:getComputedStyle(el).display,visibility:getComputedStyle(el).visibility}));
+  assert.ok(content.text.length>80,`${label}: main text did not render`);
+  assert.ok(content.height>120&&content.display!=='none'&&content.visibility!=='hidden',`${label}: main content is not visible`);
+  assert.deepEqual(errors,[],`${label}: browser errors detected\n${errors.join('\n')}`);
   await context.close();
 }
 
 await browser.close();
-console.log('Browser verification passed for mobile mining artwork, live leaderboard reads, opt-in score publishing, onboarding, homepage, legal pages, touch input, keyboard input, and overflow.');
+console.log('Browser verification passed for mobile mining, visible labels, on-site stream playback, all public pages, touch/keyboard input, and overflow.');

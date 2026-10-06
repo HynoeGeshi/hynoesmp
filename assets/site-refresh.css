@@ -1,0 +1,250 @@
+/*! Copyright © 2026 Hynoe. All rights reserved. See /COPYRIGHT.md. */
+/* Shared October 2026 finish layer: keeps each page unique while making the whole site feel like one product. */
+
+:root{
+  --refresh-bg:#070906;
+  --refresh-panel:#10150f;
+  --refresh-panel-2:#171c14;
+  --refresh-line:#45483b;
+  --refresh-gold:#e8b74f;
+  --refresh-cream:#f2ecdc;
+  --refresh-muted:#a7a896;
+  --refresh-green:#79b86f;
+  --refresh-radius:12px;
+  --refresh-shadow:0 20px 55px rgba(0,0,0,.34);
+}
+
+html{max-width:100%;overflow-x:hidden;scroll-behavior:smooth}
+body{max-width:100%;overflow-x:hidden}
+img,svg,video,iframe{max-width:100%}
+button,a,input,select,textarea{min-width:0}
+main{min-width:0}
+
+body[data-page] .world-hud{
+  border-bottom-color:#53513f;
+  background:linear-gradient(180deg,rgba(13,16,11,.97),rgba(8,11,7,.94));
+  box-shadow:0 8px 28px rgba(0,0,0,.28);
+  backdrop-filter:blur(12px);
+}
+body[data-page] .hynoe-mark{min-width:0}
+body[data-page] .hynoe-mark span{min-width:0}
+body[data-page] .hud-action,
+body[data-page] .journal-toggle{border-radius:7px;min-height:40px;display:inline-flex;align-items:center;justify-content:center}
+body[data-page] .hotbar{
+  border:1px solid #4d4b3b;
+  background:rgba(10,13,9,.94);
+  box-shadow:0 15px 40px rgba(0,0,0,.3);
+  backdrop-filter:blur(11px);
+}
+body[data-page] .hotbar-slot{border-radius:6px}
+body[data-page] .hotbar-slot.active{box-shadow:inset 0 0 0 1px rgba(232,183,79,.28),0 0 18px rgba(232,183,79,.08)}
+
+body[data-page]:not([data-page="home"]) main{
+  background:
+    radial-gradient(circle at 10% 8%,rgba(224,178,78,.06),transparent 22%),
+    radial-gradient(circle at 90% 20%,rgba(85,143,84,.05),transparent 26%);
+}
+body[data-page]:not([data-page="home"]) .chapter-hero,
+.install-hero{
+  position:relative;
+  border-bottom:1px solid #4b4938;
+  box-shadow:inset 0 -34px 70px rgba(0,0,0,.28);
+}
+body[data-page]:not([data-page="home"]) .chapter-hero:after,
+.install-hero:after{pointer-events:none}
+body[data-page]:not([data-page="home"]) .chapter-hero h1,
+.install-hero h1{text-wrap:balance}
+body[data-page]:not([data-page="home"]) .chapter-hero p,
+.install-hero p{text-wrap:pretty}
+
+body[data-page] .app-mission{
+  border:1px solid #58533e;
+  border-left:4px solid var(--app-accent,var(--refresh-gold));
+  border-radius:var(--refresh-radius);
+  background:
+    linear-gradient(115deg,color-mix(in srgb,var(--app-accent,var(--refresh-gold)) 8%,transparent),transparent 38%),
+    linear-gradient(180deg,#171b14,#0d110c);
+  box-shadow:var(--refresh-shadow),inset 0 1px rgba(255,255,255,.04);
+}
+body[data-page] .app-mission-icon{border-radius:9px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.05),0 10px 25px rgba(0,0,0,.3)}
+body[data-page] .app-mission-copy h2{color:#f4eedc;text-wrap:balance}
+body[data-page] .app-mission-copy p{color:#b9b9a7;text-wrap:pretty}
+body[data-page] .app-mission-progress{border-radius:8px;background:#0a0e09;border:1px solid #3f4235;padding:11px 12px}
+body[data-page] .app-mission-actions a,
+body[data-page] .app-mission-actions button{min-height:46px;border-radius:7px}
+
+body[data-page] .app-zone{
+  position:relative;
+  isolation:isolate;
+  scroll-margin-top:105px;
+}
+body[data-page] .app-zone:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:-1;
+  pointer-events:none;
+  border-radius:inherit;
+  background:linear-gradient(130deg,color-mix(in srgb,var(--app-accent,var(--refresh-gold)) 4%,transparent),transparent 30%);
+  opacity:.7;
+}
+body[data-page] .app-zone>h2,
+body[data-page] .app-zone>div>h2,
+body[data-page] .app-zone>header h2{text-wrap:balance}
+body[data-page] main p,
+body[data-page] main li{overflow-wrap:anywhere;text-wrap:pretty}
+
+body[data-page] :is(.guide-chapter,.quest-step>div,.market-stall,.encounter-card,.join-step,.campaign-roadmap-grid article,.october-grid article,.quick-start-grid a,.vault-grid article,.age-card,.update-card,.progression-card,.command-card){
+  border-color:#4a493d;
+  background-color:rgba(18,22,16,.94);
+  box-shadow:0 12px 28px rgba(0,0,0,.2),inset 0 1px rgba(255,255,255,.025);
+}
+body[data-page] :is(.guide-chapter,.quest-step>div,.market-stall,.encounter-card,.join-step,.campaign-roadmap-grid article,.october-grid article,.quick-start-grid a,.vault-grid article,.age-card):focus-within{
+  border-color:var(--app-accent,var(--refresh-gold));
+}
+body[data-page] :is(.mc-button,.app-primary,.genesis-route-link){min-height:46px;display:inline-flex;align-items:center;justify-content:center;line-height:1.25;text-align:center}
+body[data-page] code,body[data-page] pre{max-width:100%;overflow-x:auto;overflow-wrap:anywhere}
+
+.install-copy{
+  border-radius:14px!important;
+  border-width:1px!important;
+  border-color:#605943!important;
+  background:linear-gradient(150deg,rgba(12,15,10,.95),rgba(18,19,15,.93))!important;
+  box-shadow:var(--refresh-shadow),inset 0 1px rgba(255,255,255,.05)!important;
+}
+.install-road>*{border-radius:10px}
+
+.legal-shell{
+  width:min(940px,calc(100% - 28px));
+  margin-inline:auto;
+}
+.legal-shell :is(.legal-card,section,article){max-width:100%}
+.legal-shell h1,.legal-shell h2{text-wrap:balance}
+.legal-shell p,.legal-shell li{overflow-wrap:anywhere;text-wrap:pretty}
+
+body:not([data-page]) .topbar,
+body:not([data-page]) .site-pages{max-width:100%}
+body:not([data-page]) .topbar{box-shadow:0 8px 25px rgba(0,0,0,.22)}
+body:not([data-page]) .panel{box-shadow:0 12px 34px rgba(0,0,0,.25)}
+body:not([data-page]) .page-footer{overflow-wrap:anywhere}
+
+@media(max-width:900px){
+  body[data-page] .world-hud{padding-inline:14px}
+  body[data-page] .hotbar{max-width:calc(100vw - 20px)}
+  body[data-page] .app-mission{margin-inline:14px}
+  body[data-page] .app-zone{min-width:0}
+  body[data-page] .app-zone :is(.two-col,.three-col,.four-col,.card-grid,.october-grid,.campaign-roadmap-grid){min-width:0}
+}
+
+@media(max-width:760px){
+  body{padding-bottom:max(82px,calc(70px + env(safe-area-inset-bottom)))}
+  body[data-page] .world-hud{
+    position:sticky;
+    top:0;
+    z-index:1000;
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    gap:8px 10px;
+    min-height:0;
+    padding:8px 10px;
+  }
+  body[data-page] .hynoe-mark{flex:1 1 170px;gap:8px}
+  body[data-page] .hynoe-mark img{width:42px;height:42px}
+  body[data-page] .hynoe-mark b{font-size:12px}
+  body[data-page] .hynoe-mark small{font-size:7px}
+  body[data-page] .guide-xp{order:3;flex:1 1 100%;width:100%;margin:0;padding:5px 0 0}
+  body[data-page] .guide-xp-top{font-size:7px}
+  body[data-page] .hud-actions{
+    order:2;
+    flex:0 1 auto;
+    display:flex;
+    gap:5px;
+    max-width:48%;
+    overflow-x:auto;
+    overscroll-behavior-inline:contain;
+    scrollbar-width:none;
+  }
+  body[data-page] .hud-actions::-webkit-scrollbar{display:none}
+  body[data-page] .hud-action,
+  body[data-page] .journal-toggle{flex:0 0 auto;min-height:38px;padding:6px 8px;font-size:8px;white-space:nowrap}
+
+  body[data-page] .hotbar{
+    position:fixed;
+    z-index:999;
+    left:10px;
+    right:10px;
+    bottom:max(8px,env(safe-area-inset-bottom));
+    transform:none;
+    width:auto;
+    max-width:none;
+    display:flex;
+    justify-content:flex-start;
+    gap:4px;
+    padding:6px;
+    overflow-x:auto;
+    overflow-y:hidden;
+    scroll-snap-type:x proximity;
+    overscroll-behavior-inline:contain;
+    scrollbar-width:none;
+  }
+  body[data-page] .hotbar::-webkit-scrollbar{display:none}
+  body[data-page] .hotbar-slot{flex:0 0 92px;min-width:92px;min-height:52px;scroll-snap-align:start;padding:7px 6px}
+  body[data-page] .hotbar-slot span{font-size:7px}
+  body[data-page] .hotbar-slot b{font-size:9px;line-height:1.2;white-space:normal}
+
+  body[data-page]:not([data-page="home"]) .chapter-hero,
+  .install-hero{min-height:0!important;padding:72px 14px 44px!important;overflow:hidden}
+  body[data-page]:not([data-page="home"]) .chapter-hero>*,
+  .install-hero>*{min-width:0;max-width:100%}
+  body[data-page]:not([data-page="home"]) .chapter-hero h1,
+  .install-copy h1{font-size:clamp(38px,13vw,58px)!important;line-height:.98!important;overflow-wrap:anywhere}
+  body[data-page]:not([data-page="home"]) .chapter-hero p,
+  .install-copy>p{font-size:14px!important;line-height:1.6!important}
+  .install-copy{width:100%!important;padding:22px 16px!important}
+
+  body[data-page] .app-mission{grid-template-columns:58px minmax(0,1fr);gap:13px;margin:14px 10px 28px;padding:16px}
+  body[data-page] .app-mission-icon{width:56px;height:56px;font-size:27px}
+  body[data-page] .app-mission-copy{min-width:0}
+  body[data-page] .app-mission-copy h2{font-size:24px;line-height:1.05}
+  body[data-page] .app-mission-copy p{font-size:12px;line-height:1.55}
+  body[data-page] .app-mission-progress,
+  body[data-page] .app-mission-actions{grid-column:1/-1}
+  body[data-page] .app-mission-actions{grid-template-columns:1fr}
+
+  body[data-page] .app-zone{scroll-margin-top:135px}
+  body[data-page] :is(.guide-chapter,.quest-step>div,.market-stall,.encounter-card,.join-step,.campaign-roadmap-grid article,.october-grid article,.quick-start-grid a,.vault-grid article,.age-card){transform:none!important}
+  body[data-page] :is(.mc-button,.app-primary,.genesis-route-link){width:100%;min-height:48px;padding:12px 14px;white-space:normal}
+
+  .legal-shell{width:min(100% - 20px,940px)}
+  .legal-shell h1{font-size:clamp(34px,11vw,50px)}
+
+  body:not([data-page]){padding-bottom:0}
+}
+
+@media(max-width:520px){
+  body[data-page] .world-hud{gap:6px}
+  body[data-page] .hynoe-mark{flex:1 1 145px}
+  body[data-page] .guide-xp{order:2;flex:1 1 100%}
+  body[data-page] .hud-actions{
+    order:3;
+    flex:1 1 100%;
+    width:100%;
+    max-width:none;
+    padding-bottom:2px;
+    justify-content:flex-start;
+  }
+  body[data-page] .hud-action,
+  body[data-page] .journal-toggle{display:inline-flex}
+  body[data-page] .app-mission{grid-template-columns:1fr}
+  body[data-page] .app-mission-icon{grid-column:1;width:48px;height:48px}
+  body[data-page] .app-mission-copy{grid-column:1}
+  body[data-page] main p,body[data-page] main li{font-size:max(12px,1em)}
+  .install-road{padding-inline:12px!important;margin-block:34px 58px!important}
+}
+
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  body[data-page] .app-mission,
+  body[data-page] .hotbar-slot{transition:none!important}
+}
