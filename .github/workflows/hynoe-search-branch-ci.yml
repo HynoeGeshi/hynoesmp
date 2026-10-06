@@ -1,0 +1,32 @@
+name: Hynoe Search Branch CI
+
+on:
+  push:
+    branches:
+      - hynoe-search-render-app
+    paths:
+      - deployment/hynoe-search.tar.gz.b64
+      - .github/workflows/hynoe-search-branch-ci.yml
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Unpack Hynoe Search bundle
+        run: |
+          rm -rf .hynoe-search-ci
+          mkdir .hynoe-search-ci
+          base64 -d deployment/hynoe-search.tar.gz.b64 | tar -xz -C .hynoe-search-ci
+      - name: Install dependencies
+        working-directory: .hynoe-search-ci
+        run: npm install --no-audit --no-fund
+      - name: Unit tests
+        working-directory: .hynoe-search-ci
+        run: npm test
+      - name: Domain tests
+        working-directory: .hynoe-search-ci
+        run: npm run test:domain
+      - name: Build
+        working-directory: .hynoe-search-ci
+        run: npm run build
