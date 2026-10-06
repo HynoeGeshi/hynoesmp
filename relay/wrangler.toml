@@ -1,12 +1,13 @@
-name = "hynoe-campfire"
+name = "hynoe-community"
 main = "worker.mjs"
 compatibility_date = "2026-09-01"
 
 [vars]
 ALLOWED_ORIGINS = "https://hynoesmp.com,https://www.hynoesmp.com"
-BLOOM_SERVER_ID = "75621d38"
-# Switch only after testing a message on the actual Minecraft server.
 CHAT_ENABLED = "false"
+
+# Private secrets are configured with Wrangler and must never be committed:
+# TURNSTILE_SECRET, IP_SALT, SESSION_SECRET, ADMIN_TOKEN
 
 [[durable_objects.bindings]]
 name = "CHAT"
