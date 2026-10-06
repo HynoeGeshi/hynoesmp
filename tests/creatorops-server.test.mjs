@@ -51,7 +51,7 @@ async function start(server) {
   }
 }
 
-// Premium operator dashboard remains protected and uses the Hynoe visual system.
+// Premium operator dashboard remains protected and exposes audit status metadata without report secrets.
 {
   const server = createCreatorOpsServer({ adminUser: 'hynoe', adminPassword: 'visual-test-password' });
   const base = await start(server);
@@ -70,6 +70,13 @@ async function start(server) {
     assert.match(cssText, /admin-overview/i);
     assert.match(cssText, /admin-panel/i);
     assert.match(cssText, /admin-kpi/i);
+
+    const adminJs = await fetch(`${base}/creatorops/admin.js`);
+    const adminJsText = await adminJs.text();
+    assert.match(adminJsText, /audit_status/);
+    assert.match(adminJsText, /audit_expires_at/);
+    assert.match(adminJsText, /Starter audit/i);
+    assert.doesNotMatch(adminJsText, /token_hash|report_token|raw token/i);
   } finally {
     server.close();
     await once(server, 'close');
