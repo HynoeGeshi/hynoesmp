@@ -75,20 +75,6 @@ jobs:
             path = Path(name)
             text = path.read_text(encoding='utf-8').replace('20261006a','20261006b')
             path.write_text(text, encoding='utf-8')
-
-          workflow = Path('.github/workflows/browser-mobile-verify.yml')
-          text = workflow.read_text(encoding='utf-8')
-          marker = "      - 'index.html'\n"
-          text = text.replace(marker, "      - '*.html'\n" + marker)
-          workflow.write_text(text, encoding='utf-8')
-
-          for temporary in [
-            '.github/workflows/mobile-refresh-red.yml',
-            '.github/workflows/apply-mobile-sitewide-refresh.yml',
-          ]:
-            p = Path(temporary)
-            if p.exists():
-              p.unlink()
           PY
       - name: Verify production code and full regression suite
         run: |
@@ -100,6 +86,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
+          git add index.html start.html mca.html progression.html economy.html bosses.html join.html modpack.html updates.html modded-minecraft-server.html watch.html privacy.html terms.html data-deletion.html community-rules.html assets/watch.mjs assets/watch-game.mjs assets/watch-mobile.mjs
           git commit -m "fix: repair mobile Outpost and refresh all site pages"
           git push origin HEAD:fix/mobile-sitewide-refresh-20261006
