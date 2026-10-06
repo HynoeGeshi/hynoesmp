@@ -6,6 +6,7 @@ on:
       - main
       - hynoe-outpost-overhaul-2026-10-05
       - fix/mobile-first-load-blocker-20261006
+      - fix/restore-active-run-mobile-20261006
     paths:
       - 'index.html'
       - 'watch.html'
@@ -16,6 +17,7 @@ on:
       - 'community-rules.html'
       - 'tests/browser-mobile.mjs'
       - 'tests/browser-first-load.mjs'
+      - 'tests/browser-restored-run.mjs'
       - '.github/workflows/browser-mobile-verify.yml'
   pull_request:
     branches:
@@ -30,6 +32,7 @@ on:
       - 'community-rules.html'
       - 'tests/browser-mobile.mjs'
       - 'tests/browser-first-load.mjs'
+      - 'tests/browser-restored-run.mjs'
       - '.github/workflows/browser-mobile-verify.yml'
   workflow_dispatch:
 
@@ -62,6 +65,7 @@ jobs:
         run: |
           node tests/browser-mobile.mjs
           node tests/browser-first-load.mjs
+          node tests/browser-restored-run.mjs
       - name: Upload visual evidence
         if: always()
         uses: actions/upload-artifact@v4
