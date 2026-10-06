@@ -1,0 +1,43 @@
+name: Sync Hynoe Control Bridge
+
+on:
+  push:
+    branches:
+      - feature/hynoe-control-bridge
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@v4
+        with:
+          ref: feature/hynoe-control-bridge
+          fetch-depth: 0
+
+      - name: Download verified bridge source
+        run: |
+          curl --fail --silent --show-error --location \
+            https://sb-2nbwx51r8yxp.vercel.run/hynoe-control-bridge-source.tar.gz \
+            --output /tmp/hynoe-control-bridge-source.tar.gz
+          echo "e8a229eaf69832780f90b0950da2d9da98f04c4f86ad71dcacecc017a4fa15dd  /tmp/hynoe-control-bridge-source.tar.gz" | sha256sum --check
+
+      - name: Replace bridge tree
+        run: |
+          rm -rf control-bridge
+          tar -xzf /tmp/hynoe-control-bridge-source.tar.gz
+
+      - name: Commit verified tree
+        run: |
+          git config user.name "Hynoe Bridge Sync"
+          git config user.email "noreply@users.noreply.github.com"
+          git add -A control-bridge
+          if git diff --cached --quiet; then
+            echo "Bridge tree already matches verified source."
+            exit 0
+          fi
+          git commit -m "feat: sync verified Hynoe control bridge"
+          git push origin HEAD:feature/hynoe-control-bridge
