@@ -43,6 +43,31 @@ async function start(server) {
   }
 }
 
+// Premium operator dashboard remains protected and uses the Hynoe visual system.
+{
+  const server = createCreatorOpsServer({ adminUser: 'hynoe', adminPassword: 'visual-test-password' });
+  const base = await start(server);
+  try {
+    const auth = `Basic ${Buffer.from('hynoe:visual-test-password').toString('base64')}`;
+    const admin = await fetch(`${base}/admin`, { headers: { authorization: auth } });
+    assert.equal(admin.status, 200);
+    const html = await admin.text();
+    assert.match(html, /operator-shell/i);
+    assert.match(html, /Operations overview/i);
+    assert.match(html, /Applications/i);
+    assert.match(html, /Payment activity/i);
+
+    const css = await fetch(`${base}/creatorops/admin.css`);
+    const cssText = await css.text();
+    assert.match(cssText, /admin-overview/i);
+    assert.match(cssText, /admin-panel/i);
+    assert.match(cssText, /admin-kpi/i);
+  } finally {
+    server.close();
+    await once(server, 'close');
+  }
+}
+
 // Signed gateway + validation + rate-limit contract.
 {
   const { privateKey } = generateKeyPairSync('ed25519');
