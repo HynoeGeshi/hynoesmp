@@ -2,5 +2,6 @@
   "communityUrl": "",
   "turnstileSiteKey": "",
   "globalChatEnabled": false,
-  "askHynoeEnabled": true
+  "askHynoeEnabled": true,
+  "externalHelpEnabled": false
 }
