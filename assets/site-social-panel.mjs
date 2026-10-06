@@ -440,7 +440,7 @@ async function joinWithName(displayName) {
 }
 
 function setJoinReady() {
-  joinButton.disabled = !state.client || (!state.session && !state.captchaToken);
+  joinButton.disabled = !state.client;
 }
 
 function renderTurnstile() {

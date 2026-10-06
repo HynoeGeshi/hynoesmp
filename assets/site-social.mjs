@@ -22,8 +22,6 @@ export async function loadSiteSocialConfig(fetchImpl = globalThis.fetch) {
   if (!supabasePublishableKey.startsWith('sb_publishable_')) {
     throw new Error('A Supabase publishable key is required.');
   }
-  if (!turnstileSiteKey) throw new Error('A Turnstile site key is required.');
-
   return { enabled: true, supabaseUrl, supabasePublishableKey, turnstileSiteKey };
 }
 
@@ -45,12 +43,12 @@ export async function ensureSiteSession(client, captchaToken) {
   const { data: current, error: sessionError } = await client.auth.getSession();
   if (sessionError) throw new Error('Could not restore the site session.');
   if (current?.session) return current.session;
-  if (!String(captchaToken ?? '').trim()) throw new Error('Human verification is required.');
   if (!client.auth.signInAnonymously) throw new Error('Anonymous site authentication is unavailable.');
 
-  const { data, error } = await client.auth.signInAnonymously({
-    options: { captchaToken: String(captchaToken).trim() },
-  });
+  const token = String(captchaToken ?? '').trim();
+  const { data, error } = token
+    ? await client.auth.signInAnonymously({ options: { captchaToken: token } })
+    : await client.auth.signInAnonymously();
   if (error || !data?.session) throw new Error('Site sign-in failed. Please complete verification again.');
   return data.session;
 }
