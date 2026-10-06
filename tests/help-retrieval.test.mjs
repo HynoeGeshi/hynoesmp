@@ -74,7 +74,6 @@ test('knowledge text is treated as evidence, never executable instructions', () 
 });
 
 test('private or secret credential-style questions stay low confidence even when a public noun overlaps', () => {
-  const index = JSON.parse(fs.readFileSync('data/hynoe-help-index.json','utf8'));
   const q = 'What is the secret admin vault code for Hynoe?';
   const ranked = rankHelpChunks(q, index.chunks, { limit: 8 });
   const classification = classifyRetrieval(ranked);
@@ -85,32 +84,38 @@ test('private or secret credential-style questions stay low confidence even when
 });
 
 test('campaign progression intent ranks the progression guide above generic campaign references', () => {
-  const index = JSON.parse(fs.readFileSync('data/hynoe-help-index.json','utf8'));
   const ranked = rankHelpChunks('How does the campaign progression work?', index.chunks, { limit: 5 });
   assert.equal(ranked[0]?.chunk?.url, '/progression.html');
 });
 
 test('current updates intent ranks the updates page above generic update mentions', () => {
-  const index = JSON.parse(fs.readFileSync('data/hynoe-help-index.json','utf8'));
   const ranked = rankHelpChunks('Where do I see current Hynoe SMP updates?', index.chunks, { limit: 5 });
   assert.equal(ranked[0]?.chunk?.url, '/updates.html');
 });
 
 test('economy and jobs intent ranks the economy guide first', () => {
-  const index = JSON.parse(fs.readFileSync('data/hynoe-help-index.json','utf8'));
   const ranked = rankHelpChunks('How do jobs and the economy work?', index.chunks, { limit: 5 });
   assert.equal(ranked[0]?.chunk?.url, '/economy.html');
 });
 
 test('player help command intent ranks the first-day guide first', () => {
-  const index = JSON.parse(fs.readFileSync('data/hynoe-help-index.json','utf8'));
   const ranked = rankHelpChunks('What commands can players use for help?', index.chunks, { limit: 5 });
   assert.equal(ranked[0]?.chunk?.url, '/start.html');
 });
 
 test('bosses intent ranks the boss guide and remains answerable', () => {
-  const index = JSON.parse(fs.readFileSync('data/hynoe-help-index.json','utf8'));
   const ranked = rankHelpChunks('Where can I learn about bosses?', index.chunks, { limit: 5 });
   assert.equal(ranked[0]?.chunk?.url, '/bosses.html');
   assert.notEqual(classifyRetrieval(ranked).confidence, 'low');
+});
+
+test('natural-language travel questions rank the first-day travel guide and stay answerable', () => {
+  const ranked = rankHelpChunks('Can I teleport to my friend without walking all the way there?', index.chunks, { limit: 8 });
+  assert.equal(ranked[0]?.chunk?.url, '/start.html');
+  assert.notEqual(classifyRetrieval(ranked).confidence, 'low');
+});
+
+test('one strong official match can remain medium confidence even with extra conversational words', () => {
+  const classification = classifyRetrieval([{ score: 8.5, coverage: 0.25, chunk:{ text:'Use /tpa to request a visit to another player.', status:'confirmed' } }]);
+  assert.equal(classification.confidence, 'medium');
 });
