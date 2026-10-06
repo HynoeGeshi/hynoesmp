@@ -119,3 +119,15 @@ test('one strong official match can remain medium confidence even with extra con
   const classification = classifyRetrieval([{ score: 8.5, coverage: 0.25, chunk:{ text:'Use /tpa to request a visit to another player.', status:'confirmed' } }]);
   assert.equal(classification.confidence, 'medium');
 });
+
+test('server overview fallback reads like a natural answer instead of raw profile fields', () => {
+  const question = 'what is this server about';
+  const ranked = rankHelpChunks(question, index.chunks, { limit: 8 });
+  const classification = classifyRetrieval(ranked);
+  const answer = buildFallbackAnswer(question, ranked);
+  assert.notEqual(classification.confidence, 'low');
+  assert.match(answer.answer, /Hynoe SMP/i);
+  assert.match(answer.answer, /Java|Fabric|modded survival/i);
+  assert.match(answer.answer, /campaign|Genesis Ages|village life|economy|bosses/i);
+  assert.doesNotMatch(answer.answer, /Canonical Url:|Join Url:|Modpack Url:|Category Tags:|Features:|Positioning:/i);
+});
