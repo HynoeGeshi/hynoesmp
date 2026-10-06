@@ -1,5 +1,18 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+type ServerClientOptions = {
+  cookies: {
+    getAll(): Array<{ name: string; value: string }>;
+    setAll(
+      cookies: Array<{
+        name: string;
+        value: string;
+        options?: { path?: string };
+      }>,
+    ): void;
+  };
+};
+
 const createBrowserClient = vi.fn(() => ({ runtime: 'browser' }));
 const createServerClient = vi.fn(() => ({ runtime: 'server' }));
 const cookieSet = vi.fn();
@@ -52,7 +65,11 @@ describe('Supabase SSR client boundaries', () => {
     expect(await createServerSupabaseClient()).toEqual({ runtime: 'server' });
     expect(createServerClient).toHaveBeenCalledTimes(1);
 
-    const [url, key, options] = createServerClient.mock.calls[0];
+    const [url, key, options] = createServerClient.mock.calls[0] as unknown as [
+      string,
+      string,
+      ServerClientOptions,
+    ];
     expect(url).toBe('https://example.supabase.co');
     expect(key).toBe('sb_publishable_example');
     expect(options.cookies.getAll()).toEqual([
