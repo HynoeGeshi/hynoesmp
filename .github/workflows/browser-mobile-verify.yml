@@ -6,16 +6,26 @@ on:
       - main
       - hynoe-outpost-overhaul-2026-10-05
     paths:
-      - '*.html'
+      - 'index.html'
+      - 'watch.html'
       - 'assets/**'
+      - 'privacy.html'
+      - 'terms.html'
+      - 'data-deletion.html'
+      - 'community-rules.html'
       - 'tests/browser-mobile.mjs'
       - '.github/workflows/browser-mobile-verify.yml'
   pull_request:
     branches:
       - main
     paths:
-      - '*.html'
+      - 'index.html'
+      - 'watch.html'
       - 'assets/**'
+      - 'privacy.html'
+      - 'terms.html'
+      - 'data-deletion.html'
+      - 'community-rules.html'
       - 'tests/browser-mobile.mjs'
       - '.github/workflows/browser-mobile-verify.yml'
   workflow_dispatch:
