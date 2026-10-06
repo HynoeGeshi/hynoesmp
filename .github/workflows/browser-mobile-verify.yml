@@ -1,5 +1,6 @@
 name: Browser mobile verification
 
+# This browser gate intentionally runs against the committed branch head after generated repair commits.
 on:
   push:
     branches:
