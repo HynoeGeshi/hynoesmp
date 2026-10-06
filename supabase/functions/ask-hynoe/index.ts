@@ -1,7 +1,7 @@
 import "@supabase/functions-js/edge-runtime.d.ts";
 import { withSupabase } from "@supabase/server";
 import { isAllowedSiteOrigin } from "../_shared/site-chat-core.mjs";
-import { validateAskInput, answerAskHynoe } from "../_shared/ask-hynoe-engine.mjs";
+import { validateAskInput, answerAskHynoe, isLiveServerStatusQuestion } from "../_shared/ask-hynoe-engine.mjs";
 import { ASK_HYNOE_LIMITS, buildFeedbackRow } from "../_shared/ask-hynoe-core.mjs";
 
 const headers = (origin: string) => ({
@@ -14,6 +14,41 @@ const headers = (origin: string) => ({
 
 const fail = (origin: string, status: number, code: string, error: string) =>
   new Response(JSON.stringify({ error, code }), { status, headers: headers(origin) });
+
+let liveStatusCache: { at: number; data: { online: boolean; players: { online: number | null; max: number | null } } | null } = { at: 0, data: null };
+
+async function loadLiveServerStatus(question: string) {
+  if (!isLiveServerStatusQuestion(question)) return null;
+  const now = Date.now();
+  if (liveStatusCache.data && now - liveStatusCache.at < 15000) return liveStatusCache.data;
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 3500);
+  try {
+    const response = await fetch("https://api.mcstatus.io/v2/status/java/hynoesmp.com?query=false&timeout=3", {
+      method: "GET",
+      headers: { "Accept": "application/json" },
+      signal: controller.signal,
+    });
+    if (!response.ok) return null;
+    const data = await response.json();
+    const rawOnline = Number(data?.players?.online);
+    const rawMax = Number(data?.players?.max);
+    const status = {
+      online: data?.online === true,
+      players: {
+        online: Number.isFinite(rawOnline) && rawOnline >= 0 ? rawOnline : null,
+        max: Number.isFinite(rawMax) && rawMax > 0 ? rawMax : null,
+      },
+    };
+    liveStatusCache = { at: now, data: status };
+    return status;
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
 
 function configuredProvider() {
   const rawUrl = (Deno.env.get("HYNOE_HELP_PROVIDER_URL") ?? "").trim();
@@ -96,6 +131,7 @@ const userHandler = withSupabase({ auth: "user" }, async (req, ctx) => {
     return fail(origin, 503, "knowledge_unavailable", "Ask Hynoe knowledge is temporarily unavailable.");
   }
 
+  const liveServerStatus = await loadLiveServerStatus(checked.value.question);
   const result = await answerAskHynoe({
     question: checked.value.question,
     history: checked.value.history,
@@ -103,6 +139,7 @@ const userHandler = withSupabase({ auth: "user" }, async (req, ctx) => {
     chunks: knowledge.index_json.chunks,
     provider: configuredProvider(),
     providerTimeoutMs: 7000,
+    liveServerStatus,
   });
 
   const latency = Math.min(120000, Math.max(0, Date.now() - started));
@@ -118,10 +155,11 @@ const userHandler = withSupabase({ auth: "user" }, async (req, ctx) => {
     pagePath: checked.value.page_path,
     unanswered,
   });
+  const metricMode = result.mode === "model" ? "model" : "retrieval";
 
   const [metricWrite, feedbackWrite] = await Promise.all([
     admin.from("site_help_request_metrics").update({
-      mode: result.mode,
+      mode: metricMode,
       confidence: result.confidence_label,
       source_count: result.sources.length,
       latency_ms: latency,
