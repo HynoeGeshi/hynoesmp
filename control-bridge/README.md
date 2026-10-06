@@ -1,40 +1,52 @@
 # Hynoe Control Bridge
 
-Private MCP bridge that exposes a tightly scoped set of Bloom.host Minecraft and Discord bot tools to ChatGPT.
+Private, owner-authorized MCP bridge for Hynoe SMP on Bloom.host and the Hynoe Discord community.
 
 ## What it exposes
 
 ### Bloom.host
 - Server state and resource usage
-- Recent console replay (bounded)
+- Bounded recent console replay
 - Guarded Minecraft console commands
 - Start / stop / restart power controls
 - Approved configuration-file listing, reading, and writing
 - Backup metadata listing
 
 ### Discord
-- Approved channel listing
-- Bounded recent-message reads and search
-- Bot message / announcement sending
-- Deletion of bot-authored messages only
+- Guild-wide category/channel inventory and bounded recent-message search
+- Roles, permission-overwrite, onboarding, and webhook inspection
+- Aggregate channel-activity summaries without member profiling
+- Routine message and announcement posting
+- Reversible channel/category creation, rename/move/reorder, and topic changes
+- Low-risk role creation/update/reorder
+- Channel-permission updates with runtime detection of access broadening
+- Confirmation-gated moderation and destructive operations
 
-The bridge intentionally does **not** expose server deletion, backup deletion, billing/account management, arbitrary filesystem deletion, Discord DMs, member moderation, role management, or user-account automation.
+The bridge does **not** automate a normal Discord user account, use a self-bot, expose Discord DMs, transfer guild ownership, manage Discord billing, delete Bloom servers/backups, or provide arbitrary filesystem deletion.
 
-## Security model
+## Discord safety model
 
-- Bloom and Discord credentials are server-only environment variables.
-- Bloom access is restricted to one configured server identifier.
-- Discord access is restricted to an explicit channel allowlist.
-- File access is restricted to approved config/datapack/plugin text paths and rejects traversal/double-encoding.
-- Console commands block server power commands and shell-like payloads; power changes use a separate typed tool.
-- Discord mass mentions are disabled unless explicitly requested.
-- OAuth JWTs are verified against Supabase JWKS and restricted to one configured Supabase user ID.
-- Provider errors and audit logs redact Bloom and Discord credentials.
-- MCP annotations mark read-only vs write vs destructive actions so clients can apply review controls.
+Routine reversible organization changes may run after the owner authorizes the bridge. The following require explicit confirmation before the provider call can occur:
+
+- kick, ban, unban, or timeout
+- destructive channel/category deletion
+- destructive role deletion
+- bulk deletion of member-authored messages
+- mass member-role changes
+- permission changes that materially broaden access
+- webhook/integration removal
+
+The bridge also:
+
+- blocks Discord mass mentions by default
+- keeps message/activity analysis bounded
+- logs management metadata without storing message bodies, passwords, auth headers, tokens, or provider secrets
+- does not automatically retry failed Discord writes
+- relies on Discord's role hierarchy and API permission enforcement instead of bypassing it
 
 ## Environment variables
 
-Copy `.env.example` and configure these only in the deployment secret store:
+Store real values only in the Render environment-variable store. Never commit credentials.
 
 ```text
 BLOOM_API_KEY=
@@ -42,52 +54,61 @@ BLOOM_SERVER_ID=
 BLOOM_PANEL_URL=https://mc.bloom.host
 DISCORD_BOT_TOKEN=
 DISCORD_GUILD_ID=
-DISCORD_ALLOWED_CHANNEL_IDS=123,456
+DISCORD_GUILD_MANAGEMENT_ENABLED=false
+DISCORD_ALLOWED_CHANNEL_IDS=
 SUPABASE_URL=https://YOUR_PROJECT.supabase.co
 SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
 ALLOWED_SUPABASE_USER_ID=
-PUBLIC_BASE_URL=https://YOUR_DEPLOYMENT_DOMAIN
+PUBLIC_BASE_URL=https://YOUR_RENDER_SERVICE.onrender.com
 AUDIT_LOG_ENABLED=true
 ```
 
-Never commit real values.
+Set `DISCORD_GUILD_MANAGEMENT_ENABLED=true` on Render for the approved guild-wide Hynoe Discord management mode. In that mode, the configured guild is the boundary and `DISCORD_ALLOWED_CHANNEL_IDS` is optional. Leave guild management disabled when using the legacy channel-allowlist mode; then at least one channel ID is required.
 
 ## Bloom setup
 
 1. Sign in to Bloom's panel at `mc.bloom.host`.
 2. Open **Account API** and create an API key for the account that can access Hynoe SMP.
-3. Store it as `BLOOM_API_KEY` in Vercel; do not paste it into ChatGPT, Discord, or GitHub.
-4. Set `BLOOM_SERVER_ID` to the Hynoe SMP server identifier shown by the Pterodactyl/Bloom panel.
+3. Store it directly in Render as `BLOOM_API_KEY`; never paste it into ChatGPT, Discord, or GitHub.
+4. Set `BLOOM_SERVER_ID` to the Hynoe SMP server identifier shown by the Bloom/Pterodactyl panel.
 
-The bridge defaults to `https://mc.bloom.host` and rejects a different Bloom hostname.
+The bridge locks `BLOOM_PANEL_URL` to `https://mc.bloom.host`.
 
-## Discord setup
+## Discord bot setup
 
 Create a dedicated Discord application/bot. Do **not** use a normal user token or self-bot.
 
-Recommended guild permissions are limited to the selected channels:
+Grant only the granular permissions needed by the approved management scope:
+
 - View Channels
 - Read Message History
 - Send Messages
-- Embed Links if desired
+- Embed Links
+- Manage Channels
+- Manage Roles
+- Manage Messages
+- View Audit Log
+- Manage Webhooks only if approved integrations need it
+- Manage Guild only if a supported onboarding/server-setting operation requires it
 
-Enable the **Message Content** privileged intent because this bridge reads message bodies. Administrator is not needed.
+Do **not** grant `Administrator` by default. Put the Hynoe Control bot role above only the roles it must manage and below owner/critical roles.
 
-Store the bot token as `DISCORD_BOT_TOKEN`, the guild ID as `DISCORD_GUILD_ID`, and comma-separated approved channel IDs as `DISCORD_ALLOWED_CHANNEL_IDS`.
+Enable the **Message Content** privileged intent because bounded message reading/search and activity analysis use message bodies. Keep Presence and Guild Members privileged intents disabled unless a later approved feature specifically requires them.
 
-## Supabase OAuth setup
+Store the bot token as `DISCORD_BOT_TOKEN` and the Hynoe guild ID as `DISCORD_GUILD_ID` in Render.
 
-The bridge uses Supabase's OAuth 2.1 server as the authorization server.
+## Supabase owner authorization
 
-1. Use a dedicated Supabase project for this bridge, or intentionally configure an existing project after checking its other auth consumers.
-2. Enable Supabase OAuth 2.1 Server.
-3. Enable the client-registration mode required by your MCP/ChatGPT connection.
-4. Configure the authorization/consent UI URL to:
-   `https://YOUR_DEPLOYMENT_DOMAIN/oauth/consent`
-5. Sign into the bridge owner account and set its Supabase user UUID as `ALLOWED_SUPABASE_USER_ID`.
-6. Put the project URL and publishable key into `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY`.
+The bridge uses Supabase OAuth 2.1 and accepts MCP access only from the configured owner account.
 
-Supabase currently supports standard scopes such as `openid` and `email`; the bridge uses those and enforces action risk internally with allowlists and MCP annotations.
+1. Enable Supabase OAuth 2.1 Server for the bridge project.
+2. Enable the client-registration mode required by the ChatGPT MCP connection.
+3. Configure the consent UI as `https://YOUR_RENDER_SERVICE.onrender.com/oauth/consent`.
+4. Create/sign in to the intended owner account.
+5. Store that account's Supabase UUID in Render as `ALLOWED_SUPABASE_USER_ID`.
+6. Store `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` in Render.
+
+The bridge verifies Supabase JWT signatures/issuer and requires the exact configured owner subject.
 
 ## Endpoints
 
@@ -97,7 +118,7 @@ Supabase currently supports standard scopes such as `openid` and `email`; the br
 - Owner login: `/login?authorization_id=...`
 - Health: `/health`
 
-## Development
+## Development and verification
 
 ```bash
 npm ci
@@ -106,17 +127,17 @@ npm run typecheck
 npm run build
 ```
 
-For local builds, all required environment variables must be present because MCP and auth configuration are validated on startup.
+The Render service uses the same test → typecheck → production-build gate before deployment.
 
-## Connecting ChatGPT
+Recommended live verification order:
 
-Once the production deployment and Supabase OAuth server are configured, add the deployed `/api/mcp` URL through the ChatGPT custom MCP/plugin connection surface available to the account. Complete the one-time owner login and explicit consent screen when prompted.
-
-Test in this order:
 1. `hynoe_status`
-2. `bloom_server_status`
-3. `discord_list_channels`
-4. `discord_recent_messages` in a test channel
-5. `discord_send_message` to a test channel
-6. `bloom_send_command` with `list`
-7. Verify stop/restart and config writes receive the expected important-action review.
+2. `discord_guild_overview`
+3. `discord_list_roles`
+4. `discord_list_webhooks`
+5. `discord_activity_summary`
+6. one reversible low-risk Discord channel update/create operation
+7. verify a high-impact operation cannot execute without explicit confirmation
+8. Bloom status/console verification
+
+Do not begin a live Discord overhaul by deleting the old structure. Inventory first, preserve useful channel history by renaming/moving where practical, validate permissions, and only then request confirmation for any destructive cleanup.
