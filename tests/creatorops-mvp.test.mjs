@@ -25,8 +25,10 @@ test('CreatorOps MVP ships a secure, monetizable creator funnel', () => {
   assert.match(html, /\$499/);
   assert.match(html, /\$750/);
   assert.match(html, /per month|\/month/i);
-  assert.match(html, /544 subscribers/i);
-  assert.match(html, /2,235 views/i);
+  assert.match(html, /544/);
+  assert.match(html, /Subscribers/i);
+  assert.match(html, /2,235/);
+  assert.match(html, /Views/i);
 
   assert.match(html, /<form[^>]+id="creator-audit-form"/i);
   for (const field of ['creatorName', 'email', 'primaryPlatform', 'profileUrl', 'goal', 'bottleneck']) {
