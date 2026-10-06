@@ -7,15 +7,13 @@ const root = process.cwd();
 const pagePath = path.join(root, 'creatorops', 'index.html');
 const cssPath = path.join(root, 'creatorops', 'creatorops.css');
 const jsPath = path.join(root, 'creatorops', 'creatorops.js');
+const privacyPath = path.join(root, 'creatorops', 'privacy.html');
+const termsPath = path.join(root, 'creatorops', 'terms.html');
 
-function read(file) {
-  return fs.readFileSync(file, 'utf8');
-}
+function read(file) { return fs.readFileSync(file, 'utf8'); }
 
 test('CreatorOps MVP ships a secure, monetizable creator funnel', () => {
-  assert.ok(fs.existsSync(pagePath), 'creatorops/index.html must exist');
-  assert.ok(fs.existsSync(cssPath), 'creatorops/creatorops.css must exist');
-  assert.ok(fs.existsSync(jsPath), 'creatorops/creatorops.js must exist');
+  for (const file of [pagePath, cssPath, jsPath, privacyPath, termsPath]) assert.ok(fs.existsSync(file), `${file} must exist`);
 
   const html = read(pagePath);
   const css = read(cssPath);
@@ -44,7 +42,12 @@ test('CreatorOps MVP ships a secure, monetizable creator funnel', () => {
   assert.match(html, /<meta[^>]+name="viewport"/i);
   assert.match(css, /@media\s*\(/i);
 
-  assert.match(js, /localStorage/i);
-  assert.match(js, /mailto:|intakeEndpoint|INTAKE_ENDPOINT/i);
+  assert.match(js, /sessionStorage/i);
+  assert.doesNotMatch(js, /localStorage/i);
+  assert.match(js, /name = 'company'|name='company'|name="company"/i);
+  assert.match(js, /\/api\/intake/i);
+  assert.match(js, /stripe\.com\/test_/i);
+  assert.match(js, /privacy\.html/i);
+  assert.match(js, /terms\.html/i);
   assert.match(js, /application summary|copy/i);
 });
