@@ -1,4 +1,5 @@
 import type { HynoePage } from '@/domain/pages/types';
+import { SaveFollowControls } from '@/components/retention/save-follow-controls';
 import { ModuleRenderer } from './module-renderer';
 import { PageActions } from './page-actions';
 import { PageHeader } from './page-header';
@@ -33,6 +34,7 @@ export function PageShell({ page }: { page: HynoePage }) {
         {page.tags.slice(0, 3).map((tag) => <span className={styles.metaPill} key={tag}>{tag}</span>)}
       </div>
       <PageActions canonicalUrl={page.canonicalUrl} />
+      <SaveFollowControls slug={page.slug} />
     </section>
     {page.modules.length > 0 ? (
       <section className={`module-stack ${styles.modules}`}>
