@@ -45,6 +45,8 @@ export function createCreatorOpsServer(options={}){
   }
   if(req.method!=='GET'&&req.method!=='HEAD'){send(res,405,'Method not allowed','text/plain; charset=utf-8',{Allow:'GET, HEAD'});return}
   if(path==='/'||path==='/creatorops'||path==='/creatorops/'||path==='/index.html'){await sendFile(res,'index.html');return}
+  if(path==='/creatorops.css'){await sendFile(res,'creatorops.css');return}
+  if(path==='/creatorops.js'){await sendFile(res,'creatorops.js');return}
   if(path.startsWith('/creatorops/')){const asset=safeAssetPath(path);if(!asset){send(res,400,'Bad request');return}await sendFile(res,asset);return}
   send(res,404,'Not found')
  })
