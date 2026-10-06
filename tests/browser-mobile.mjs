@@ -3,6 +3,11 @@ import {mkdir} from 'node:fs/promises';
 import {chromium} from 'playwright';
 
 const base='http://127.0.0.1:4173';
+const leaderboardOrigin='https://hynoe-global-leaderboard.rellyoukno.chatgpt.site';
+const mockBoard={players:[
+  {playerId:'11111111-1111-4111-8111-111111111111',callsign:'ALPHA',score:1200,depth:55,legacy:1,rank:1},
+  {playerId:'22222222-2222-4222-8222-222222222222',callsign:'BRAVO',score:800,depth:34,legacy:0,rank:2},
+],me:null,total:2,generatedAt:Date.now()};
 const phoneViewports=[
   {width:320,height:800},
   {width:360,height:800},
@@ -21,6 +26,17 @@ function captureErrors(page,label){
   page.on('response',response=>{if(response.status()>=400)errors.push(`${label} HTTP ${response.status()}: ${response.url()}`);});
   page.on('console',msg=>{if(msg.type()==='error'&&!/Failed to load resource/i.test(msg.text()))errors.push(`${label} console: ${msg.text()}`);});
   return errors;
+}
+
+async function mockLeaderboard(page){
+  const calls={reads:0,posts:0};
+  await page.route(`${leaderboardOrigin}/**`,async route=>{
+    const request=route.request(),url=new URL(request.url());
+    if(url.pathname==='/v1/leaderboard')calls.reads++;
+    if(url.pathname==='/v1/score')calls.posts++;
+    await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(mockBoard)});
+  });
+  return calls;
 }
 
 async function assertNoHorizontalOverflow(page,label){
@@ -59,11 +75,22 @@ for(const viewport of [...phoneViewports,...extraViewports]){
   const isMobile=viewport.width<900;
   const context=await browser.newContext({viewport,hasTouch:isMobile,isMobile});
   const page=await context.newPage();
+  const leaderboardCalls=await mockLeaderboard(page);
   const label=`watch ${viewport.width}x${viewport.height}`;
   const errors=captureErrors(page,label);
   await page.goto(`${base}/watch.html`,{waitUntil:'domcontentloaded'});
   await page.waitForSelector('#vein-11');
+  await page.waitForFunction(()=>document.querySelector('#leaderboard-live')?.textContent==='LIVE · 2 PLAYERS');
   await dismissFirstRunGuide(page,label);
+  const optIn=page.locator('#leader-opt-in');
+  assert.equal(await optIn.count(),1,`${label}: leaderboard publish opt-in is missing from the DOM`);
+  await page.locator('#tab-leaderboard').click();
+  await page.waitForTimeout(50);
+  assert.ok(await optIn.isVisible(),`${label}: leaderboard publish opt-in is not visible when Leaderboard is open`);
+  assert.equal(await optIn.isChecked(),false,`${label}: leaderboard publishing must default off`);
+  assert.equal(await page.locator('#leader-list article').count(),2,`${label}: global leaderboard rows did not render`);
+  assert.ok(leaderboardCalls.reads>=1,`${label}: public leaderboard was not loaded`);
+  assert.equal(leaderboardCalls.posts,0,`${label}: fresh player score was published without opt-in`);
   await assertNoHorizontalOverflow(page,label);
 
   const cols=await gridColumns(page);
@@ -72,6 +99,12 @@ for(const viewport of [...phoneViewports,...extraViewports]){
 
   const minVeinHeight=await page.locator('#vein-0').evaluate(el=>el.getBoundingClientRect().height);
   assert.ok(minVeinHeight>=88,`${label}: vein target only ${minVeinHeight}px tall`);
+  const miningArtwork=await page.locator('#vein-0 .ore-crystal svg').evaluate(el=>{const box=el.getBoundingClientRect(),style=getComputedStyle(el),face=el.querySelector('.gem-face');return {width:box.width,height:box.height,display:style.display,visibility:style.visibility,opacity:Number(style.opacity),fill:face?getComputedStyle(face).fill:''};});
+  assert.ok(miningArtwork.width>=40&&miningArtwork.height>=30,`${label}: mining artwork has no rendered geometry (${miningArtwork.width}x${miningArtwork.height})`);
+  assert.notEqual(miningArtwork.display,'none',`${label}: mining artwork is display:none`);
+  assert.notEqual(miningArtwork.visibility,'hidden',`${label}: mining artwork is hidden`);
+  assert.ok(miningArtwork.opacity>0,`${label}: mining artwork is transparent`);
+  assert.ok(miningArtwork.fill&&miningArtwork.fill!=='none',`${label}: mining artwork gem face has no fill`);
 
   const tabs=page.locator('.game .tabs');
   assert.ok(await tabs.isVisible(),`${label}: game tabs are not visible`);
@@ -95,6 +128,7 @@ for(const viewport of [...phoneViewports,...extraViewports]){
     assert.equal(afterKeyboard,afterTouch-1,`${label}: keyboard activation must still mine exactly once`);
   }
 
+  assert.equal(leaderboardCalls.posts,0,`${label}: gameplay published a score while opt-in remained off`);
   if(viewport.width===390||viewport.width===1024){
     await page.screenshot({path:`test-artifacts/watch-${viewport.width}.png`,fullPage:true});
   }
@@ -138,4 +172,4 @@ for(const pageName of ['privacy.html','terms.html','data-deletion.html','communi
 }
 
 await browser.close();
-console.log('Browser verification passed for mobile mining, onboarding, homepage, legal pages, touch input, keyboard input, and overflow.');
+console.log('Browser verification passed for mobile mining artwork, live leaderboard reads, opt-in score publishing, onboarding, homepage, legal pages, touch input, keyboard input, and overflow.');
