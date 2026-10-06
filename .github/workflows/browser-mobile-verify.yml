@@ -6,32 +6,25 @@ on:
       - main
       - hynoe-outpost-overhaul-2026-10-05
       - fix/mobile-first-load-blocker-20261006
+      - feature/hynoe-community-chat-help
     paths:
-      - 'index.html'
-      - 'watch.html'
+      - '*.html'
       - 'assets/**'
-      - 'privacy.html'
-      - 'terms.html'
-      - 'data-deletion.html'
-      - 'community-rules.html'
-      - 'tests/browser-mobile.mjs'
-      - 'tests/browser-first-load.mjs'
-      - 'tests/browser-restored-run.mjs'
+      - 'data/**'
+      - 'relay/**'
+      - 'scripts/**'
+      - 'tests/**'
       - '.github/workflows/browser-mobile-verify.yml'
   pull_request:
     branches:
       - main
     paths:
-      - 'index.html'
-      - 'watch.html'
+      - '*.html'
       - 'assets/**'
-      - 'privacy.html'
-      - 'terms.html'
-      - 'data-deletion.html'
-      - 'community-rules.html'
-      - 'tests/browser-mobile.mjs'
-      - 'tests/browser-first-load.mjs'
-      - 'tests/browser-restored-run.mjs'
+      - 'data/**'
+      - 'relay/**'
+      - 'scripts/**'
+      - 'tests/**'
       - '.github/workflows/browser-mobile-verify.yml'
   workflow_dispatch:
 
