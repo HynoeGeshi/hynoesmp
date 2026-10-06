@@ -47,10 +47,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Run Node regression suite
+        run: node --test tests/*.test.mjs
       - name: Install pinned browser test runtime
         run: |
           npm install --no-save --no-package-lock playwright@1.63.0
-          npx playwright install --with-deps chromium
+          npx playwright install --with-deps chromium webkit
       - name: Start static site
         run: |
           python3 -m http.server 4173 --bind 127.0.0.1 > /tmp/hynoe-http.log 2>&1 &
