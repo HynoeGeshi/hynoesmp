@@ -45,6 +45,13 @@ test('Global Chat sends on Enter while Shift+Enter keeps a line break', async ()
   assert.match(source, /requestSubmit\(\)/);
 });
 
+test('Ask Hynoe sends on Enter while Shift+Enter keeps a line break', async () => {
+  const source = await text('assets/site-social-panel.mjs');
+  assert.match(source, /askInput\.addEventListener\(['"]keydown['"]/);
+  assert.match(source, /askForm\.requestSubmit\(\)/);
+  assert.match(source, /askInput\.addEventListener\(['"]keydown['"][\s\S]*event\.shiftKey/);
+});
+
 test('social panel CSS supports mobile bottom sheet, visible composer, and reduced motion', async () => {
   const css = await text('assets/site-social.css');
   assert.match(css, /position\s*:\s*fixed/i);
