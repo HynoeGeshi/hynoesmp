@@ -5,6 +5,7 @@ import type { DiscordChannelPatch, DiscordClient, DiscordMessage, DiscordRolePat
 import { assertAllowedChannel, assertDiscordActionAllowed } from '../policy/discord-policy';
 
 const MAX_ACTIVITY_CHANNELS = 25;
+const MAX_MASS_ROLE_MEMBERS = 100;
 
 function rejectMassMention(content: string, allowMassMention: boolean) {
   if (!allowMassMention && /@(everyone|here)\b/i.test(content)) throw new Error('Mass mentions require explicit approval');
@@ -27,30 +28,17 @@ export function createDiscordTools(config: AppConfig, client: DiscordClient = cr
   return {
     async discord_list_channels() {
       const channels = await client.listGuildChannels();
-      return {
-        channels: config.discordGuildManagementEnabled === true
-          ? channels
-          : channels.filter((channel) => config.discordAllowedChannelIds.includes(channel.id)),
-      };
+      return { channels: config.discordGuildManagementEnabled === true ? channels : channels.filter((channel) => config.discordAllowedChannelIds.includes(channel.id)) };
     },
     async discord_guild_overview() {
-      const [guild, channels, roles, onboarding] = await Promise.all([
-        client.getGuild(), client.listGuildChannels(), client.listGuildRoles(), client.getGuildOnboarding(),
-      ]);
-      return {
-        guild,
-        categories: channels.filter((channel) => channel.type === 4),
-        channels: channels.filter((channel) => channel.type !== 4),
-        roles,
-        onboarding,
-      };
+      const [guild, channels, roles, onboarding] = await Promise.all([client.getGuild(), client.listGuildChannels(), client.listGuildRoles(), client.getGuildOnboarding()]);
+      return { guild, categories: channels.filter((channel) => channel.type === 4), channels: channels.filter((channel) => channel.type !== 4), roles, onboarding };
     },
     async discord_list_roles() { return { roles: await client.listGuildRoles() }; },
     async discord_list_webhooks() { return { webhooks: await client.listGuildWebhooks() }; },
     async discord_channel_permissions({ channelId }: { channelId: string }) {
       assertAllowedChannel(channelId, config);
-      const channels = await client.listGuildChannels();
-      const channel = channels.find((candidate) => candidate.id === channelId);
+      const channel = (await client.listGuildChannels()).find((candidate) => candidate.id === channelId);
       if (!channel) throw new Error('Discord channel was not found in the configured guild');
       return { channelId, permissionOverwrites: channel.permission_overwrites ?? [] };
     },
@@ -147,8 +135,7 @@ export function createDiscordTools(config: AppConfig, client: DiscordClient = cr
     },
     async discord_update_channel_permission(input: { channelId: string; overwriteId: string; type: 0 | 1; allow: string; deny: string; confirmed?: boolean; reason?: string }) {
       assertAllowedChannel(input.channelId, config);
-      const channels = await client.listGuildChannels();
-      const channel = channels.find((candidate) => candidate.id === input.channelId);
+      const channel = (await client.listGuildChannels()).find((candidate) => candidate.id === input.channelId);
       if (!channel) throw new Error('Discord channel was not found in the configured guild');
       const current = channel.permission_overwrites?.find((overwrite) => overwrite.id === input.overwriteId);
       const isBroader = !current || broadensPermissions(current.allow, current.deny, input.allow, input.deny);
@@ -166,6 +153,51 @@ export function createDiscordTools(config: AppConfig, client: DiscordClient = cr
       assertDiscordActionAllowed('delete_role', { confirmed: input.confirmed });
       await client.deleteGuildRole(input.roleId, input.reason ?? 'Confirmed Hynoe Control role deletion');
       return { ok: true, roleId: input.roleId };
+    },
+
+    async discord_timeout_member(input: { userId: string; until: string | null; confirmed?: boolean; reason?: string }) {
+      assertDiscordActionAllowed('timeout_member', { confirmed: input.confirmed });
+      await client.timeoutGuildMember(input.userId, input.until, input.reason ?? 'Confirmed Hynoe Control timeout');
+      return { ok: true, userId: input.userId, until: input.until };
+    },
+    async discord_kick_member(input: { userId: string; confirmed?: boolean; reason?: string }) {
+      assertDiscordActionAllowed('kick_member', { confirmed: input.confirmed });
+      await client.kickGuildMember(input.userId, input.reason ?? 'Confirmed Hynoe Control kick');
+      return { ok: true, userId: input.userId };
+    },
+    async discord_ban_member(input: { userId: string; confirmed?: boolean; reason?: string }) {
+      assertDiscordActionAllowed('ban_member', { confirmed: input.confirmed });
+      await client.banGuildMember(input.userId, input.reason ?? 'Confirmed Hynoe Control ban');
+      return { ok: true, userId: input.userId };
+    },
+    async discord_unban_member(input: { userId: string; confirmed?: boolean; reason?: string }) {
+      assertDiscordActionAllowed('unban_member', { confirmed: input.confirmed });
+      await client.unbanGuildMember(input.userId, input.reason ?? 'Confirmed Hynoe Control unban');
+      return { ok: true, userId: input.userId };
+    },
+    async discord_bulk_delete_member_messages(input: { channelId: string; messageIds: string[]; confirmed?: boolean; reason?: string }) {
+      assertDiscordActionAllowed('bulk_delete_member_messages', { confirmed: input.confirmed });
+      assertAllowedChannel(input.channelId, config);
+      const messageIds = [...new Set(input.messageIds.filter(Boolean))];
+      if (messageIds.length < 2 || messageIds.length > 100) throw new Error('Discord bulk deletion requires 2-100 message IDs');
+      await client.bulkDeleteMessages(input.channelId, messageIds, input.reason ?? 'Confirmed Hynoe Control member-message deletion');
+      return { ok: true, channelId: input.channelId, count: messageIds.length };
+    },
+    async discord_mass_member_role_change(input: { userIds: string[]; roleId: string; operation: 'add' | 'remove'; confirmed?: boolean; reason?: string }) {
+      assertDiscordActionAllowed('mass_member_role_change', { confirmed: input.confirmed });
+      const userIds = [...new Set(input.userIds.filter(Boolean))];
+      if (userIds.length < 1 || userIds.length > MAX_MASS_ROLE_MEMBERS) throw new Error('Mass role changes are limited to 1-100 members');
+      const reason = input.reason ?? 'Confirmed Hynoe Control mass role change';
+      for (const userId of userIds) {
+        if (input.operation === 'add') await client.addGuildMemberRole(userId, input.roleId, reason);
+        else await client.removeGuildMemberRole(userId, input.roleId, reason);
+      }
+      return { ok: true, roleId: input.roleId, operation: input.operation, count: userIds.length };
+    },
+    async discord_remove_webhook(input: { webhookId: string; confirmed?: boolean; reason?: string }) {
+      assertDiscordActionAllowed('remove_webhook', { confirmed: input.confirmed });
+      await client.deleteWebhook(input.webhookId, input.reason ?? 'Confirmed Hynoe Control webhook removal');
+      return { ok: true, webhookId: input.webhookId };
     },
   };
 }
