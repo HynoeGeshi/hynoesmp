@@ -44,6 +44,9 @@ test('CreatorOps MVP ships a secure, monetizable creator funnel', () => {
   assert.match(html, /<meta[^>]+name="viewport"/i);
   assert.match(css, /@media\s*\(/i);
 
+  assert.match(html, /href="\/creatorops\/creatorops\.css"/i, 'stylesheet path must work when index is served from /');
+  assert.match(html, /src="\/creatorops\/creatorops\.js"/i, 'script path must work when index is served from /');
+
   assert.match(js, /sessionStorage/i);
   assert.doesNotMatch(js, /localStorage/i);
   assert.match(js, /name = 'company'|name='company'|name="company"/i);
