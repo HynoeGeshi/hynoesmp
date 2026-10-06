@@ -60,6 +60,72 @@
     reveals.forEach((element) => revealObserver.observe(element));
   }
 
+  const metricNodes = {
+    views: document.querySelector('#metric-views'),
+    subscribers: document.querySelector('#metric-subscribers'),
+    watchHours: document.querySelector('#metric-watch-hours'),
+    likes: document.querySelector('#metric-likes'),
+    comments: document.querySelector('#metric-comments'),
+    shares: document.querySelector('#metric-shares'),
+    source: document.querySelector('#metric-source')
+  };
+
+  const integerFormatter = new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 });
+  const hourFormatter = new Intl.NumberFormat(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 1 });
+
+  function setMetric(node, value, formatter = integerFormatter) {
+    if (!node) return;
+    const number = Number(value);
+    node.textContent = Number.isFinite(number) ? formatter.format(number) : '—';
+  }
+
+  function metricDate(value) {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return 'date unavailable';
+    return date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+  }
+
+  function clearProofMetrics(message = 'Verified metrics temporarily unavailable') {
+    for (const node of [metricNodes.views, metricNodes.subscribers, metricNodes.watchHours, metricNodes.likes, metricNodes.comments, metricNodes.shares]) {
+      if (node) node.textContent = '—';
+    }
+    if (metricNodes.source) metricNodes.source.textContent = message;
+  }
+
+  async function hydrateProofMetrics() {
+    if (!metricNodes.source) return;
+    try {
+      const response = await fetch('/api/public/metrics/hynoe-youtube', { cache: 'no-store', credentials: 'same-origin' });
+      if (!response.ok) throw new Error('metrics_unavailable');
+      const payload = await response.json();
+      const metrics = payload.metrics || {};
+      setMetric(metricNodes.views, metrics.views_30d);
+      setMetric(metricNodes.subscribers, metrics.subscribers);
+      setMetric(metricNodes.likes, metrics.likes_30d);
+      setMetric(metricNodes.comments, metrics.comments_30d);
+      setMetric(metricNodes.shares, metrics.shares_30d);
+      if (metricNodes.watchHours) {
+        const hours = Number(metrics.watch_hours_30d);
+        metricNodes.watchHours.textContent = Number.isFinite(hours) ? `~${hourFormatter.format(hours)}h` : '—';
+      }
+
+      const asOf = metricDate(payload.asOf);
+      if (payload.freshness === 'stale_verified_snapshot') {
+        metricNodes.source.textContent = `Last verified snapshot · as of ${asOf}`;
+      } else if (payload.freshness === 'verified_snapshot') {
+        metricNodes.source.textContent = `Verified snapshot · as of ${asOf}`;
+      } else if (payload.freshness === 'fresh') {
+        metricNodes.source.textContent = `Fresh verified snapshot · as of ${asOf}`;
+      } else {
+        metricNodes.source.textContent = `Verified snapshot · as of ${asOf}`;
+      }
+    } catch (_) {
+      clearProofMetrics();
+    }
+  }
+
+  hydrateProofMetrics();
+
   const form = document.querySelector('#creator-audit-form');
   if (!form) return;
 
@@ -122,15 +188,29 @@
     const wrap = document.createElement('div');
     wrap.id = 'sandbox-checkout';
     wrap.className = 'security-note';
-    wrap.innerHTML = '<strong>Prototype payment ready.</strong><p>This checkout is Stripe sandbox only — it cannot create a live charge.</p>';
+    const strong = document.createElement('strong');
+    strong.textContent = 'Prototype payment ready.';
+    const copy = document.createElement('p');
+    copy.textContent = 'This checkout is Stripe sandbox only — it cannot create a charge with real money.';
     const link = document.createElement('a');
     link.className = 'button primary';
     link.href = url;
     link.target = '_blank';
     link.rel = 'noopener noreferrer';
     link.textContent = interest.includes('499') ? 'Open $499 sandbox checkout' : 'Open $750/mo sandbox checkout';
-    wrap.append(link);
+    wrap.append(strong, copy, link);
     panel.append(wrap);
+  }
+
+  function showAuditResult(url) {
+    document.querySelector('#audit-result-cta')?.remove();
+    if (typeof url !== 'string' || !url.startsWith('/creatorops/report/')) throw new Error('invalid_report_url');
+    const link = document.createElement('a');
+    link.id = 'audit-result-cta';
+    link.className = 'button primary wide';
+    link.href = url;
+    link.textContent = 'View my audit';
+    panel.prepend(link);
   }
 
   async function submitSecurely(data) {
@@ -154,8 +234,10 @@
     saveDraft();
     status.textContent = 'Submitting securely…';
     try {
-      await submitSecurely(data);
-      status.textContent = 'Application received securely. Your Creator Audit is now in the review queue.';
+      const result = await submitSecurely(data);
+      if (!result?.report?.url) throw new Error('report_unavailable');
+      showAuditResult(result.report.url);
+      status.textContent = 'Your Starter Creator Audit is ready.';
       sessionStorage.removeItem(DRAFT_KEY);
       showSandboxCheckout(data.interest);
     } catch (error) {
@@ -177,6 +259,8 @@
     honeypot.value = '';
     panel.hidden = true;
     summaryBox.value = '';
+    document.querySelector('#audit-result-cta')?.remove();
+    document.querySelector('#sandbox-checkout')?.remove();
     status.textContent = 'Draft cleared.';
   });
 
