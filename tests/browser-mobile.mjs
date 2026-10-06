@@ -28,6 +28,22 @@ async function assertNoHorizontalOverflow(page,label){
   assert.ok(dims.body<=dims.width+1,`${label}: body overflow ${dims.body} > ${dims.width}`);
 }
 
+async function dismissFirstRunGuide(page,label){
+  await page.waitForTimeout(550);
+  const guide=page.locator('#how-to-play');
+  const open=await guide.evaluate(el=>el.open);
+  if(!open)return;
+  const box=await guide.boundingBox();
+  const viewport=page.viewportSize();
+  assert.ok(box&&viewport,`${label}: onboarding guide has no measurable viewport box`);
+  assert.ok(box.x>=-1&&box.x+box.width<=viewport.width+1,`${label}: onboarding guide overflows horizontally`);
+  const close=guide.locator('.dialog-close');
+  assert.ok(await close.isVisible(),`${label}: onboarding close control is not visible`);
+  await close.click();
+  await page.waitForTimeout(50);
+  assert.equal(await guide.evaluate(el=>el.open),false,`${label}: onboarding guide did not close`);
+}
+
 async function gridColumns(page){
   return page.locator('#vein-grid').evaluate(el=>getComputedStyle(el).gridTemplateColumns.trim().split(/\s+/).filter(Boolean).length);
 }
@@ -46,7 +62,7 @@ for(const viewport of [...phoneViewports,...extraViewports]){
   const errors=captureErrors(page,label);
   await page.goto(`${base}/watch.html`,{waitUntil:'domcontentloaded'});
   await page.waitForSelector('#vein-11');
-  await page.waitForTimeout(250);
+  await dismissFirstRunGuide(page,label);
   await assertNoHorizontalOverflow(page,label);
 
   const cols=await gridColumns(page);
@@ -121,4 +137,4 @@ for(const pageName of ['privacy.html','terms.html','data-deletion.html','communi
 }
 
 await browser.close();
-console.log('Browser verification passed for mobile mining, homepage, legal pages, touch input, keyboard input, and overflow.');
+console.log('Browser verification passed for mobile mining, onboarding, homepage, legal pages, touch input, keyboard input, and overflow.');
