@@ -8,6 +8,10 @@ test('every public page loads the same Hynoe Community shell and release token',
   for(const page of pages){const html=read(page);assert.match(html,/assets\/community\.css\?v=20261006e/,page);assert.match(html,/assets\/community-shell\.mjs\?v=20261006e/,page);}
 });
 
+test('every public page has one valid community-aware CSP',()=>{
+  for(const page of pages){const html=read(page);const csp=html.match(/<meta\s+http-equiv="Content-Security-Policy"\s+content="([^"]+)"/i)?.[1];assert.ok(csp,`missing CSP in ${page}`);assert.match(csp,/default-src 'self'/,page);assert.match(csp,/script-src 'self' https:\/\/challenges\.cloudflare\.com/,page);assert.match(csp,/connect-src 'self'.*https:\/\/\*\.workers\.dev.*https:\/\/challenges\.cloudflare\.com/,page);assert.equal((csp.match(/script-src/g)||[]).length,1,`duplicate script-src in ${page}`);assert.equal((csp.match(/connect-src/g)||[]).length,1,`duplicate connect-src in ${page}`);assert.doesNotMatch(csp,/default-src\s*;/,page);}
+});
+
 test('watch page retires Minecraft server-chat copy',()=>{
   const html=read('watch.html');assert.doesNotMatch(html,/Server chat/i);assert.doesNotMatch(html,/SETUP PENDING/i);
 });
