@@ -7,12 +7,21 @@
   const summaryBox = document.querySelector('#application-summary');
   const copyButton = document.querySelector('#copy-summary');
   const clearButton = document.querySelector('#clear-draft');
-  const DRAFT_KEY = 'hynoe.creatorops.auditDraft.v2';
+  const DRAFT_KEY = 'hynoe.creatorops.auditDraft.v3';
   const intakeEndpoint = '/api/intake';
   const CHECKOUTS = {
     '$499 Creator System Build': 'https://buy.stripe.com/test_aFa28t4Vc0qS2A66I19fW00',
     '$750/month Founding CreatorOps': 'https://buy.stripe.com/test_8x26oJ3R8a1sgqWc2l9fW01'
   };
+
+  const honeypot = document.createElement('input');
+  honeypot.type = 'text';
+  honeypot.name = 'company';
+  honeypot.tabIndex = -1;
+  honeypot.autocomplete = 'off';
+  honeypot.setAttribute('aria-hidden', 'true');
+  honeypot.style.cssText = 'position:absolute!important;left:-10000px!important;width:1px!important;height:1px!important;opacity:0!important;pointer-events:none!important';
+  form.append(honeypot);
 
   const fields = ['creatorName', 'email', 'primaryPlatform', 'profileUrl', 'goal', 'bottleneck', 'revenue', 'interest'];
 
@@ -21,17 +30,17 @@
   }
 
   function saveDraft() {
-    localStorage.setItem(DRAFT_KEY, JSON.stringify(getData()));
+    sessionStorage.setItem(DRAFT_KEY, JSON.stringify(getData()));
   }
 
   function loadDraft() {
     try {
-      const saved = JSON.parse(localStorage.getItem(DRAFT_KEY) || '{}');
+      const saved = JSON.parse(sessionStorage.getItem(DRAFT_KEY) || '{}');
       fields.forEach((name) => {
         if (saved[name] && form.elements[name]) form.elements[name].value = saved[name];
       });
     } catch (_) {
-      localStorage.removeItem(DRAFT_KEY);
+      sessionStorage.removeItem(DRAFT_KEY);
     }
   }
 
@@ -67,7 +76,7 @@
     const response = await fetch(intakeEndpoint, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ ...data, company: '' })
+      body: JSON.stringify({ ...data, company: honeypot.value || '' })
     });
     const result = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(result.error || `Intake request failed (${response.status})`);
@@ -86,10 +95,10 @@
     try {
       await submitSecurely(data);
       status.textContent = 'Application received securely. Your Creator Audit is now in the review queue.';
-      localStorage.removeItem(DRAFT_KEY);
+      sessionStorage.removeItem(DRAFT_KEY);
       showSandboxCheckout(data.interest);
     } catch (error) {
-      status.textContent = 'Your draft is still saved locally. Secure intake is temporarily unavailable; copy the summary below.';
+      status.textContent = 'Your draft is still available in this tab. Secure intake is temporarily unavailable; copy the summary below.';
       console.error(error);
     }
   });
@@ -102,7 +111,19 @@
   });
 
   clearButton?.addEventListener('click', () => {
-    localStorage.removeItem(DRAFT_KEY); form.reset(); panel.hidden = true; summaryBox.value = ''; status.textContent = 'Draft cleared.';
+    sessionStorage.removeItem(DRAFT_KEY); form.reset(); honeypot.value = ''; panel.hidden = true; summaryBox.value = ''; status.textContent = 'Draft cleared.';
   });
+
+  const footer = document.querySelector('.site-footer');
+  if (footer) {
+    const legal = document.createElement('span');
+    const privacy = document.createElement('a');
+    privacy.href = '/creatorops/privacy.html'; privacy.textContent = 'Privacy'; privacy.className = 'legal-link';
+    const terms = document.createElement('a');
+    terms.href = '/creatorops/terms.html'; terms.textContent = 'Terms'; terms.className = 'legal-link';
+    legal.append(privacy, document.createTextNode(' · '), terms);
+    footer.append(legal);
+  }
+
   loadDraft();
 })();
