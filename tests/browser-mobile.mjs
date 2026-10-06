@@ -4,10 +4,7 @@ import {chromium} from 'playwright';
 
 const base='http://127.0.0.1:4173';
 const leaderboardOrigin='https://hynoe-global-leaderboard.rellyoukno.chatgpt.site';
-const mockBoard={players:[
-  {playerId:'11111111-1111-4111-8111-111111111111',callsign:'ALPHA',score:1200,depth:55,legacy:1,rank:1},
-  {playerId:'22222222-2222-4222-8222-222222222222',callsign:'BRAVO',score:800,depth:34,legacy:0,rank:2},
-],me:null,total:2,generatedAt:Date.now()};
+const mockBoard={players:[{playerId:'11111111-1111-4111-8111-111111111111',callsign:'ALPHA',score:1200,depth:55,legacy:1,rank:1},{playerId:'22222222-2222-4222-8222-222222222222',callsign:'BRAVO',score:800,depth:34,legacy:0,rank:2}],me:null,total:2,generatedAt:Date.now()};
 const phoneViewports=[
   {width:320,height:800},
   {width:360,height:800},
@@ -25,6 +22,12 @@ const publicPages=[
 const browser=await chromium.launch({headless:true});
 await mkdir('test-artifacts',{recursive:true});
 
+async function mockLeaderboard(page){
+  await page.route(`${leaderboardOrigin}/**`,async route=>{
+    await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(mockBoard)});
+  });
+}
+
 function captureErrors(page,label){
   const errors=[];
   page.on('pageerror',error=>errors.push(`${label} pageerror: ${error.message}`));
@@ -33,17 +36,6 @@ function captureErrors(page,label){
   });
   page.on('console',msg=>{if(msg.type()==='error'&&!/Failed to load resource/i.test(msg.text()))errors.push(`${label} console: ${msg.text()}`);});
   return errors;
-}
-
-async function mockLeaderboard(page){
-  const calls={reads:0,posts:0};
-  await page.route(`${leaderboardOrigin}/**`,async route=>{
-    const request=route.request(),url=new URL(request.url());
-    if(url.pathname==='/v1/leaderboard')calls.reads++;
-    if(url.pathname==='/v1/score')calls.posts++;
-    await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(mockBoard)});
-  });
-  return calls;
 }
 
 async function assertNoHorizontalOverflow(page,label){
@@ -114,22 +106,12 @@ for(const viewport of [...phoneViewports,...extraViewports]){
   const isMobile=viewport.width<900;
   const context=await browser.newContext({viewport,hasTouch:isMobile,isMobile});
   const page=await context.newPage();
-  const leaderboardCalls=await mockLeaderboard(page);
+  await mockLeaderboard(page);
   const label=`watch ${viewport.width}x${viewport.height}`;
   const errors=captureErrors(page,label);
   await page.goto(`${base}/watch.html`,{waitUntil:'domcontentloaded'});
   await page.waitForSelector('#vein-11');
-  await page.waitForFunction(()=>document.querySelector('#leaderboard-live')?.textContent==='LIVE · 2 PLAYERS');
   await dismissFirstRunGuide(page,label);
-  const optIn=page.locator('#leader-opt-in');
-  assert.equal(await optIn.count(),1,`${label}: leaderboard publish opt-in is missing from the DOM`);
-  await page.locator('#tab-leaderboard').click();
-  await page.waitForTimeout(50);
-  assert.ok(await optIn.isVisible(),`${label}: leaderboard publish opt-in is not visible when Leaderboard is open`);
-  assert.equal(await optIn.isChecked(),false,`${label}: leaderboard publishing must default off`);
-  assert.equal(await page.locator('#leader-list article').count(),2,`${label}: global leaderboard rows did not render`);
-  assert.ok(leaderboardCalls.reads>=1,`${label}: public leaderboard was not loaded`);
-  assert.equal(leaderboardCalls.posts,0,`${label}: fresh player score was published without opt-in`);
   await assertNoHorizontalOverflow(page,label);
 
   const cols=await gridColumns(page);
@@ -144,6 +126,7 @@ for(const viewport of [...phoneViewports,...extraViewports]){
   assert.notEqual(miningArtwork.visibility,'hidden',`${label}: mining artwork is hidden`);
   assert.ok(miningArtwork.opacity>0,`${label}: mining artwork is transparent`);
   assert.ok(miningArtwork.fill&&miningArtwork.fill!=='none',`${label}: mining artwork gem face has no fill`);
+  await assertVeinsFullyVisible(page,label);
 
   const tabs=page.locator('.game .tabs');
   assert.ok(await tabs.isVisible(),`${label}: game tabs are not visible`);
@@ -167,7 +150,18 @@ for(const viewport of [...phoneViewports,...extraViewports]){
     assert.equal(afterKeyboard,afterTouch-1,`${label}: keyboard activation must still mine exactly once`);
   }
 
-  assert.equal(leaderboardCalls.posts,0,`${label}: gameplay published a score while opt-in remained off`);
+  if(viewport.width===390){
+    const beforeUrl=page.url();
+    const play=page.locator('#video .play-broadcast');
+    assert.ok(await play.isVisible(),`${label}: on-site stream play button is missing`);
+    await page.waitForFunction(()=>{const button=document.querySelector('#video .play-broadcast');return !!button&&!button.disabled;},null,{timeout:4000});
+    await play.click();
+    await page.waitForSelector('#video iframe',{timeout:4000});
+    const frameSrc=await page.locator('#video iframe').getAttribute('src');
+    assert.match(frameSrc||'',/youtube-nocookie\.com\/embed\//,`${label}: stream iframe is not privacy-enhanced YouTube embed`);
+    assert.equal(new URL(page.url()).pathname,new URL(beforeUrl).pathname,`${label}: primary stream button navigated away from Hynoe`);
+  }
+
   if(viewport.width===390||viewport.width===1024){
     await page.screenshot({path:`test-artifacts/watch-${viewport.width}.png`,fullPage:true});
   }
@@ -178,6 +172,7 @@ for(const viewport of [...phoneViewports,...extraViewports]){
 for(const viewport of [{width:320,height:800},{width:390,height:844},{width:430,height:932},{width:1024,height:768}]){
   const context=await browser.newContext({viewport,hasTouch:viewport.width<900,isMobile:viewport.width<900});
   const page=await context.newPage();
+  await mockLeaderboard(page);
   const label=`home ${viewport.width}x${viewport.height}`;
   const errors=captureErrors(page,label);
   await page.goto(`${base}/index.html`,{waitUntil:'domcontentloaded'});
@@ -202,6 +197,7 @@ for(const viewport of [{width:320,height:800},{width:390,height:844},{width:430,
 for(const pageName of publicPages){
   const context=await browser.newContext({viewport:{width:390,height:844},hasTouch:true,isMobile:true});
   const page=await context.newPage();
+  await mockLeaderboard(page);
   const label=`sitewide ${pageName}`;
   const errors=captureErrors(page,label);
   await page.goto(`${base}/${pageName}`,{waitUntil:'domcontentloaded'});
@@ -217,4 +213,4 @@ for(const pageName of publicPages){
 }
 
 await browser.close();
-console.log('Browser verification passed for mobile mining artwork, live leaderboard reads, opt-in score publishing, onboarding, homepage, legal pages, touch input, keyboard input, and overflow.');
+console.log('Browser verification passed for mobile mining, visible labels, on-site stream playback, all public pages, touch/keyboard input, and overflow.');

@@ -10,6 +10,3 @@ if(recoveryResult.recovered){
     }
   }catch{}
 }
-
-// Native button click/tap activation is intentionally left untouched.
-// The main game module owns mining input so touch, mouse and keyboard all share one path.
