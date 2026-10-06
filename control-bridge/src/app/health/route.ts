@@ -1,4 +1,4 @@
-import { loadConfig } from '../../config';
+import { diagnoseConfigEnv, loadConfig } from '../../config';
 import { defaultHealthProbes, runHealthChecks } from '../../health';
 
 export const dynamic = 'force-dynamic';
@@ -13,7 +13,7 @@ export async function GET() {
     });
   } catch {
     return Response.json(
-      { ok: false, checks: { configuration: 'error' } },
+      { ok: false, checks: { configuration: 'error' }, missingConfiguration: diagnoseConfigEnv().missing },
       { status: 503, headers: { 'cache-control': 'no-store' } },
     );
   }
