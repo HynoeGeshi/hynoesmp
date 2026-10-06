@@ -43,7 +43,7 @@ describe('Phase 2A Supabase migration', () => {
 
   it('does not grant anonymous users direct insert access to inquiries', () => {
     const sql = migrationSql();
-    expect(sql).not.toMatch(/create policy[^;]*inquiries[^;]*for insert[^;]*to anon/s);
+    expect(sql).not.toMatch(/create policy[^;]*inquiries[^;]*for insert[^;]*to anon/);
     expect(sql).not.toMatch(/grant insert on public\.inquiries to anon/);
   });
 });
