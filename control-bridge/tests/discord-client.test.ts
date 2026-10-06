@@ -42,7 +42,8 @@ describe('Discord client', () => {
     await client.listGuildRoles();
     await client.listGuildWebhooks();
     await client.getGuildOnboarding();
-    const urls = fetchMock.mock.calls.map(([url]) => String(url));
+    const calls = fetchMock.mock.calls as unknown as [string, RequestInit?][];
+    const urls = calls.map(([url]) => String(url));
     expect(urls[0]).toContain('/api/v10/guilds/guild-1');
     expect(urls[1]).toContain('/api/v10/guilds/guild-1/roles');
     expect(urls[2]).toContain('/api/v10/guilds/guild-1/webhooks');
@@ -109,7 +110,8 @@ describe('Discord client', () => {
     await client.removeGuildMemberRole('user-1', 'role-1', 'confirmed');
     await client.bulkDeleteMessages('chan-1', ['m1', 'm2'], 'confirmed');
     await client.deleteWebhook('webhook-1', 'confirmed');
-    const urls = fetchMock.mock.calls.map(([url]) => String(url));
+    const calls = fetchMock.mock.calls as unknown as [string, RequestInit?][];
+    const urls = calls.map(([url]) => String(url));
     expect(urls).toContainEqual(expect.stringContaining('/guilds/guild-1/members/user-1'));
     expect(urls).toContainEqual(expect.stringContaining('/guilds/guild-1/bans/user-1'));
     expect(urls).toContainEqual(expect.stringContaining('/guilds/guild-1/members/user-1/roles/role-1'));
