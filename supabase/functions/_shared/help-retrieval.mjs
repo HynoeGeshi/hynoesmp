@@ -1,5 +1,5 @@
 const STOP_WORDS = new Set([
-  'the','and','for','that','with','this','from','your','you','are','but','not','into','has','have','was','will','can','our','all','use','its','how','what','when','where','who','why','a','an','to','of','in','on','at','as','or','is','be','by','it','do','does','i','me','my'
+  'the','and','for','that','with','this','from','your','you','are','but','not','into','has','have','was','will','can','our','all','use','its','how','what','when','where','who','why','a','an','to','of','in','on','at','as','or','is','be','by','it','do','does','i','me','my','about','learn','work','players','current','see'
 ]);
 
 const INJECTION_PATTERNS = [
@@ -46,6 +46,38 @@ export function sanitizeKnowledgeChunk(chunk = {}) {
     status: ['confirmed','announced','planned','unknown'].includes(String(chunk.status)) ? String(chunk.status) : 'confirmed',
     tokens: Array.isArray(chunk.tokens) ? chunk.tokens.map(normalize).filter(Boolean).slice(0, 220) : [],
   };
+}
+
+
+const PRIVATE_QUERY_PATTERNS = [
+  /\bsecret\b/i,
+  /\bpassword\b/i,
+  /\bcredential(?:s)?\b/i,
+  /\bapi\s*key\b/i,
+  /\bprivate\s*key\b/i,
+  /\bservice\s*role\b/i,
+  /\badmin\s+(?:code|password|token|secret)\b/i,
+  /\bvault\s+code\b/i,
+];
+
+const INTENT_PAGE_HINTS = [
+  { pattern: /\b(?:campaign|progression|quests?|genesis\s+ages?)\b/i, url: '/progression.html', boost: 6 },
+  { pattern: /\b(?:updates?|changelog|release\s+notes?|what\s+changed|latest\s+changes?)\b/i, url: '/updates.html', boost: 6 },
+  { pattern: /\b(?:economy|jobs?|dollars?|tokens?|vault)\b/i, url: '/economy.html', boost: 6 },
+  { pattern: /\b(?:commands?|help\s+command|help)\b/i, url: '/start.html', boost: 6 },
+  { pattern: /\bboss(?:es)?\b/i, url: '/bosses.html', boost: 7 },
+];
+
+function isPrivateInfoQuery(question) {
+  return PRIVATE_QUERY_PATTERNS.some((pattern) => pattern.test(String(question ?? '')));
+}
+
+function intentPageBoost(question, url) {
+  let boost = 0;
+  for (const hint of INTENT_PAGE_HINTS) {
+    if (hint.url === url && hint.pattern.test(String(question ?? ''))) boost = Math.max(boost, hint.boost);
+  }
+  return boost;
 }
 
 function commandTokens(value) {
@@ -99,11 +131,19 @@ export function rankHelpChunks(question, chunks = [], options = {}) {
     }
 
     score += exactPhraseBoost(q, all);
+    score += intentPageBoost(q, chunk.url);
     score += dateBoost(chunk.dated_at);
     if (chunk.status === 'confirmed') score += 0.4;
     if (matches >= Math.min(3, qTokens.length)) score += 3;
 
-    if (score > 0) results.push({ score: Number(score.toFixed(3)), matches, chunk });
+    if (score > 0) results.push({
+      score: Number(score.toFixed(3)),
+      matches,
+      queryTokenCount: qTokens.length,
+      coverage: qTokens.length ? Number((matches / qTokens.length).toFixed(3)) : 0,
+      privateQuery: isPrivateInfoQuery(q),
+      chunk,
+    });
   }
 
   return results
@@ -147,8 +187,16 @@ export function classifyRetrieval(results = []) {
   if (!usable.length) return { confidence: 'low', conflict: false, topScore: 0 };
   const conflict = usable.slice(0, 4).some((item, index, list) => list.slice(index + 1).some((other) => likelyConflict(item, other)));
   const topScore = usable[0].score;
-  const confidence = conflict ? 'low' : topScore >= 12 ? 'high' : topScore >= 5 ? 'medium' : 'low';
-  return { confidence, conflict, topScore };
+  const topCoverage = Number.isFinite(usable[0].coverage) ? usable[0].coverage : 1;
+  const privateQuery = usable.some((item) => item.privateQuery === true);
+  const confidence = (conflict || privateQuery || topCoverage < 0.4)
+    ? 'low'
+    : (topScore >= 12 && topCoverage >= 0.5)
+      ? 'high'
+      : topScore >= 5
+        ? 'medium'
+        : 'low';
+  return { confidence, conflict, topScore, topCoverage, privateQuery };
 }
 
 function sourceList(results) {

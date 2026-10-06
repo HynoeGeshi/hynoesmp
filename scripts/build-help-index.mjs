@@ -228,8 +228,9 @@ async function main() {
   const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
   const index = await buildHelpIndex({ rootDir, sources: DEFAULT_HELP_SOURCES });
   const json = JSON.stringify(index, null, 2);
+  const compact = JSON.stringify(index);
   await writeFile(path.join(rootDir, 'data/hynoe-help-index.json'), `${json}\n`);
-  await writeFile(path.join(rootDir, 'supabase/functions/_shared/hynoe-help-index.mjs'), `export default ${json};\n`);
+  await writeFile(path.join(rootDir, 'supabase/functions/_shared/hynoe-help-index.mjs'), `export default ${compact};\n`);
   console.log(`Wrote ${index.chunk_count} Ask Hynoe chunks from ${index.source_count} approved sources.`);
 }
 
