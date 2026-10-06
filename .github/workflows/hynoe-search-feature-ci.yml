@@ -42,7 +42,22 @@ jobs:
           cache-dependency-path: hynoe-search-app/package.json
       - name: Install dependencies
         run: npm install --no-audit --no-fund
+      - name: Build app for browser tests
+        run: npm run build
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
+      - name: Start production server
+        run: |
+          npm start -- --hostname 127.0.0.1 --port 3000 > /tmp/hynoe-next.log 2>&1 &
+          for attempt in $(seq 1 120); do
+            if curl --fail --silent http://127.0.0.1:3000/ > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/hynoe-next.log
+          exit 1
       - name: Homepage browser tests
+        env:
+          PLAYWRIGHT_BASE_URL: http://127.0.0.1:3000
         run: npx playwright test e2e/home.spec.ts --project=desktop --project=mobile
