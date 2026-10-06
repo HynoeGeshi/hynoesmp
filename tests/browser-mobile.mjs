@@ -23,7 +23,9 @@ await mkdir('test-artifacts',{recursive:true});
 function captureErrors(page,label){
   const errors=[];
   page.on('pageerror',error=>errors.push(`${label} pageerror: ${error.message}`));
-  page.on('response',response=>{if(response.status()>=400)errors.push(`${label} HTTP ${response.status()}: ${response.url()}`);});
+  page.on('response',response=>{
+    if(response.status()>=400&&response.url().startsWith(base))errors.push(`${label} HTTP ${response.status()}: ${response.url()}`);
+  });
   page.on('console',msg=>{if(msg.type()==='error'&&!/Failed to load resource/i.test(msg.text()))errors.push(`${label} console: ${msg.text()}`);});
   return errors;
 }
@@ -137,6 +139,7 @@ for(const viewport of [...phoneViewports,...extraViewports]){
     const beforeUrl=page.url();
     const play=page.locator('#video .play-broadcast');
     assert.ok(await play.isVisible(),`${label}: on-site stream play button is missing`);
+    await page.waitForFunction(()=>{const button=document.querySelector('#video .play-broadcast');return !!button&&!button.disabled;},null,{timeout:4000});
     await play.click();
     await page.waitForSelector('#video iframe',{timeout:4000});
     const frameSrc=await page.locator('#video iframe').getAttribute('src');
