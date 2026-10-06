@@ -200,6 +200,35 @@ join public.site_profiles p on p.user_id = m.author_id;
 
 grant select on public.site_chat_public_messages to authenticated;
 
+-- Server-only atomic cooldown claim. Secret-key callers execute as the backend role;
+-- normal visitors receive no EXECUTE grant.
+create or replace function public.claim_site_chat_post_slot(
+  p_user_id uuid,
+  p_now timestamptz,
+  p_min_spacing interval default interval '3 seconds'
+)
+returns boolean
+security invoker
+language plpgsql
+as $$
+declare
+  claimed uuid;
+begin
+  update public.site_profiles
+  set last_post_at = p_now, updated_at = p_now
+  where user_id = p_user_id
+    and is_banned = false
+    and (banned_until is null or banned_until <= p_now)
+    and (muted_until is null or muted_until <= p_now)
+    and (last_post_at is null or last_post_at <= p_now - p_min_spacing)
+  returning user_id into claimed;
+  return claimed is not null;
+end;
+$$;
+
+revoke all on function public.claim_site_chat_post_slot(uuid, timestamptz, interval) from public, anon, authenticated;
+grant execute on function public.claim_site_chat_post_slot(uuid, timestamptz, interval) to service_role;
+
 -- Private topic authorization: visitors receive database broadcasts + presence,
 -- but browser clients may only publish presence state themselves.
 create policy "site global realtime receive"
