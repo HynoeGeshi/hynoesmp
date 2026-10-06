@@ -27,36 +27,47 @@ test('homepage and Watch & Play surface privacy, terms and deletion routes', () 
   }
 });
 
-test('privacy notice describes current local-only account state instead of future promises', () => {
+test('privacy notice describes local saves and opt-in leaderboard publishing accurately', () => {
   const html = read('privacy.html');
   assert.match(html, /cloud (?:accounts|saves)[^<]*(?:are not|aren't|not yet) live/i);
   assert.match(html, /localStorage|stored on your device|browser storage/i);
-  assert.match(html, /global leaderboard[^<]*(?:paused|privacy hold)/i);
+  assert.match(html, /Hall of Legends[^<]*viewed by everyone/i);
+  assert.match(html, /publishing your own score[^<]*optional[^<]*off by default/i);
+  assert.match(html, /random local player ID|random player ID/i);
+  assert.match(html, /bounded gameplay metrics/i);
   assert.match(html, /website chat[^<]*(?:not connected|inactive|not active)/i);
   assert.match(html, /under 18|18\+/i);
   assert.doesNotMatch(html, /we guarantee|100% secure|fully compliant/i);
 });
 
-test('external global leaderboard is code-gated off while local legend scoring remains', () => {
-  const js = read('assets/watch.mjs');
-  assert.match(js, /GLOBAL_BOARD_ENABLED=false/);
-  assert.match(js, /LOCAL ONLY · PRIVACY HOLD/);
-  assert.match(js, /if\(GLOBAL_BOARD_ENABLED\)connectLeaderboard\(\)/);
-  assert.match(js, /if\(!GLOBAL_BOARD_ENABLED\)return/);
-  assert.match(js, /G\.legendStatus\(state\)/);
+test('global board reads are live while score publishing is gated by explicit opt in', () => {
+  const ui = read('assets/watch.mjs');
+  const transport = read('assets/leaderboard-live.mjs');
+  assert.match(ui, /GLOBAL_BOARD_ENABLED=true/);
+  assert.match(ui, /leaderboardOptedIn=L\.readOptIn\(\)/);
+  assert.match(ui, /leaderboardOptedIn&&\(force\|\|key!==lastSubmittedKey\)/);
+  assert.match(ui, /!GLOBAL_BOARD_ENABLED\|\|!leaderboardOptedIn/);
+  assert.match(ui, /if\(GLOBAL_BOARD_ENABLED\)connectLeaderboard\(\)/);
+  assert.match(ui, /G\.legendStatus\(state\)/);
+  assert.match(transport, /PUBLIC_BOARD_PATH='\/v1\/leaderboard'/);
+  assert.match(transport, /SCORE_PATH='\/v1\/score'/);
+  assert.match(transport, /getItem\(OPT_IN_KEY\)==='yes'/);
 });
 
-test('leaderboard UI explains privacy hold and local score continuity', () => {
+test('leaderboard UI explains live rankings and explicit publishing choice', () => {
   const html = read('watch.html');
-  assert.match(html, /GLOBAL SYNC PAUSED/i);
-  assert.match(html, /local Legend score/i);
-  assert.match(html, /worldwide privacy|privacy and deletion|privacy\/deletion/i);
+  assert.match(html, /GLOBAL HALL CONNECTING/i);
+  assert.match(html, /LIVE RANKINGS/i);
+  assert.match(html, /Publishing your own score is optional and off by default/i);
+  assert.match(html, /stays local until you explicitly opt in/i);
 });
 
-test('data deletion page gives local deletion and private legacy-data request paths', () => {
+test('data deletion page gives local deletion and private leaderboard-data request paths', () => {
   const html = read('data-deletion.html');
   assert.match(html, /browser (?:storage|site data)|localStorage/i);
-  assert.match(html, /legacy leaderboard/i);
+  assert.match(html, /Global leaderboard records/i);
+  assert.match(html, /Publishing your own score is optional and off by default/i);
+  assert.match(html, /stops future score uploads/i);
   assert.match(html, /do not post[^<]*(?:player ID|identifier|private)/i);
   assert.match(html, /Discord/i);
 });

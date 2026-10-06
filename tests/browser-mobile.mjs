@@ -72,6 +72,12 @@ for(const viewport of [...phoneViewports,...extraViewports]){
 
   const minVeinHeight=await page.locator('#vein-0').evaluate(el=>el.getBoundingClientRect().height);
   assert.ok(minVeinHeight>=88,`${label}: vein target only ${minVeinHeight}px tall`);
+  const miningArtwork=await page.locator('#vein-0 .ore-crystal svg').evaluate(el=>{const box=el.getBoundingClientRect(),style=getComputedStyle(el),face=el.querySelector('.gem-face');return {width:box.width,height:box.height,display:style.display,visibility:style.visibility,opacity:Number(style.opacity),fill:face?getComputedStyle(face).fill:''};});
+  assert.ok(miningArtwork.width>=40&&miningArtwork.height>=30,`${label}: mining artwork has no rendered geometry (${miningArtwork.width}x${miningArtwork.height})`);
+  assert.notEqual(miningArtwork.display,'none',`${label}: mining artwork is display:none`);
+  assert.notEqual(miningArtwork.visibility,'hidden',`${label}: mining artwork is hidden`);
+  assert.ok(miningArtwork.opacity>0,`${label}: mining artwork is transparent`);
+  assert.ok(miningArtwork.fill&&miningArtwork.fill!=='none',`${label}: mining artwork gem face has no fill`);
 
   const tabs=page.locator('.game .tabs');
   assert.ok(await tabs.isVisible(),`${label}: game tabs are not visible`);
