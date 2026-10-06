@@ -1,9 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 import * as mod from '../relay/worker.mjs';
 
-const sourceUrl = new URL('../relay/worker.mjs', import.meta.url);
-const source = await (await fetch(sourceUrl)).text();
+const source = await readFile(new URL('../relay/worker.mjs', import.meta.url), 'utf8');
 
 // RED: these exports/behaviors do not exist in the Minecraft relay yet.
 test('exports site-native moderation helpers', () => {
@@ -22,7 +22,7 @@ test('ordinary profanity is censored while severe abuse is blocked', () => {
   assert.ok(severe.reason);
 });
 
-test('normalization catches punctuation and leet evasion without changing display input', () => {
+test('normalization catches punctuation and leet evasion', () => {
   assert.match(mod.normalizeForModeration('f.u.c.k'), /fuck/i);
   assert.match(mod.normalizeForModeration('n1gg3r'), /nigger/i);
 });
