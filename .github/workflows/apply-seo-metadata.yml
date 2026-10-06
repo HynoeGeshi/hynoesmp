@@ -1,0 +1,39 @@
+name: Apply approved SEO metadata
+
+on:
+  push:
+    branches:
+      - seo-metadata-2026-10-05
+    paths:
+      - '.github/workflows/apply-seo-metadata.yml'
+      - '.github/scripts/apply-seo-metadata.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: "!contains(github.event.head_commit.message || '', '[seo-metadata-applied]')"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Apply approved head-only metadata changes
+        run: python .github/scripts/apply-seo-metadata.py
+      - name: Verify targeted metadata and full regression suite
+        run: |
+          node --test tests/seo-metadata.test.mjs
+          node --check assets/watch.mjs
+          node --test tests/*.test.mjs
+      - name: Commit verified metadata changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add start.html progression.html economy.html mca.html bosses.html modpack.html watch.html
+          git commit -m "seo: strengthen guide page metadata [seo-metadata-applied]"
+          git push origin HEAD:seo-metadata-2026-10-05
