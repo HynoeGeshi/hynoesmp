@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { HynoeWordmark } from '@/components/brand/hynoe-wordmark';
+import { ReturningDiscovery } from '@/components/home/returning-discovery';
 import { SearchForm } from '@/components/search/search-form';
 import { flagshipPages } from '@/data/flagship-pages';
 
@@ -36,6 +37,8 @@ export default function Home() {
           {categoryLinks.map(([label, href]) => <Link key={label} href={href}>{label}</Link>)}
         </div>
       </section>
+
+      <ReturningDiscovery />
 
       <section className="creatorops-section" id="creatorops">
         <div className="creatorops-copy">
