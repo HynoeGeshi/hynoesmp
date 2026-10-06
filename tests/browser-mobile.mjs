@@ -18,7 +18,8 @@ await mkdir('test-artifacts',{recursive:true});
 function captureErrors(page,label){
   const errors=[];
   page.on('pageerror',error=>errors.push(`${label} pageerror: ${error.message}`));
-  page.on('console',msg=>{if(msg.type()==='error')errors.push(`${label} console: ${msg.text()}`);});
+  page.on('response',response=>{if(response.status()>=400)errors.push(`${label} HTTP ${response.status()}: ${response.url()}`);});
+  page.on('console',msg=>{if(msg.type()==='error'&&!/Failed to load resource/i.test(msg.text()))errors.push(`${label} console: ${msg.text()}`);});
   return errors;
 }
 
