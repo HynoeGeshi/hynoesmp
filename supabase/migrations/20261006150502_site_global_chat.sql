@@ -109,9 +109,10 @@ revoke all on public.site_announcements from anon, authenticated;
 revoke all on public.site_moderation_audit from anon, authenticated;
 revoke all on public.site_chat_settings from anon, authenticated;
 
-grant select on public.site_profiles to authenticated;
+grant select (user_id, display_name, role) on public.site_profiles to authenticated;
 grant insert (user_id, display_name, normalized_name, avatar_seed) on public.site_profiles to authenticated;
 grant update (display_name, normalized_name, avatar_seed) on public.site_profiles to authenticated;
+grant select (id, author_id, body, reply_to, created_at, edited_at, deleted_at) on public.site_chat_messages to authenticated;
 
 grant select, insert, delete on public.site_chat_reactions to authenticated;
 grant insert (message_id, reporter_id, reason, details) on public.site_chat_reports to authenticated;
@@ -218,6 +219,24 @@ with check (
   (select realtime.topic()) = 'site:global'
   and realtime.messages.extension = 'presence'
 );
+
+-- A tombstoned message cannot be recovered through direct safe-column reads.
+create or replace function public.scrub_deleted_site_chat_message()
+returns trigger
+security invoker
+language plpgsql
+as $$
+begin
+  if new.deleted_at is not null and old.deleted_at is null then
+    new.body := '[message removed]';
+  end if;
+  return new;
+end;
+$$;
+
+create trigger site_chat_messages_scrub_deleted_trigger
+before update on public.site_chat_messages
+for each row execute function public.scrub_deleted_site_chat_message();
 
 -- Database-authoritative message changes are broadcast privately.
 create or replace function public.broadcast_site_chat_message_change()
