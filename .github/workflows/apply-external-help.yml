@@ -1,0 +1,53 @@
+name: Wire Ask Hynoe external fallback
+
+on:
+  push:
+    branches:
+      - feature/hynoe-community-20261006-final
+    paths:
+      - .github/workflows/apply-external-help.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/hynoe-community-20261006-final
+      - name: Wire external help endpoint
+        shell: python
+        run: |
+          from pathlib import Path
+          p=Path('relay/worker.mjs')
+          text=p.read_text()
+          if not text.startswith("import {handleExternalHelp}"):
+            text="import {handleExternalHelp} from './external-help.mjs';\n"+text
+          old="if(path.startsWith('/admin'))return this.admin(request,path);"
+          new="if(path.startsWith('/admin'))return this.admin(request,path);if(path==='/help/external'&&request.method==='POST'){let b;try{b=await body(request);}catch{return fail('Invalid or oversized request.');}return handleExternalHelp({request,env:this.env,storage:s,body:b,now});}"
+          if old not in text and new not in text:
+            raise SystemExit('community fetch insertion point not found')
+          text=text.replace(old,new,1)
+          text=text.replace("k.startsWith('actor-rate:'))&&v.expires<=now", "k.startsWith('actor-rate:')||k.startsWith('help:'))&&v.expires<=now")
+          p.write_text(text)
+
+          readme=Path('relay/README.md')
+          r=readme.read_text()
+          marker='The static site and Hynoe Outpost remain usable while the backend is unconfigured or offline.'
+          extra='''\n\n## Optional Ask Hynoe external fallback\n\nOfficial Hynoe answers are generated from the site and do not require an external provider. To add general Minecraft/mod fallback for questions the Hynoe knowledge index cannot answer, configure private Worker secrets `HELP_PROVIDER_URL` and `HELP_PROVIDER_KEY`. The provider endpoint must use HTTPS and accept `{question, context}` JSON. Its credentials never appear in browser code. If the provider is absent or fails, Ask Hynoe returns a clear unavailable result rather than inventing an answer.\n'''
+          if '## Optional Ask Hynoe external fallback' not in r:
+            r=r.replace(marker,marker+extra)
+          readme.write_text(r)
+      - name: Commit integration
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add relay/worker.mjs relay/README.md
+          if git diff --cached --quiet; then
+            echo "No integration changes"
+          else
+            git commit -m "feat: wire optional Ask Hynoe external fallback"
+            git push origin HEAD:feature/hynoe-community-20261006-final
+          fi
