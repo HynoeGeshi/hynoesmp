@@ -20,8 +20,8 @@ export function normalizeForModeration(text){
  let s=String(text??'').normalize('NFKC').toLowerCase().normalize('NFKD').replace(/\p{M}/gu,'');
  s=s.replace(/[!|]/g,'i').replace(/[@4]/g,'a').replace(/[3]/g,'e').replace(/[1]/g,'i').replace(/[0]/g,'o').replace(/[5$]/g,'s').replace(/[7]/g,'t');
  s=s.replace(/[^a-z0-9]+/g,' ').replace(/\s+/g,' ').trim();
- s=s.replace(/\bk\s+i\s+l\s+l\s+y\s+o\s+u\b/g,'kill you');
- s=s.replace(/\bk\s+i\s+l\s+l\s+y\s+o\s+u\s+r\s+s?\s+e\s+l\s+f\b/g,'kill yourself');
+ s=s.replace(/\b(?:[a-z0-9]\s+){2,}[a-z0-9]\b/g,part=>part.replace(/\s+/g,''));
+ s=s.replace(/\bkillyou\b/g,'kill you').replace(/\bkillyourself\b/g,'kill yourself');
  return s;
 }
 
@@ -29,8 +29,10 @@ export function moderateMessage(text){
  const normalized=normalizeForModeration(text);
  for(const pattern of SEVERE_PATTERNS){if(pattern.test(normalized))return {action:'block',text:String(text),reason:'severe-abuse'};pattern.lastIndex=0;}
  let censored=false;
- const safe=String(text).replace(PROFANITY,word=>{censored=true;return word[0]+'*'.repeat(Math.max(1,word.length-1));});
+ let safe=String(text).replace(PROFANITY,word=>{censored=true;return word[0]+'*'.repeat(Math.max(1,word.length-1));});
  PROFANITY.lastIndex=0;
+ const normalizedProfanity=/\b(?:fuck(?:ing|ed|er|s)?|shit(?:ty|s)?|bitch(?:es)?|asshole(?:s)?)\b/i;
+ if(!censored&&normalizedProfanity.test(normalized)){const evasive=[/f[\W_]*u[\W_]*c[\W_]*k(?:[\W_]*(?:i[\W_]*n[\W_]*g|e[\W_]*d|e[\W_]*r|s))?/gi,/s[\W_]*h[\W_]*i[\W_]*t(?:[\W_]*(?:t[\W_]*y|s))?/gi,/b[\W_]*i[\W_]*t[\W_]*c[\W_]*h(?:[\W_]*e[\W_]*s)?/gi,/a[\W_]*s[\W_]*s[\W_]*h[\W_]*o[\W_]*l[\W_]*e(?:[\W_]*s)?/gi];for(const pattern of evasive)safe=safe.replace(pattern,word=>{censored=true;const letters=word.replace(/[^A-Za-z0-9]/g,'');return letters[0]+'*'.repeat(Math.max(3,letters.length-1));});}
  return {action:censored?'censor':'allow',text:safe};
 }
 
