@@ -7,8 +7,12 @@
   const summaryBox = document.querySelector('#application-summary');
   const copyButton = document.querySelector('#copy-summary');
   const clearButton = document.querySelector('#clear-draft');
-  const DRAFT_KEY = 'hynoe.creatorops.auditDraft.v1';
-  const intakeEndpoint = window.CREATOROPS_INTAKE_ENDPOINT || '';
+  const DRAFT_KEY = 'hynoe.creatorops.auditDraft.v2';
+  const intakeEndpoint = '/api/intake';
+  const CHECKOUTS = {
+    '$499 Creator System Build': 'https://buy.stripe.com/test_aFa28t4Vc0qS2A66I19fW00',
+    '$750/month Founding CreatorOps': 'https://buy.stripe.com/test_8x26oJ3R8a1sgqWc2l9fW01'
+  };
 
   const fields = ['creatorName', 'email', 'primaryPlatform', 'profileUrl', 'goal', 'bottleneck', 'revenue', 'interest'];
 
@@ -33,79 +37,72 @@
 
   function applicationSummary(data) {
     return [
-      'Hynoe CreatorOps — Free Creator Audit application summary',
-      '',
-      `Creator: ${data.creatorName}`,
-      `Email: ${data.email}`,
-      `Primary platform: ${data.primaryPlatform}`,
-      `Profile: ${data.profileUrl}`,
-      `90-day goal: ${data.goal}`,
-      `Biggest bottleneck: ${data.bottleneck}`,
-      `Current creator revenue: ${data.revenue}`,
-      `Interested in: ${data.interest}`,
-      '',
+      'Hynoe CreatorOps — Free Creator Audit application summary', '',
+      `Creator: ${data.creatorName}`, `Email: ${data.email}`, `Primary platform: ${data.primaryPlatform}`,
+      `Profile: ${data.profileUrl}`, `90-day goal: ${data.goal}`, `Biggest bottleneck: ${data.bottleneck}`,
+      `Current creator revenue: ${data.revenue}`, `Interested in: ${data.interest}`, '',
       'Security reminder: no passwords, access tokens, API keys, or recovery codes are included in this application.'
     ].join('\n');
   }
 
+  function showSandboxCheckout(interest) {
+    document.querySelector('#sandbox-checkout')?.remove();
+    const url = CHECKOUTS[interest];
+    if (!url) return;
+    const wrap = document.createElement('div');
+    wrap.id = 'sandbox-checkout';
+    wrap.className = 'security-note';
+    wrap.innerHTML = '<strong>Prototype payment ready.</strong><p>This checkout is Stripe sandbox only — it cannot create a live charge.</p>';
+    const link = document.createElement('a');
+    link.className = 'button primary';
+    link.href = url;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.textContent = interest.includes('499') ? 'Open $499 sandbox checkout' : 'Open $750/mo sandbox checkout';
+    wrap.append(link);
+    panel.append(wrap);
+  }
+
   async function submitSecurely(data) {
-    if (!intakeEndpoint) return false;
     const response = await fetch(intakeEndpoint, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ source: 'creatorops-audit', submittedAt: new Date().toISOString(), ...data })
+      body: JSON.stringify({ ...data, company: '' })
     });
-    if (!response.ok) throw new Error(`Intake request failed (${response.status})`);
-    return true;
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(result.error || `Intake request failed (${response.status})`);
+    return result;
   }
 
   form.addEventListener('input', saveDraft);
-
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
     if (!form.reportValidity()) return;
-
     const data = getData();
-    const summary = applicationSummary(data);
-    summaryBox.value = summary;
+    summaryBox.value = applicationSummary(data);
     panel.hidden = false;
     saveDraft();
-    status.textContent = 'Application summary created.';
-
+    status.textContent = 'Submitting securely…';
     try {
-      const sent = await submitSecurely(data);
-      if (sent) {
-        status.textContent = 'Application received securely. We will use it for your Creator Audit.';
-        localStorage.removeItem(DRAFT_KEY);
-      } else {
-        status.textContent = 'Application ready. Copy the summary below; secure direct intake will activate when the production endpoint is connected.';
-      }
+      await submitSecurely(data);
+      status.textContent = 'Application received securely. Your Creator Audit is now in the review queue.';
+      localStorage.removeItem(DRAFT_KEY);
+      showSandboxCheckout(data.interest);
     } catch (error) {
-      status.textContent = 'Your draft is safe in this browser, but the direct intake endpoint did not accept it. Copy the application summary below.';
+      status.textContent = 'Your draft is still saved locally. Secure intake is temporarily unavailable; copy the summary below.';
       console.error(error);
     }
   });
 
   copyButton?.addEventListener('click', async () => {
     if (!summaryBox.value) return;
-    try {
-      await navigator.clipboard.writeText(summaryBox.value);
-      status.textContent = 'Application summary copied.';
-    } catch (_) {
-      summaryBox.focus();
-      summaryBox.select();
-      document.execCommand('copy');
-      status.textContent = 'Application summary copied.';
-    }
+    try { await navigator.clipboard.writeText(summaryBox.value); }
+    catch { summaryBox.focus(); summaryBox.select(); document.execCommand('copy'); }
+    status.textContent = 'Application summary copied.';
   });
 
   clearButton?.addEventListener('click', () => {
-    localStorage.removeItem(DRAFT_KEY);
-    form.reset();
-    panel.hidden = true;
-    summaryBox.value = '';
-    status.textContent = 'Draft cleared.';
+    localStorage.removeItem(DRAFT_KEY); form.reset(); panel.hidden = true; summaryBox.value = ''; status.textContent = 'Draft cleared.';
   });
-
   loadDraft();
 })();
