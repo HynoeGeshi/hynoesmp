@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import './creatorops-audit-engine.test.mjs';
+import './creatorops-integration.test.mjs';
 
 const root = process.cwd();
 const pagePath = path.join(root, 'creatorops', 'index.html');
