@@ -2,7 +2,7 @@ const DAY=86400000,SESSION_TTL=12*60*60*1000;
 const json=(data,status=200)=>Response.json(data,{status,headers:{'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
 const fail=(error,status=400,reason)=>json({error,...(reason?{reason}:{})},status);
 
-const STAFF_RE=/\b(admin|administrator|moderator|mod|owner|hynoe|system|staff)\b/i;
+const STAFF_RE=/(admin|administrator|moderator|mod|owner|hynoe|system|staff)/i;
 const PROFANITY=[
  {stem:'fuck',normalized:/\bfuck(?:ing|ed|er|ers|s)?\b/i,display:/\bfuck(?:ing|ed|er|ers|s)?\b/gi},
  {stem:'shit',normalized:/\bshit(?:ty|ting|ted|s)?\b/i,display:/\bshit(?:ty|ting|ted|s)?\b/gi},
@@ -53,14 +53,14 @@ export function validateMessage(b,actorName){
 
 const enc=new TextEncoder(),dec=new TextDecoder();
 const b64url=bytes=>{let s='';for(const b of bytes)s+=String.fromCharCode(b);return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');};
-const unb64url=value=>{try{const s=atob(value.replace(/-/g,'+').replace(/_/g,'/')+'==='.slice((value.length+3)%4));return Uint8Array.from(s,c=>c.charCodeAt(0));}catch{return null;}};
+const unb64url=value=>{try{const s=atob(value.replace(/-/g,'+').replace(/_/g,'/')+'='.repeat((4-value.length%4)%4));return Uint8Array.from(s,c=>c.charCodeAt(0));}catch{return null;}};
 async function hmac(secret,data){const key=await crypto.subtle.importKey('raw',enc.encode(secret),{name:'HMAC',hash:'SHA-256'},false,['sign']);return new Uint8Array(await crypto.subtle.sign('HMAC',key,enc.encode(data)));}
 export async function signGuestSession(payload,secret){if(!secret)throw Error('Session secret is not configured.');const body=b64url(enc.encode(JSON.stringify(payload)));return body+'.'+b64url(await hmac(secret,body));}
 function constantEqual(a,b){if(!a||!b||a.length!==b.length)return false;let diff=0;for(let i=0;i<a.length;i++)diff|=a[i]^b[i];return diff===0;}
 export async function verifyGuestSession(token,secret,now=Date.now()){
  if(typeof token!=='string'||token.length>2048||!secret)return null;const [body,sig,...extra]=token.split('.');if(!body||!sig||extra.length)return null;
  const got=unb64url(sig),expected=await hmac(secret,body);if(!constantEqual(got,expected))return null;
- try{const payload=JSON.parse(dec.decode(unb64url(body)));if(!payload.actorId||!Number.isFinite(payload.expiresAt)||payload.expiresAt<=now)return null;return payload;}catch{return null;}
+ try{const decoded=unb64url(body);if(!decoded)return null;const payload=JSON.parse(dec.decode(decoded));if(!payload.actorId||!Number.isFinite(payload.expiresAt)||payload.expiresAt<=now)return null;return payload;}catch{return null;}
 }
 const ADJECTIVES=['Copper','Cinder','Quartz','Moss','Iron','Ember','Rift','Nova','Cedar','Flint'];
 const NOUNS=['Wolf','Fox','Pick','Drill','Mole','Raven','Badger','Lantern','Anvil','Comet'];
