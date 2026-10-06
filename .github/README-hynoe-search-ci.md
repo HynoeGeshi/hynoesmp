@@ -1,0 +1,1 @@
+Hynoe Search implementation work uses a dedicated feature branch for cloud CI. The Render service tracks `hynoe-search-render-app`; feature-branch RED/GREEN test cycles must not be pushed to the Render-tracked branch.
