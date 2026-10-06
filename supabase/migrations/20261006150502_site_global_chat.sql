@@ -301,3 +301,7 @@ for each row execute function public.broadcast_site_chat_message_change();
 create trigger site_announcements_broadcast_trigger
 after insert or update or delete on public.site_announcements
 for each row execute function public.broadcast_site_chat_message_change();
+
+create trigger site_chat_settings_broadcast_trigger
+after update on public.site_chat_settings
+for each row execute function public.broadcast_site_chat_message_change();
