@@ -21,16 +21,7 @@ jobs:
         run: |
           npm install --no-save --no-package-lock playwright@1.63.0
           npx playwright install --with-deps webkit
-      - name: Start static site
-        run: |
-          python3 -m http.server 4173 --bind 127.0.0.1 > /tmp/hynoe-http.log 2>&1 &
-          for i in {1..20}; do
-            if curl -fsS http://127.0.0.1:4173/watch.html >/dev/null; then exit 0; fi
-            sleep 1
-          done
-          cat /tmp/hynoe-http.log
-          exit 1
-      - name: Probe fresh iPhone-like load in WebKit
+      - name: Probe live iPhone-like load in WebKit
         run: |
           cat > tests/debug-webkit-probe.mjs <<'EOF'
           import {webkit} from 'playwright';
@@ -42,8 +33,8 @@ jobs:
           const errors=[];
           page.on('pageerror',e=>errors.push('PAGEERROR '+e.stack));
           page.on('console',m=>{if(m.type()==='error')errors.push('CONSOLE '+m.text());});
-          await page.goto('http://127.0.0.1:4173/watch.html?webkit='+Date.now(),{waitUntil:'domcontentloaded'});
-          await page.waitForTimeout(1800);
+          await page.goto('https://hynoesmp.com/watch.html?webkit='+Date.now(),{waitUntil:'domcontentloaded'});
+          await page.waitForTimeout(2200);
           const state=await page.evaluate(()=>{
             const b=document.querySelector('#vein-0');
             const face=b?.querySelector('.gem-face');
@@ -51,6 +42,7 @@ jobs:
             const small=b?.querySelector('small');
             const fill=b?.querySelector('.vein-health i');
             return {
+              href:location.href,
               veinCount:document.querySelectorAll('.vein').length,
               oreText:document.querySelector('#ore')?.textContent,
               strongText:strong?.textContent,
@@ -68,10 +60,16 @@ jobs:
           const report='WEBKIT_STATE '+JSON.stringify(state)+'\nWEBKIT_ERRORS '+JSON.stringify(errors)+'\n';
           console.log(report);
           fs.writeFileSync('test-artifacts/webkit-probe.txt',report);
+          await page.locator('#vein-0').scrollIntoViewIfNeeded().catch(()=>{});
           await page.screenshot({path:'test-artifacts/webkit-watch.png',fullPage:false});
           if(state.veinCount!==12) throw new Error('Expected 12 veins');
           if(!state.strongText||!state.smallText||!state.oreVar||!state.fillWidth) throw new Error('Mine initialized incompletely: '+JSON.stringify(state));
-          if(errors.length) throw new Error(errors.join('\n'));
+          const before=Number((await page.locator('#ore').textContent())||0);
+          await page.locator('#vein-0').tap();
+          await page.waitForTimeout(150);
+          const after=Number((await page.locator('#ore').textContent())||0);
+          if(!(after>before)) throw new Error('Tap failed '+before+' -> '+after);
+          if(errors.some(e=>e.startsWith('PAGEERROR'))) throw new Error(errors.join('\n'));
           await browser.close();
           EOF
           node tests/debug-webkit-probe.mjs
