@@ -1,4 +1,65 @@
 (() => {
+  document.documentElement.classList.add('js');
+
+  const diagnosticMap = {
+    views: {
+      code: '01 / PACKAGING',
+      title: 'Make the next upload easier to understand and easier to choose.',
+      copy: 'We would study the formats already holding attention, sharpen the promise before you publish, and build a repeatable packaging system around what your audience is already rewarding.'
+    },
+    overwhelmed: {
+      code: '02 / OPERATIONS',
+      title: 'Get the work out of your head and into one weekly operating rhythm.',
+      copy: 'We would map the recurring creator work, remove duplicate steps, centralize the important decisions and automate the repeatable admin so creating stops competing with running the business.'
+    },
+    money: {
+      code: '03 / MONETIZATION',
+      title: 'Turn audience attention into a revenue path that actually fits the brand.',
+      copy: 'We would map the offers your audience is most likely to value, strengthen sponsor readiness and build a simple path from content to action without turning every post into a sales pitch.'
+    },
+    consistency: {
+      code: '04 / WORKFLOW',
+      title: 'Build a publishing system that still works when motivation is not perfect.',
+      copy: 'We would turn ideas, recording, packaging, publishing and repurposing into a repeatable cadence with clear next actions, so momentum comes from the system instead of memory.'
+    }
+  };
+
+  const diagnosticButtons = [...document.querySelectorAll('[data-diagnostic]')];
+  const diagnosticResult = document.querySelector('#diagnostic-result');
+  const diagnosticTitle = document.querySelector('#diagnostic-title');
+  const diagnosticCopy = document.querySelector('#diagnostic-copy');
+  const diagnosticCode = diagnosticResult?.querySelector('.result-top b');
+
+  function selectDiagnostic(key) {
+    const result = diagnosticMap[key];
+    if (!result || !diagnosticResult) return;
+    diagnosticButtons.forEach((button) => button.setAttribute('aria-pressed', String(button.dataset.diagnostic === key)));
+    if (diagnosticTitle) diagnosticTitle.textContent = result.title;
+    if (diagnosticCopy) diagnosticCopy.textContent = result.copy;
+    if (diagnosticCode) diagnosticCode.textContent = result.code;
+    diagnosticResult.classList.remove('result-pulse');
+    requestAnimationFrame(() => diagnosticResult.classList.add('result-pulse'));
+  }
+
+  diagnosticButtons.forEach((button) => {
+    button.addEventListener('click', () => selectDiagnostic(button.dataset.diagnostic));
+  });
+
+  const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  const reveals = [...document.querySelectorAll('.reveal')];
+  if (reducedMotion || !('IntersectionObserver' in window)) {
+    reveals.forEach((element) => element.classList.add('is-visible'));
+  } else {
+    const revealObserver = new IntersectionObserver((entries, observer) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add('is-visible');
+        observer.unobserve(entry.target);
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -7% 0px' });
+    reveals.forEach((element) => revealObserver.observe(element));
+  }
+
   const form = document.querySelector('#creator-audit-form');
   if (!form) return;
 
@@ -111,16 +172,25 @@
   });
 
   clearButton?.addEventListener('click', () => {
-    sessionStorage.removeItem(DRAFT_KEY); form.reset(); honeypot.value = ''; panel.hidden = true; summaryBox.value = ''; status.textContent = 'Draft cleared.';
+    sessionStorage.removeItem(DRAFT_KEY);
+    form.reset();
+    honeypot.value = '';
+    panel.hidden = true;
+    summaryBox.value = '';
+    status.textContent = 'Draft cleared.';
   });
 
   const footer = document.querySelector('.site-footer');
   if (footer) {
     const legal = document.createElement('span');
     const privacy = document.createElement('a');
-    privacy.href = '/creatorops/privacy.html'; privacy.textContent = 'Privacy'; privacy.className = 'legal-link';
+    privacy.href = '/creatorops/privacy.html';
+    privacy.textContent = 'Privacy';
+    privacy.className = 'legal-link';
     const terms = document.createElement('a');
-    terms.href = '/creatorops/terms.html'; terms.textContent = 'Terms'; terms.className = 'legal-link';
+    terms.href = '/creatorops/terms.html';
+    terms.textContent = 'Terms';
+    terms.className = 'legal-link';
     legal.append(privacy, document.createTextNode(' · '), terms);
     footer.append(legal);
   }
