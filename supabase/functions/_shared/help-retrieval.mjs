@@ -225,6 +225,69 @@ function sourceList(results) {
   return sources;
 }
 
+const PROFILE_FIELDS = [
+  'Name','Canonical Url','Server Address','Edition','Loader','Client Requirement','Join Url','Modpack Url','Discovery Url','Discord Url','Category Tags','Features','Positioning','Last Reviewed',
+];
+
+function escapeRegex(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function profileField(text, label) {
+  const labels = PROFILE_FIELDS.map(escapeRegex).join('|');
+  const pattern = new RegExp(`(?:^|\\.\\s+)${escapeRegex(label)}:\\s*(.*?)(?=\\.\\s+(?:${labels}):|$)`, 'i');
+  const match = normalize(text).match(pattern);
+  return normalize(match?.[1] ?? '').replace(/\.+$/g, '').trim();
+}
+
+function humanList(values = []) {
+  const items = values.map(normalize).filter(Boolean);
+  if (!items.length) return '';
+  if (items.length === 1) return items[0];
+  if (items.length === 2) return `${items[0]} and ${items[1]}`;
+  return `${items.slice(0, -1).join(', ')}, and ${items.at(-1)}`;
+}
+
+function naturalServerOverview(question, results = []) {
+  const q = normalize(question);
+  const overviewIntent = /\b(?:what(?:'s| is)?\s+(?:this|the|hynoe(?:\s+smp)?)\s+server\s+(?:about|like)|tell\s+me\s+about\s+(?:this|the|hynoe(?:\s+smp)?)\s+server|what\s+is\s+hynoe(?:\s+smp)?|server\s+overview)\b/i.test(q);
+  if (!overviewIntent) return '';
+
+  const profile = results.find((result) => result?.chunk?.url === '/data/server-profile.json' || /canonical server profile/i.test(String(result?.chunk?.heading ?? '')))?.chunk;
+  if (!profile?.text) return '';
+
+  const name = profileField(profile.text, 'Name') || 'Hynoe SMP';
+  const edition = profileField(profile.text, 'Edition');
+  const loader = profileField(profile.text, 'Loader');
+  const tags = profileField(profile.text, 'Category Tags').split(';').map(normalize).filter((item) => item && !/^smp$/i.test(item));
+  const features = profileField(profile.text, 'Features').split(';').map(normalize).filter(Boolean);
+  const positioning = profileField(profile.text, 'Positioning');
+  const clientRequirement = profileField(profile.text, 'Client Requirement');
+
+  const sentences = [];
+  const platform = [edition, loader].filter(Boolean).join(' ');
+  const focus = humanList(tags.slice(0, 4));
+  sentences.push(`${name} is a ${platform ? `${platform} ` : ''}server${focus ? ` focused on ${focus}` : ''}.`);
+
+  if (features.length) {
+    sentences.push(`Core systems include ${humanList(features.slice(0, 5))}.`);
+  }
+
+  const positionMatch = positioning.match(/^long-term modded survival built for\s+(.+)$/i);
+  if (positionMatch?.[1]) {
+    sentences.push(`It is designed as long-term modded survival for ${positionMatch[1]}.`);
+  } else if (positioning) {
+    sentences.push(`${positioning.replace(/^[a-z]/, (letter) => letter.toUpperCase())}.`);
+  }
+
+  if (clientRequirement) {
+    const requirement = clientRequirement.replace(/\s+required$/i, ' is required');
+    sentences.push(`To join, ${/^the\b/i.test(requirement) ? requirement : `the ${requirement}`}.`);
+  }
+
+  return sentences.join(' ');
+}
+
 export function buildFallbackAnswer(question, results = []) {
   const classification = classifyRetrieval(results);
   const sources = sourceList(results);
@@ -236,6 +299,16 @@ export function buildFallbackAnswer(question, results = []) {
       sources: classification.conflict ? sources : [],
       confidence: 'low',
       conflict: classification.conflict,
+    };
+  }
+
+  const overview = naturalServerOverview(question, results);
+  if (overview) {
+    return {
+      answer: overview,
+      sources,
+      confidence: classification.confidence,
+      conflict: false,
     };
   }
 
