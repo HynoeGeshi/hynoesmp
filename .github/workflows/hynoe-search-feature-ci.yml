@@ -9,7 +9,7 @@ on:
       - .github/workflows/hynoe-search-feature-ci.yml
 
 jobs:
-  verify:
+  unit-build:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -27,3 +27,22 @@ jobs:
         run: npm test
       - name: Build
         run: npm run build
+
+  homepage-browser:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: hynoe-search-app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: hynoe-search-app/package.json
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Homepage browser tests
+        run: npx playwright test e2e/home.spec.ts --project=desktop --project=mobile
