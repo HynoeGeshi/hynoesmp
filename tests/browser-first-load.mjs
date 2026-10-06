@@ -47,6 +47,15 @@ for(const width of widths){
     const after=Number((await page.locator('#ore').textContent())||0);
     assert.ok(after>before,`${label}: first physical tap did not register (${before} -> ${after})`);
 
+    const repeatedBefore=after;
+    for(let i=0;i<20;i++){
+      await vein.tap({timeout:3000});
+      await page.waitForTimeout(18);
+    }
+    await page.waitForTimeout(150);
+    const repeatedAfter=Number((await page.locator('#ore').textContent())||0);
+    assert.ok(repeatedAfter>=repeatedBefore+20,`${label}: repeated physical taps were lost or blocked (${repeatedBefore} -> ${repeatedAfter})`);
+
     await page.locator('#open-help').click();
     assert.equal(await guide.evaluate(el=>el.open),true,`${label}: Help button did not open guide`);
     await page.locator('#how-to-play .dialog-close').click();
@@ -54,12 +63,18 @@ for(const width of widths){
 
     await page.goto(`${base}/?firstload=${Date.now()}-${width}`,{waitUntil:'domcontentloaded'});
     const home=await page.evaluate(()=>{
+      const hotbar=document.querySelector('.hotbar');
+      const hr=hotbar?.getBoundingClientRect();
       const covers=[...document.querySelectorAll('body *')].filter(el=>{
         const r=el.getBoundingClientRect(),s=getComputedStyle(el);
-        return (s.position==='fixed'||s.position==='sticky')&&s.pointerEvents!=='none'&&s.display!=='none'&&s.visibility!=='hidden'&&Number(s.opacity)!==0&&r.width>=innerWidth*.9&&r.height>=innerHeight*.7;
+        const intersects=r.right>0&&r.left<innerWidth&&r.bottom>0&&r.top<innerHeight;
+        return intersects&&(s.position==='fixed'||s.position==='sticky')&&s.pointerEvents!=='none'&&s.display!=='none'&&s.visibility!=='hidden'&&Number(s.opacity)!==0&&r.width>=innerWidth*.9&&r.height>=innerHeight*.7;
       });
-      return {covers:covers.map(el=>el.id||String(el.className)||el.tagName),scrollWidth:document.documentElement.scrollWidth,innerWidth};
+      return {hotbar:hr?hr.toJSON():null,covers:covers.map(el=>el.id||String(el.className)||el.tagName),scrollWidth:document.documentElement.scrollWidth,innerWidth,innerHeight};
     });
+    assert.ok(home.hotbar,`${label}: homepage hotbar missing`);
+    assert.ok(home.hotbar.height<=96,`${label}: mobile hotbar stretched to ${home.hotbar.height}px`);
+    assert.ok(home.hotbar.top>=0&&home.hotbar.bottom<=home.innerHeight+1,`${label}: mobile hotbar is outside viewport`);
     assert.deepEqual(home.covers,[],`${label}: homepage has a viewport-covering fixed/sticky layer: ${home.covers.join(', ')}`);
     assert.ok(home.scrollWidth<=home.innerWidth+1,`${label}: homepage horizontal overflow ${home.scrollWidth} > ${home.innerWidth}`);
   }catch(error){

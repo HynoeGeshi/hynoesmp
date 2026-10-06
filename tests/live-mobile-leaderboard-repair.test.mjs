@@ -7,10 +7,10 @@ const read=path=>readFileSync(new URL(`../${path}`,import.meta.url),'utf8');
 test('watch page cache-busts every interactive Outpost asset with the repair build',()=>{
   const html=read('watch.html');
   for(const asset of ['watch.css','watch-mobile.css','watch.mjs','watch-mobile.mjs']){
-    assert.match(html,new RegExp(`assets/${asset.replace('.',String.raw`\.`)}\\?v=20261006b`));
+    assert.match(html,new RegExp(`assets/${asset.replace('.',String.raw`\.`)}\\?v=20261006c`));
   }
-  assert.match(html,/assets\/leaderboard-live\.css\?v=20261006b/);
-  assert.match(html,/assets\/leaderboard-live\.mjs\?v=20261006b/);
+  assert.match(html,/assets\/leaderboard-live\.css\?v=20261006c/);
+  assert.match(html,/assets\/leaderboard-live\.mjs\?v=20261006c/);
 });
 
 test('phone CSS explicitly keeps mining SVG artwork visible',()=>{

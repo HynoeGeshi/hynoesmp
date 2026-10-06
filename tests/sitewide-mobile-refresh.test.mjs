@@ -11,14 +11,14 @@ const refreshedPages=[
 
 test('every public page loads the final shared site refresh layer',()=>{
   for(const page of refreshedPages){
-    assert.match(read(page),/assets\/site-refresh\.css\?v=20261006b/,`${page} is missing site-refresh.css`);
+    assert.match(read(page),/assets\/site-refresh\.css\?v=20261006c/,`${page} is missing site-refresh.css`);
   }
 });
 
 test('watch page loads the phone layout override and on-site video controller',()=>{
   const html=read('watch.html');
-  assert.match(html,/assets\/watch-mobile-v2\.css\?v=20261006b/);
-  assert.match(html,/assets\/watch-video\.mjs\?v=20261006b/);
+  assert.match(html,/assets\/watch-mobile-v2\.css\?v=20261006c/);
+  assert.match(html,/assets\/watch-video\.mjs\?v=20261006c/);
   assert.match(html,/id="video"/);
   assert.match(html,/class="play-broadcast"/);
 });
