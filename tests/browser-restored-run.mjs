@@ -11,6 +11,8 @@ function restoredRunState() {
   s.blocks = 100;
   s.progress.chapter = 8;
   G.ensureVeins(s);
+  // Make the first card deterministic so one physical tap must visibly damage it.
+  s.veins[0] = { id: 'coal', left: 2 };
   if (!G.startSurvey(s, 2)) throw new Error('Test setup could not start a cave run.');
   return s;
 }
@@ -61,12 +63,22 @@ for (const [engineName, engine] of [['Chromium', chromium], ['WebKit', webkit]])
   if (!mine.faceFill || mine.faceFill === 'rgb(0, 0, 0)' || mine.faceFill === 'rgba(0, 0, 0, 0)') {
     throw new Error(`${engineName} restored cave run rendered a black/empty gem: ${mine.faceFill}`);
   }
+  if (mine.name !== 'Coal' || !mine.detail.includes('2 taps left')) {
+    throw new Error(`${engineName} deterministic first mine card was not restored correctly: ${JSON.stringify(mine)}`);
+  }
 
-  const before = Number((await page.locator('#ore').textContent())?.replace(/[^0-9.-]/g, '') || 0);
   await page.locator('#vein-0').tap();
   await page.waitForTimeout(100);
-  const after = Number((await page.locator('#ore').textContent())?.replace(/[^0-9.-]/g, '') || 0);
-  if (!(after > before)) throw new Error(`${engineName} restored-run physical tap did not mine: ${before} -> ${after}`);
+  const afterTap = await page.evaluate(() => {
+    const button = document.querySelector('#vein-0');
+    return {
+      detail: button?.querySelector('small')?.textContent?.trim() || '',
+      healthWidth: button?.querySelector('.vein-health i')?.style.width || ''
+    };
+  });
+  if (!afterTap.detail.includes('1 tap left') || afterTap.healthWidth === mine.healthWidth) {
+    throw new Error(`${engineName} restored-run physical tap did not damage the mine card: ${JSON.stringify({ before: mine, afterTap })}`);
+  }
 
   await context.close();
   await browser.close();
