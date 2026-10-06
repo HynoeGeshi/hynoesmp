@@ -84,3 +84,60 @@ export async function ensureProfile(client, user, displayName) {
   if (inserted?.error) throw new Error('Could not create the site profile.');
   return payload;
 }
+
+export async function loadRecentMessages(client, limit = 50) {
+  const safeLimit = Math.min(100, Math.max(1, Number(limit) || 50));
+  const { data, error } = await client
+    .from('site_chat_public_messages')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(safeLimit);
+  if (error) throw new Error('Could not load Global Chat history.');
+  return [...(data ?? [])].reverse();
+}
+
+export async function connectGlobalChannel(client, {
+  userId,
+  displayName,
+  page = '/',
+  onBroadcast = () => {},
+  onPresence = () => {},
+  refreshHistory = async () => {},
+  onStatus = () => {},
+} = {}) {
+  if (!client?.channel || !client?.realtime) throw new Error('Realtime chat is unavailable.');
+  if (!userId) throw new Error('A signed-in site user is required for realtime chat.');
+  if (client.realtime.setAuth) await client.realtime.setAuth();
+
+  const channel = client.channel('site:global', {
+    config: { private: true, presence: { key: userId } },
+  });
+
+  channel.on('broadcast', { event: '*' }, (payload) => onBroadcast(payload));
+  channel.on('presence', { event: 'sync' }, () => {
+    onPresence(typeof channel.presenceState === 'function' ? channel.presenceState() : {});
+  });
+
+  channel.subscribe(async (status) => {
+    onStatus(status);
+    if (status !== 'SUBSCRIBED') return;
+    await refreshHistory();
+    if (channel.track) {
+      await channel.track({
+        user_id: userId,
+        display_name: String(displayName ?? '').slice(0, 24),
+        page: String(page ?? '/').slice(0, 160),
+        last_seen: new Date().toISOString(),
+      });
+    }
+  });
+
+  return {
+    channel,
+    async disconnect() {
+      try { if (channel.untrack) await channel.untrack(); } catch {}
+      if (client.removeChannel) await client.removeChannel(channel);
+      else if (channel.unsubscribe) await channel.unsubscribe();
+    },
+  };
+}

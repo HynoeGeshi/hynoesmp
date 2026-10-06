@@ -37,3 +37,17 @@ export function computeUnread(state, event) {
   if (state?.panelOpen && state?.activeTab === 'global') return 0;
   return Math.max(0, Number(state?.count) || 0) + 1;
 }
+
+export function mergeMessageLists(current = [], incoming = [], maxMessages = 100) {
+  const byId = new Map();
+  for (const item of current ?? []) if (item?.id) byId.set(item.id, item);
+  for (const item of incoming ?? []) if (item?.id) byId.set(item.id, item);
+  return [...byId.values()]
+    .sort((a, b) => String(a.created_at ?? '').localeCompare(String(b.created_at ?? '')) || String(a.id).localeCompare(String(b.id)))
+    .slice(-Math.max(1, Number(maxMessages) || 100));
+}
+
+export function presenceOnlineCount(state) {
+  if (!state || typeof state !== 'object') return 0;
+  return new Set(Object.keys(state).filter(Boolean)).size;
+}
