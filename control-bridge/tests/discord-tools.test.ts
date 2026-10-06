@@ -4,14 +4,14 @@ import type { DiscordClient } from '../src/discord/types';
 import { createDiscordTools } from '../src/tools/discord';
 
 const config = { discordAllowedChannelIds: ['allowed'], discordGuildId: 'guild' } as AppConfig;
-const client: DiscordClient = {
+const client = {
   listGuildChannels: vi.fn(async () => [{ id: 'allowed', name: 'server-chat', type: 0 }, { id: 'blocked', name: 'staff', type: 0 }]),
   recentMessages: vi.fn(async () => [{ id: 'm1', content: 'campaign bug here', author: { id: 'u1', username: 'player' } }]),
-  sendMessage: vi.fn(async () => ({ id: 'm2', content: 'ok', author: { id: 'bot', username: 'Hynoe' } })),
+  sendMessage: vi.fn(async () => ({ id: 'm2', content: 'ok', author: { id: 'bot', username: 'Hynoe' })),
   getCurrentUser: vi.fn(async () => ({ id: 'bot', username: 'Hynoe' })),
-  getMessage: vi.fn(async () => ({ id: 'm2', content: 'ok', author: { id: 'bot', username: 'Hynoe' } })),
+  getMessage: vi.fn(async () => ({ id: 'm2', content: 'ok', author: { id: 'bot', username: 'Hynoe' })),
   deleteMessage: vi.fn(async () => undefined),
-};
+} as unknown as DiscordClient;
 
 describe('Discord tools', () => {
   it('lists only allowlisted channels', async () => {
