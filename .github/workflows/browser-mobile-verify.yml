@@ -49,10 +49,10 @@ jobs:
           node-version: '22'
       - name: Run Node regression suite
         run: node --test tests/*.test.mjs
-      - name: Install pinned browser test runtime
+      - name: Install current Chromium test runtime
         run: |
           npm install --no-save --no-package-lock playwright@1.63.0
-          npx playwright install --with-deps chromium webkit
+          npx playwright install --with-deps chromium
       - name: Start static site
         run: |
           python3 -m http.server 4173 --bind 127.0.0.1 > /tmp/hynoe-http.log 2>&1 &
@@ -63,11 +63,11 @@ jobs:
           done
           cat /tmp/hynoe-http.log
           exit 1
-      - name: Verify mobile and desktop browser behavior
+      - name: Verify current mobile and desktop browser behavior
         run: |
           node tests/browser-mobile.mjs
           node tests/browser-first-load.mjs
-          node tests/browser-restored-run.mjs
+          RESTORED_RUN_ENGINE=chromium node tests/browser-restored-run.mjs
       - name: Upload visual evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -76,3 +76,27 @@ jobs:
           path: test-artifacts/*.png
           if-no-files-found: ignore
           retention-days: 7
+
+  ios-webkit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install iOS 18 era WebKit test runtime
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright install --with-deps webkit
+      - name: Start static site
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 > /tmp/hynoe-http.log 2>&1 &
+          echo $! > /tmp/hynoe-http.pid
+          for i in {1..20}; do
+            if curl -fsS http://127.0.0.1:4173/watch.html >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/hynoe-http.log
+          exit 1
+      - name: Verify restored cave save on iPhone WebKit
+        run: RESTORED_RUN_ENGINE=webkit node tests/browser-restored-run.mjs
