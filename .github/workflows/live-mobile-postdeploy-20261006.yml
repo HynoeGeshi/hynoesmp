@@ -1,0 +1,143 @@
+name: Live mobile postdeploy verification
+
+on:
+  push:
+    branches:
+      - debug/live-mobile-production-20261006
+    paths:
+      - '.github/workflows/live-mobile-postdeploy-20261006.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Chromium
+        run: |
+          npm install --no-save --no-package-lock playwright@1.63.0
+          npx playwright install --with-deps chromium
+      - name: Test actual hynoesmp.com on phone matrix
+        run: |
+          cat > live-postdeploy.mjs <<'EOF'
+          import assert from 'node:assert/strict';
+          import {chromium} from 'playwright';
+
+          const base='https://hynoesmp.com';
+          const widths=[320,360,375,390,412,430];
+          const pages=['index.html','start.html','mca.html','progression.html','economy.html','bosses.html','join.html','modpack.html','updates.html','modded-minecraft-server.html','watch.html','privacy.html','terms.html','data-deletion.html','community-rules.html'];
+          const browser=await chromium.launch({headless:true});
+
+          const number=async locator=>Number((await locator.textContent())?.replace(/[^0-9.]/g,'')||0);
+
+          for(const width of widths){
+            const context=await browser.newContext({viewport:{width,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:1});
+            const page=await context.newPage();
+            const errors=[];
+            page.on('pageerror',e=>errors.push(`pageerror ${e.message}`));
+            page.on('console',m=>{if(m.type()==='error'&&!/Failed to load resource/i.test(m.text()))errors.push(`console ${m.text()}`)});
+
+            await page.goto(`${base}/watch.html?postdeploy=${Date.now()}-${width}`,{waitUntil:'networkidle',timeout:60000});
+            await page.waitForSelector('#vein-11');
+            await page.waitForTimeout(900);
+
+            assert.equal(await page.locator('link[href*="site-refresh.css?v=20261006c"]').count(),1,`${width}: site refresh c missing on Watch`);
+            assert.equal(await page.locator('script[src*="watch.mjs?v=20261006c"]').count(),1,`${width}: watch c entry missing`);
+            const guide=page.locator('#how-to-play');
+            assert.equal(await guide.evaluate(el=>el.open),false,`${width}: Help modal auto-opened and blocked game`);
+
+            const vein=page.locator('#vein-0');
+            await vein.scrollIntoViewIfNeeded();
+            const visual=await vein.evaluate(el=>{
+              const face=el.querySelector('.gem-face');
+              const strong=el.querySelector('strong');
+              const small=el.querySelector('small');
+              const rect=el.getBoundingClientRect();
+              const stack=document.elementsFromPoint(rect.left+rect.width/2,rect.top+rect.height/2);
+              return {
+                fill:face?getComputedStyle(face).fill:'',
+                strong:!!strong&&strong.getBoundingClientRect().height>0&&getComputedStyle(strong).visibility!=='hidden',
+                small:!!small&&small.getBoundingClientRect().height>0&&getComputedStyle(small).visibility!=='hidden',
+                hit:stack.includes(el),
+                scrollWidth:document.documentElement.scrollWidth,
+                innerWidth
+              };
+            });
+            assert.ok(visual.fill&&!['rgb(0, 0, 0)','rgba(0, 0, 0, 0)','transparent','none'].includes(visual.fill),`${width}: ore rendered black/transparent: ${visual.fill}`);
+            assert.ok(visual.strong&&visual.small,`${width}: ore labels missing`);
+            assert.ok(visual.hit,`${width}: ore is not active hit target`);
+            assert.ok(visual.scrollWidth<=visual.innerWidth+1,`${width}: Watch horizontal overflow`);
+
+            const ore=page.locator('#ore');
+            const before=await number(ore);
+            await vein.tap({timeout:4000});
+            await page.waitForTimeout(100);
+            const first=await number(ore);
+            assert.ok(first>before,`${width}: first physical tap did not register ${before}->${first}`);
+            for(let i=0;i<20;i++){
+              await vein.tap({timeout:4000});
+              await page.waitForTimeout(18);
+            }
+            await page.waitForTimeout(160);
+            const repeated=await number(ore);
+            assert.ok(repeated>=first+20,`${width}: repeated taps lost ${first}->${repeated}`);
+
+            await page.locator('#open-help').click();
+            assert.equal(await guide.evaluate(el=>el.open),true,`${width}: manual Help did not open`);
+            await page.locator('#how-to-play .dialog-close').click();
+            assert.equal(await guide.evaluate(el=>el.open),false,`${width}: manual Help did not close`);
+
+            if(width===390){
+              const beforePath=new URL(page.url()).pathname;
+              const play=page.locator('#video .play-broadcast');
+              await page.waitForFunction(()=>{const b=document.querySelector('#video .play-broadcast');return !!b&&!b.disabled},null,{timeout:5000});
+              await play.click();
+              await page.waitForSelector('#video iframe',{timeout:5000});
+              assert.match((await page.locator('#video iframe').getAttribute('src'))||'',/youtube-nocookie\.com\/embed\//,'390: on-site video iframe missing');
+              assert.equal(new URL(page.url()).pathname,beforePath,'390: Watch play navigated away from Hynoe');
+            }
+
+            await page.goto(`${base}/?postdeploy=${Date.now()}-${width}`,{waitUntil:'networkidle',timeout:60000});
+            assert.equal(await page.locator('link[href*="site-refresh.css?v=20261006c"]').count(),1,`${width}: homepage site refresh c missing`);
+            const home=await page.evaluate(()=>{
+              const hotbar=document.querySelector('.hotbar');
+              const hr=hotbar?.getBoundingClientRect();
+              const covers=[...document.querySelectorAll('body *')].filter(el=>{
+                const r=el.getBoundingClientRect(),s=getComputedStyle(el);
+                const intersects=r.right>0&&r.left<innerWidth&&r.bottom>0&&r.top<innerHeight;
+                return intersects&&(s.position==='fixed'||s.position==='sticky')&&s.pointerEvents!=='none'&&s.display!=='none'&&s.visibility!=='hidden'&&Number(s.opacity)!==0&&r.width>=innerWidth*.9&&r.height>=innerHeight*.7;
+              });
+              return {hotbar:hr?hr.toJSON():null,covers:covers.map(e=>e.id||String(e.className)||e.tagName),scrollWidth:document.documentElement.scrollWidth,innerWidth,innerHeight};
+            });
+            assert.ok(home.hotbar,`${width}: homepage hotbar missing`);
+            assert.ok(home.hotbar.height<=96,`${width}: homepage hotbar is ${home.hotbar.height}px tall`);
+            assert.ok(home.hotbar.top>=0&&home.hotbar.bottom<=home.innerHeight+1,`${width}: homepage hotbar outside viewport`);
+            assert.deepEqual(home.covers,[],`${width}: homepage covered by ${home.covers.join(',')}`);
+            assert.ok(home.scrollWidth<=home.innerWidth+1,`${width}: homepage horizontal overflow`);
+            assert.deepEqual(errors,[],`${width}: browser errors: ${errors.join(' | ')}`);
+            console.log(`LIVE ${width}px PASS: 21 taps, visible ore, manual Help, hotbar ${home.hotbar.height}px`);
+            await context.close();
+          }
+
+          const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
+          for(const name of pages){
+            const page=await context.newPage();
+            await page.goto(`${base}/${name}?sitewide=${Date.now()}`,{waitUntil:'domcontentloaded',timeout:60000});
+            await page.waitForSelector('main');
+            await page.waitForTimeout(180);
+            assert.equal(await page.locator('link[href*="site-refresh.css?v=20261006c"]').count(),1,`${name}: c stylesheet missing`);
+            const state=await page.locator('main').evaluate(el=>({text:el.innerText.trim().length,height:el.getBoundingClientRect().height,scroll:document.documentElement.scrollWidth,width:innerWidth}));
+            assert.ok(state.text>80&&state.height>120,`${name}: main content not visible`);
+            assert.ok(state.scroll<=state.width+1,`${name}: horizontal overflow ${state.scroll}>${state.width}`);
+            await page.close();
+          }
+          await context.close();
+          await browser.close();
+          console.log('LIVE PRODUCTION PASS: all six phone widths and all public pages verified');
+          EOF
+          node live-postdeploy.mjs
