@@ -24,3 +24,10 @@ test('atomic request-slot claim is not callable by browser roles', async()=>{
   assert.match(sql,/revoke\s+all\s+on\s+function\s+public\.claim_site_help_request_slot[^;]*from\s+public\s*,\s*anon\s*,\s*authenticated/i);
   assert.match(sql,/grant\s+execute\s+on\s+function\s+public\.claim_site_help_request_slot[^;]*to\s+service_role/i);
 });
+
+test('request metrics use one primary key plus an idempotency unique constraint', async()=>{
+  const sql=await source();
+  const primaryKeys=(sql.match(/primary\s+key/gi) || []).length;
+  assert.equal(primaryKeys,1,'site_help_request_metrics must declare only one primary key');
+  assert.match(sql,/request_id\s+uuid\s+not\s+null\s+unique/i,'request_id idempotency constraint missing');
+});

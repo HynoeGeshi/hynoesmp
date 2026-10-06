@@ -10,8 +10,8 @@ test('ask-hynoe uses current Supabase user auth and keeps JWT verification enabl
   assert.doesNotMatch(source,/verify_jwt\s*=\s*false/i);
 });
 
-test('ask-hynoe loads bundled official knowledge and delegates to the shared grounded engine',()=>{
-  assert.match(source,/hynoe-help-index\.mjs/);
+test('ask-hynoe loads private official knowledge and delegates to the shared grounded engine',()=>{
+  assert.match(source,/site_help_knowledge/);
   assert.match(source,/validateAskInput/);
   assert.match(source,/answerAskHynoe/);
   assert.doesNotMatch(source,/site_chat_messages|site_chat_public_messages|site_chat_reactions/i);

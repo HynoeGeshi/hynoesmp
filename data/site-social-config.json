@@ -1,6 +1,6 @@
 {
   "enabled": false,
-  "supabaseUrl": "",
-  "supabasePublishableKey": "",
+  "supabaseUrl": "https://yyxsrljmailopoviriiq.supabase.co",
+  "supabasePublishableKey": "sb_publishable_fTnrYrPzLR_N29OMkGdh9w_jC2yp73X",
   "turnstileSiteKey": ""
 }

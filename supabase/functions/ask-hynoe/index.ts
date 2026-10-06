@@ -1,6 +1,5 @@
 import "@supabase/functions-js/edge-runtime.d.ts";
 import { withSupabase } from "@supabase/server";
-import helpIndex from "../_shared/hynoe-help-index.mjs";
 import { isAllowedSiteOrigin } from "../_shared/site-chat-core.mjs";
 import { validateAskInput, answerAskHynoe } from "../_shared/ask-hynoe-engine.mjs";
 import { ASK_HYNOE_LIMITS, buildFeedbackRow } from "../_shared/ask-hynoe-core.mjs";
@@ -89,11 +88,20 @@ const userHandler = withSupabase({ auth: "user" }, async (req, ctx) => {
   if (rateError) return fail(origin, 500, "rate_limit_failed", "Could not verify request limits.");
   if (!claimed) return fail(origin, 429, "rate_limited", "Ask Hynoe is getting too many questions from this session. Try again shortly.");
 
+  const { data: knowledge, error: knowledgeError } = await admin
+    .from("site_help_knowledge")
+    .select("index_json")
+    .eq("id", true)
+    .maybeSingle();
+  if (knowledgeError || !knowledge || !Array.isArray(knowledge.index_json?.chunks)) {
+    return fail(origin, 503, "knowledge_unavailable", "Ask Hynoe knowledge is temporarily unavailable.");
+  }
+
   const result = await answerAskHynoe({
     question: checked.value.question,
     history: checked.value.history,
     pagePath: checked.value.page_path,
-    chunks: helpIndex.chunks,
+    chunks: knowledge.index_json.chunks,
     provider: configuredProvider(),
     providerTimeoutMs: 7000,
   });

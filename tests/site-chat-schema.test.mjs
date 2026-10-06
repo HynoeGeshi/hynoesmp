@@ -47,3 +47,9 @@ test('authorization never uses user metadata and admin audit is not granted to v
   assert.doesNotMatch(sql, /user_metadata/i);
   assert.doesNotMatch(sql, /grant\s+select[^;]*site_moderation_audit[^;]*to\s+authenticated/i);
 });
+
+test('realtime authorization does not alter Supabase-owned realtime.messages', () => {
+  assert.doesNotMatch(sql, /alter\s+table\s+realtime\.messages/i, 'realtime.messages RLS is Supabase-owned and already enabled');
+  has(/create policy\s+"site global realtime receive"[\s\S]*on\s+realtime\.messages/i, 'private realtime read policy missing');
+  has(/create policy\s+"site global realtime presence publish"[\s\S]*on\s+realtime\.messages/i, 'private realtime write policy missing');
+});
