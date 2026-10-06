@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { loadConfig } from '../src/config';
+import { diagnoseConfigEnv, loadConfig } from '../src/config';
 
 function baseEnv(): NodeJS.ProcessEnv {
   return {
@@ -19,21 +19,25 @@ describe('loadConfig', () => {
     expect(() => loadConfig({} as unknown as NodeJS.ProcessEnv)).toThrow(/BLOOM_API_KEY/);
   });
 
-  it('enables guild management without a legacy channel allowlist', () => {
-    const config = loadConfig({
+  it('reports only missing configuration names for safe production diagnosis', () => {
+    const env = {
       ...baseEnv(),
       DISCORD_GUILD_MANAGEMENT_ENABLED: 'true',
-    });
+      BLOOM_API_KEY: '',
+      DISCORD_BOT_TOKEN: '',
+    } as NodeJS.ProcessEnv;
+    expect(diagnoseConfigEnv(env)).toEqual({ missing: ['BLOOM_API_KEY', 'DISCORD_BOT_TOKEN'] });
+    expect(JSON.stringify(diagnoseConfigEnv(env))).not.toContain('server');
+  });
+
+  it('enables guild management without a legacy channel allowlist', () => {
+    const config = loadConfig({ ...baseEnv(), DISCORD_GUILD_MANAGEMENT_ENABLED: 'true' });
     expect(config.discordGuildManagementEnabled).toBe(true);
     expect(config.discordAllowedChannelIds).toEqual([]);
   });
 
   it('keeps legacy comma-separated channel allowlist parsing when present', () => {
-    const config = loadConfig({
-      ...baseEnv(),
-      DISCORD_GUILD_MANAGEMENT_ENABLED: 'true',
-      DISCORD_ALLOWED_CHANNEL_IDS: '1, 2,3',
-    });
+    const config = loadConfig({ ...baseEnv(), DISCORD_GUILD_MANAGEMENT_ENABLED: 'true', DISCORD_ALLOWED_CHANNEL_IDS: '1, 2,3' });
     expect(config.discordAllowedChannelIds).toEqual(['1', '2', '3']);
   });
 
@@ -42,11 +46,7 @@ describe('loadConfig', () => {
   });
 
   it('loadConfig_forces_bloom_panel_to_https', () => {
-    const env = {
-      ...baseEnv(),
-      DISCORD_ALLOWED_CHANNEL_IDS: '1',
-      BLOOM_PANEL_URL: 'http://mc.bloom.host',
-    };
+    const env = { ...baseEnv(), DISCORD_ALLOWED_CHANNEL_IDS: '1', BLOOM_PANEL_URL: 'http://mc.bloom.host' };
     expect(() => loadConfig(env)).toThrow(/https/);
   });
 });
