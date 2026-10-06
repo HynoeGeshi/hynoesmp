@@ -4,6 +4,12 @@ import { createClient } from '@supabase/supabase-js';
 import { useEffect, useMemo, useState } from 'react';
 import { consentLoginUrl, normalizeAuthorizationId } from '../auth/consent';
 
+export const CONTROL_PERMISSION_ITEMS = [
+  'Approved Bloom server status, console, commands, files, backups, and power controls',
+  'Owner-only guild-wide Discord inspection and management, including channels, roles, permissions, integrations, and bounded activity analysis',
+  'Routine reversible Discord organization changes may run normally; high-impact moderation, deletion, member-content removal, and access broadening require explicit confirmation',
+] as const;
+
 type Details = {
   authorization_id: string;
   redirect_uri: string;
@@ -70,14 +76,10 @@ export function ConsentClient({ supabaseUrl, supabasePublishableKey, authorizati
         {!details && !error && <p className="muted">Loading authorization request…</p>}
         {details && (
           <div className="stack">
-            <p><strong>{details.client.name || 'ChatGPT'}</strong> is requesting access to your Hynoe Control Bridge.</p>
+            <p><strong>{details.client.name || 'ChatGPT'}</strong> is requesting access to your private Hynoe Control Bridge.</p>
             <div className="permissionBox">
-              <strong>What this connection can access</strong>
-              <ul>
-                <li>Approved Bloom server status, console, commands, files, backups, and power controls</li>
-                <li>Approved Discord channels for reading and bot-authored messages</li>
-                <li>Important/destructive actions remain marked for review</li>
-              </ul>
+              <strong>What this owner-only connection can access</strong>
+              <ul>{CONTROL_PERMISSION_ITEMS.map((item) => <li key={item}>{item}</li>)}</ul>
             </div>
             <p className="muted">Signed in as {details.user.email}. Requested OAuth scopes: {details.scope || 'openid email'}.</p>
             <div className="actions">
