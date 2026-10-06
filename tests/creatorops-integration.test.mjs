@@ -45,7 +45,7 @@ test('HTTP intake creates an opaque private report and keeps raw tokens out of t
   let intakeCount = 0;
   const gatewayFn = async (method, payload, operation) => {
     calls.push({ method, payload, operation });
-    if (operation === 'intake-with-report') return { status: 201, body: { ok: true, duplicate: intakeCount++ > 0, createdAt: new Date().toISOString() } };
+    if (operation === 'intake-with-report') return { status: intakeCount++ > 0 ? 200 : 201, body: { ok: true, duplicate: intakeCount > 1, createdAt: new Date().toISOString() } };
     if (operation === 'public-metrics') return { status: 200, body: { ok: true, key: 'hynoe_youtube_case_study', source: 'youtube_via_windsor_verified_snapshot', asOf: '2026-10-06T21:06:30Z', verifiedAt: '2026-10-06T21:10:00Z', freshness: 'verified_snapshot', metrics: { subscribers: 544, views_30d: 2349, watch_hours_30d: 212.7, likes_30d: 122, comments_30d: 36, shares_30d: 23, subscribers_gained_30d: 8, subscribers_lost_30d: 3, net_subscribers_30d: 5 } } };
     if (operation === 'report-read') return { status: 200, body: { ok: true, report: sampleReport, expiresAt: '2026-11-05T21:10:00Z' } };
     return { status: 404, body: { error: 'not_found' } };
@@ -118,7 +118,7 @@ test('report probing and intake validation fail safely', async () => {
   const gatewayFn = async (method, payload, operation) => operation === 'report-read'
     ? { status: 404, body: { error: 'report_not_found' } }
     : { status: 500, body: { error: 'unexpected' } };
-  const app = createCreatorOpsServer({ gatewayFn, rateLimitMax: 2, rateLimitWindowMs: 60000 });
+  const app = createCreatorOpsServer({ gatewayFn, rateLimitMax: 20, rateLimitWindowMs: 60000 });
   const base = await start(app);
   try {
     const wrongType = await fetch(`${base}/api/intake`, { method: 'POST', body: '{}' });
@@ -131,8 +131,10 @@ test('report probing and intake validation fail safely', async () => {
     const unknown = await fetch(`${base}/api/report/${'a'.repeat(43)}`);
     assert.equal(malformed.status, 404);
     assert.equal(unknown.status, 404);
-    assert.deepEqual(await malformed.json(), await unknown.json());
-    assert.deepEqual(await unknown.clone?.() ?? {}, {});
+    const malformedJson = await malformed.json();
+    const unknownJson = await unknown.json();
+    assert.deepEqual(malformedJson, unknownJson);
+    assert.deepEqual(unknownJson, { error: 'report_not_found' });
   } finally {
     app.close();
     await once(app, 'close');
