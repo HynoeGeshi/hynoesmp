@@ -42,6 +42,8 @@ test('CreatorOps MVP ships a secure, monetizable creator funnel', () => {
   assert.match(html, /<meta[^>]+name="description"/i);
   assert.match(html, /<meta[^>]+property="og:title"/i);
   assert.match(html, /<meta[^>]+name="viewport"/i);
+  assert.match(html, /href="\/creatorops\/creatorops\.css"/i);
+  assert.match(html, /src="\/creatorops\/creatorops\.js"/i);
   assert.match(css, /@media\s*\(/i);
 
   assert.match(js, /sessionStorage/i);
@@ -58,14 +60,8 @@ test('CreatorOps presents a premium Hynoe command-center visual system', () => {
   const html = read(pagePath);
   const css = read(cssPath);
 
-  assert.match(html, /class="[^"]*hero-kicker/i);
   assert.match(html, /class="[^"]*command-center/i);
   assert.match(html, /Creator Health/i);
-  assert.match(html, /class="[^"]*workflow-rail/i);
-  assert.match(html, /Discover/i);
-  assert.match(html, /Optimize/i);
-  assert.match(html, /Monetize/i);
-  assert.match(html, /class="[^"]*proof-spotlight/i);
   assert.match(html, /Founding creator/i);
   assert.match(html, /class="[^"]*audit-benefits/i);
 
@@ -75,6 +71,35 @@ test('CreatorOps presents a premium Hynoe command-center visual system', () => {
   assert.match(css, /focus-visible/i);
   assert.match(css, /prefers-reduced-motion/i);
   assert.match(css, /command-center/i);
-  assert.match(css, /workflow-rail/i);
-  assert.match(css, /proof-spotlight/i);
+});
+
+test('CreatorOps speaks to mainstream modern creators with an interactive outcome-first buying journey', () => {
+  const html = read(pagePath);
+  const css = read(cssPath);
+  const js = read(jsPath);
+
+  assert.match(html, /Create more\.\s*Grow faster\.\s*Run less\./i);
+  assert.match(html, /id="diagnostic"/i);
+  for (const problem of ['stalled views', 'overwhelmed', 'not making money', 'need consistency']) {
+    assert.match(html, new RegExp(problem, 'i'), `missing diagnostic problem: ${problem}`);
+  }
+  assert.match(html, /id="diagnostic-result"/i);
+  assert.match(html, /Build My System/i);
+  assert.match(html, /Run It With Me/i);
+  assert.match(html, /less admin/i);
+  assert.match(html, /more time creating/i);
+  assert.match(html, /Founding access/i);
+  assert.match(html, /What happens next/i);
+
+  assert.match(js, /data-diagnostic/i);
+  assert.match(js, /diagnostic-result/i);
+  assert.match(js, /aria-pressed/i);
+  assert.match(js, /IntersectionObserver/i);
+
+  assert.match(css, /--ivory/i);
+  assert.match(css, /\.light-section/i);
+  assert.match(css, /\.diagnostic-stage/i);
+  assert.match(css, /\.editorial-panel/i);
+  assert.match(css, /\.reveal/i);
+  assert.match(css, /@media\s*\(max-width:\s*720px\)/i);
 });
