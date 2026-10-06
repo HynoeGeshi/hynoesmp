@@ -89,14 +89,24 @@ def video_info(video_id: str) -> dict:
     page = get(f"https://www.youtube.com/watch?v={video_id}")
     parsed = page_meta(page)
 
-    # Use the canonical page metadata only. The old generic JSON `title` fallback
-    # could accidentally grab tiny unrelated values such as "4" from YouTube's page data.
+    # Prefer canonical watch-page metadata. If YouTube serves a reduced watch page
+    # without title metadata, use its public oEmbed response before falling back.
     title = (
         meta_value(parsed, "property", "og:title")
         or meta_value(parsed, "name", "title")
         or "".join(parsed.page_title).removesuffix(" - YouTube").strip()
-        or "Hynoe livestream"
     )
+    if not title:
+        try:
+            oembed_url = (
+                "https://www.youtube.com/oembed?"
+                f"url=https://www.youtube.com/watch?v={video_id}&format=json"
+            )
+            title = json.loads(get(oembed_url)).get("title", "").strip()
+        except Exception:
+            title = ""
+    if not title:
+        title = "Hynoe livestream"
 
     is_live = bool(re.search(r'"isLiveNow"\s*:\s*true', page))
     is_upcoming = bool(re.search(r'"isUpcoming"\s*:\s*true', page))
