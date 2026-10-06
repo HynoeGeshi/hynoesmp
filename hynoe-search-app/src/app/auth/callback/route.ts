@@ -10,8 +10,8 @@ export async function GET(request: Request) {
   if (code) {
     const supabase = await createClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (!error) return NextResponse.redirect(new URL(next, requestUrl.origin));
+    if (!error) return NextResponse.redirect(`${requestUrl.origin}${next}`);
   }
 
-  return NextResponse.redirect(new URL('/sign-in?error=auth_callback', requestUrl.origin));
+  return NextResponse.redirect(`${requestUrl.origin}/sign-in?error=auth_callback`);
 }
