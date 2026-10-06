@@ -37,7 +37,7 @@ for (const [engineName, engine] of [['Chromium', chromium], ['WebKit', webkit]])
   }, saved);
 
   await page.goto(`${base}/watch.html?restored-run=${engineName}-${Date.now()}`, { waitUntil: 'domcontentloaded' });
-  await page.waitForTimeout(1200);
+  await page.waitForFunction(() => document.querySelectorAll('.vein').length === 12, null, { timeout: 8000 });
 
   const mine = await page.evaluate(() => {
     const button = document.querySelector('#vein-0');
@@ -68,7 +68,7 @@ for (const [engineName, engine] of [['Chromium', chromium], ['WebKit', webkit]])
   }
 
   await page.locator('#vein-0').tap();
-  await page.waitForTimeout(100);
+  await page.waitForFunction(() => document.querySelector('#vein-0 small')?.textContent?.includes('1 tap left'), null, { timeout: 3000 });
   const afterTap = await page.evaluate(() => {
     const button = document.querySelector('#vein-0');
     return {
