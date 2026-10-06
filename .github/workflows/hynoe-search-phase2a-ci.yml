@@ -23,4 +23,6 @@ jobs:
           cache: npm
           cache-dependency-path: hynoe-search-app/package-lock.json
       - run: npm ci
-      - run: npm test -- tests/smoke/supabase-security.test.ts
+      - run: npm test
+      - run: npm run test:domain
+      - run: npm run build
