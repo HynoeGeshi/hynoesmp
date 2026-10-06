@@ -53,6 +53,6 @@ After uploading this version to GitHub:
 
 All guide headers link to Watch & Play. The original site content, modpack release links, domain, and stream updater remain intact.
 
-Public chat is intentionally disabled until `relay/README.md` setup is complete. `data/chat-config.json` stores only a public relay URL and public Turnstile key. Bloom secrets belong exclusively in the Worker secret store. `chat-admin.html` supplies token-authenticated moderation. No live delivery is claimed without a real Minecraft test.
+The retired Minecraft relay chat has been replaced by a website-native Hynoe Community system. `data/site-social-config.json` contains only public Supabase/Turnstile configuration; server secrets belong in the dedicated backend. Global Chat remains disabled until the dedicated production Supabase project is connected and verified.
 
 Run `node --test tests/*.test.mjs` for progression and relay tests. Preview with `python -m http.server 8765` and visit `/watch.html`.

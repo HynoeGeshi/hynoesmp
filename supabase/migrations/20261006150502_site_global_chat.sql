@@ -109,7 +109,7 @@ revoke all on public.site_announcements from anon, authenticated;
 revoke all on public.site_moderation_audit from anon, authenticated;
 revoke all on public.site_chat_settings from anon, authenticated;
 
-grant select (user_id, display_name, role) on public.site_profiles to authenticated;
+grant select (user_id, display_name, normalized_name, avatar_seed, role) on public.site_profiles to authenticated;
 grant insert (user_id, display_name, normalized_name, avatar_seed) on public.site_profiles to authenticated;
 grant update (display_name, normalized_name, avatar_seed) on public.site_profiles to authenticated;
 grant select (id, author_id, body, reply_to, created_at, edited_at, deleted_at) on public.site_chat_messages to authenticated;

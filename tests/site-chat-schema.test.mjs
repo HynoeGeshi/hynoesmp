@@ -27,7 +27,7 @@ test('message table is not directly insertable by browser roles', () => {
 
 test('base-table read grants expose only columns required by safe public surfaces', () => {
   assert.doesNotMatch(sql, /grant\s+select\s+on\s+public\.site_profiles\s+to\s+authenticated/i);
-  has(/grant\s+select\s*\(\s*user_id\s*,\s*display_name\s*,\s*role\s*\)\s+on\s+public\.site_profiles\s+to\s+authenticated/i, 'profile safe column grant missing');
+  has(/grant\s+select\s*\(\s*user_id\s*,\s*display_name\s*,\s*normalized_name\s*,\s*avatar_seed\s*,\s*role\s*\)\s+on\s+public\.site_profiles\s+to\s+authenticated/i, 'profile safe column grant missing');
   assert.doesNotMatch(sql, /grant\s+select\s+on\s+public\.site_chat_messages\s+to\s+authenticated/i);
   has(/grant\s+select\s*\([^)]*body[^)]*deleted_at[^)]*\)\s+on\s+public\.site_chat_messages\s+to\s+authenticated/i, 'message safe column grant missing');
   has(/create trigger site_chat_messages_scrub_deleted_trigger/i, 'deleted body scrub trigger missing');

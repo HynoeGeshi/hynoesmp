@@ -1,7 +1,7 @@
 import { createClient } from './vendor/supabase.mjs';
 import { normalizeDisplayName, validateDisplayName, validateClientMessage, validateReaction, validateReport, isAnnouncementActive } from './site-social-core.mjs';
 
-export const SITE_SOCIAL_CONFIG_PATH = 'data/site-social-config.json';
+export const SITE_SOCIAL_CONFIG_PATH = '/data/site-social-config.json';
 
 export async function loadSiteSocialConfig(fetchImpl = globalThis.fetch) {
   if (typeof fetchImpl !== 'function') throw new Error('Site social configuration cannot be loaded.');
