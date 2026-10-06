@@ -78,5 +78,6 @@ test('request IDs must be UUIDs and allowed origins are explicit', () => {
   assert.equal(validateRequestId('not-a-uuid').ok, false);
   assert.equal(isAllowedSiteOrigin('https://hynoesmp.com'), true);
   assert.equal(isAllowedSiteOrigin('https://www.hynoesmp.com'), true);
+  assert.equal(isAllowedSiteOrigin('https://hynoesmp-social-preview.onrender.com'), true);
   assert.equal(isAllowedSiteOrigin('https://evil.example'), false);
 });
