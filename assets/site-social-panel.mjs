@@ -158,7 +158,7 @@ askPane.append(askIntro);
 const askTranscript = el('div', { className: 'site-social-ask-log', role: 'log', 'aria-live': 'polite' });
 const askWelcome = el('article', { className: 'site-social-ask-message bot' });
 askWelcome.append(el('strong', {}, 'HYNOE'));
-askWelcome.append(el('p', {}, 'Ask me about joining, campaign progression, commands, economy, bosses, mods, village life, or site features. I will tell you when the official Hynoe sources do not verify an answer.'));
+askWelcome.append(el('p', {}, 'Ask me about joining, campaign progression, commands, economy, bosses, mods, village life, site features, or the live server status. I will tell you when the official Hynoe sources do not verify an answer.'));
 askTranscript.append(askWelcome);
 askPane.append(askTranscript);
 const askForm = el('form', { className: 'site-social-composer ask' });
@@ -577,6 +577,12 @@ askClearButton.addEventListener('click', () => {
 });
 
 renderStoredAskHistory();
+
+askInput.addEventListener('keydown', (event) => {
+  if (event.key !== 'Enter' || event.shiftKey || event.isComposing) return;
+  event.preventDefault();
+  if (!state.askBusy && askInput.value.trim()) askForm.requestSubmit();
+});
 
 askForm.addEventListener('submit', async (event) => {
   event.preventDefault();
