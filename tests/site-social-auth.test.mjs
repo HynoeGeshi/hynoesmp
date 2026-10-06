@@ -4,6 +4,8 @@ import {
   ensureSiteSession,
   ensureProfile,
   loadSiteSocialConfig,
+  restoreSiteSession,
+  clearSiteAuthStorage,
 } from '../assets/site-social.mjs';
 
 test('ensureSiteSession reuses an existing Supabase session', async () => {
@@ -52,6 +54,22 @@ test('ensureSiteSession bootstraps anonymously without Turnstile when CAPTCHA is
   const result = await ensureSiteSession(client, '');
   assert.equal(result, session);
   assert.equal(received, undefined);
+});
+
+test('restoreSiteSession times out instead of leaving identity stuck loading forever', async () => {
+  const client = { auth: { getSession() { return new Promise(() => {}); } } };
+  const started = Date.now();
+  const result = await restoreSiteSession(client, { timeoutMs: 20 });
+  assert.deepEqual(result, { session: null, timedOut: true });
+  assert.ok(Date.now() - started < 250);
+});
+
+test('clearSiteAuthStorage removes only this Supabase project auth token', () => {
+  const removed = [];
+  const storage = { removeItem(key) { removed.push(key); } };
+  const key = clearSiteAuthStorage({ supabaseUrl: 'https://abc123.supabase.co' }, storage);
+  assert.equal(key, 'sb-abc123-auth-token');
+  assert.deepEqual(removed, ['sb-abc123-auth-token']);
 });
 
 function profileClient(existing = null) {
