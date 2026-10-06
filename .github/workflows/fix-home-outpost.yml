@@ -7,6 +7,7 @@ on:
     paths:
       - '.github/workflows/fix-home-outpost.yml'
       - '.github/scripts/fix-home-outpost.py'
+      - '.github/scripts/run-home-outpost-fix.py'
       - 'tests/home-overhaul.test.mjs'
   workflow_dispatch:
 
@@ -33,7 +34,7 @@ jobs:
             echo "Confirmed: homepage overhaul contract is RED."
           fi
       - name: Apply homepage overhaul
-        run: python .github/scripts/fix-home-outpost.py
+        run: python .github/scripts/run-home-outpost-fix.py
       - name: Verify homepage and full suite
         run: |
           node --test tests/home-overhaul.test.mjs
