@@ -2,351 +2,223 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Ship a secure, persistent, site-wide Global Chat with anonymous guest identity, realtime presence, replies/reactions/reporting, moderation/admin controls, and a shared launcher that works across Hynoe SMP public pages without any Minecraft, Bloom, Discord, or control-bridge dependency.
+**Goal:** Ship a secure, persistent, site-wide Global Chat with anonymous guest identity, realtime presence, replies/reactions/reporting, moderation/admin controls, and a shared launcher across Hynoe SMP public pages.
 
-**Architecture:** Keep the existing static site and add Supabase Auth/Postgres/Realtime/Edge Functions behind a shared `assets/site-social.mjs` UI shell. Visitors authenticate anonymously through Supabase with Cloudflare Turnstile, reads use explicitly granted + RLS-protected Data API access, all message creation goes through the authenticated `send-site-message` Edge Function, and database changes broadcast over the private `site:global` Realtime topic.
+**Architecture:** Keep the existing static site. Add Supabase Auth/Postgres/Realtime/Edge Functions behind shared `assets/site-social.mjs` + `assets/site-social.css`. Visitors use anonymous Supabase auth with Cloudflare Turnstile. Reads are RLS-protected. Message creation goes only through authenticated Edge Function `send-site-message`. Persisted message changes are broadcast on private Realtime topic `site:global` and Presence is used only for online state.
 
-**Tech Stack:** Static HTML/CSS/ES modules, Node.js built-in test runner, Supabase Auth/Postgres/Realtime/Edge Functions, Cloudflare Turnstile.
+**Tech Stack:** Static HTML/CSS/ES modules, Node.js built-in test runner, Playwright/browser smoke tests, Supabase Auth/Postgres/Realtime/Edge Functions, Cloudflare Turnstile.
 
-**Spec:** `docs/superpowers/specs/2026-10-06-site-help-global-chat-design.md` plus `docs/superpowers/specs/2026-10-06-site-help-global-chat-self-review.md`
+**Spec:** `docs/superpowers/specs/2026-10-06-site-help-global-chat-design.md` and `docs/superpowers/specs/2026-10-06-site-help-global-chat-self-review.md`
 
 ## Global Constraints
 
-- Global Chat is website-native; no Minecraft, Bloom, Discord, or `control-bridge/` dependency.
-- Guest bootstrap uses `supabase.auth.signInAnonymously({ options: { captchaToken } })` with Cloudflare Turnstile.
-- Public message creation uses one authenticated Supabase Edge Function named `send-site-message`; browsers do not get direct insert permission on `site_chat_messages`.
-- Message body limit is 300 characters and normal guest minimum spacing is 3 seconds; centralize rate constants.
-- Realtime topic is private `site:global`; Presence is only for low-frequency online state.
-- All exposed-schema tables have RLS plus explicit `GRANT` statements because Supabase Data API auto-exposure is no longer a safe assumption.
-- Never use `user_metadata` for authorization; admin/moderator role must come from immutable server-controlled data.
-- Do not modify objects in the `realtime` schema; only create the supported RLS policies on `realtime.messages`.
-- Use a browser-safe Supabase publishable key only; privileged `sb_secret_*` credentials remain Edge-Function/server-side only.
-- Site must remain usable when Supabase is unavailable.
-- Preserve existing stream/mining-game behavior on `watch.html` while removing the obsolete website-to-Minecraft chat concept.
+- Website-native only; no Minecraft, Bloom, Discord, or `control-bridge/` dependency.
+- Guest bootstrap: `supabase.auth.signInAnonymously({ options: { captchaToken } })`.
+- Browser uses a Supabase **publishable** key only; privileged secret keys stay in Edge Functions/server paths.
+- All exposed-schema tables get RLS plus explicit Data API `GRANT`s.
+- Anonymous users use the `authenticated` Postgres role; authorization must use ownership/immutable role data, not `TO authenticated` alone.
+- Do not use `user_metadata` for authorization.
+- Message body max: 300 chars. Normal guest spacing: minimum 3 seconds. Rate constants centralized.
+- Public message creation only through `send-site-message`; browser has no direct insert grant on `site_chat_messages`.
+- Realtime topic: private `site:global`; Presence is low-frequency only.
+- User content is rendered with safe DOM/text APIs only.
+- No secrets in GitHub, query strings, browser storage, or page source.
 
 ## Review Focus
 
-- A guest clears storage or opens a second browser: a new identity is created cleanly and cannot inherit the previous identity's moderation/admin state.
-- A muted/banned user calls the Edge Function directly instead of using the UI: server-side policy rejects the send.
-- A malicious message/display name contains HTML/script/control characters: rendering remains text-only and message validation rejects unsafe payload forms.
-- Realtime disconnects and reconnects while messages are posted: history reconciliation does not duplicate or lose visible messages and unread state remains sane.
-- A guest attempts to self-promote by changing profile role fields or forged JWT metadata: RLS/server authorization denies the change.
+1. Anonymous user attempts to self-promote role -> rejected by RLS/server checks.
+2. Muted/banned user calls Edge Function directly -> rejected even if UI is bypassed.
+3. Duplicate/replayed message requests inside cooldown -> rejected or idempotently handled.
+4. Realtime reconnect after missed events -> client refreshes authoritative history without duplicates.
+5. Malicious display/message text (`<script>`, bidi/control chars, oversized payload) -> safely normalized/rejected and never injected as HTML.
+
+## File Structure
+
+- `assets/site-social.mjs` — site-wide launcher, auth bootstrap, history, realtime, presence, chat interactions.
+- `assets/site-social.css` — desktop/mobile HUD panel, accessibility/reduced-motion states.
+- `assets/site-social-core.mjs` — pure validation/state helpers testable in Node.
+- `assets/site-social-admin.mjs` — protected moderation/admin UI client.
+- `site-admin.html` — admin operations surface.
+- `supabase/functions/_shared/site-chat-core.mjs` — pure message/profile/rate-limit helpers testable in Node.
+- `supabase/functions/send-site-message/index.ts` — authenticated write endpoint.
+- `supabase/functions/moderate-site-chat/index.ts` — authenticated moderator/admin actions.
+- `supabase/migrations/*_site_global_chat.sql` — schema, RLS, grants, realtime policies/triggers.
+- `tests/site-social-core.test.mjs` — pure frontend behavior.
+- `tests/site-chat-function-core.test.mjs` — Edge Function pure-core tests.
+- `tests/site-social-browser.mjs` — panel/mobile integration smoke tests.
+- `community-rules.html` — public site-chat rules wording.
+- `watch.html` — remove obsolete Minecraft-relay chat shell while preserving stream/game features.
+- root visitor HTML pages — include shared social assets + required CSP origins.
 
 ---
 
-### Task 1: Supabase project layout, schema, grants, and RLS foundation
+### Task 1: Chat domain rules and pure validation
 
 **Files:**
-- Create: `supabase/config.toml`
-- Create: `supabase/migrations/<generated>-site_global_chat.sql`
-- Create: `supabase/tests/site_global_chat_rls.sql`
-- Create: `tests/site-social-schema.test.mjs`
+- Create: `assets/site-social-core.mjs`
+- Create: `supabase/functions/_shared/site-chat-core.mjs`
+- Create: `tests/site-social-core.test.mjs`
+- Create: `tests/site-chat-function-core.test.mjs`
 
 **Interfaces:**
-- Consumes: approved database model from the spec.
-- Produces: tables `site_profiles`, `site_chat_messages`, `site_chat_reactions`, `site_chat_reports`, `site_announcements`, `site_moderation_audit`, plus a safe read view/API for chat history and helper authorization functions in a non-exposed schema where privileged logic is required.
+- Produces frontend: `normalizeDisplayName(input)`, `validateDisplayName(input)`, `validateClientMessage(input)`, `computeUnread(state,event)`.
+- Produces server: `normalizeMessageBody(input)`, `validateMessageBody(input)`, `canPost(profile,limits,now)`, `validateReplyTarget(reply)`.
 
-- [ ] **Step 1: Write the failing repository-structure test**
+- [ ] Write failing tests for 300-char max, blank/control-only rejection, reserved staff names, HTML/script text preservation as text, 3-second cooldown, muted/banned rejection, and unread behavior.
+- [ ] Run: `node --test tests/site-social-core.test.mjs tests/site-chat-function-core.test.mjs`; expect failures for missing modules/functions.
+- [ ] Implement only the pure helpers above; centralize constants in the server core and export safe client constants where needed.
+- [ ] Re-run tests; expect PASS.
+- [ ] Commit: `feat: add site chat validation core`.
 
-Create `tests/site-social-schema.test.mjs` asserting that the migration contains all required table names, `enable row level security`, explicit `grant select`/`grant insert` statements where client Data API access is intended, and contains no `grant all` to `anon` or `authenticated`.
-
-- [ ] **Step 2: Run the test to verify it fails**
-
-Run: `node --test tests/site-social-schema.test.mjs`
-Expected: FAIL because the Supabase migration does not exist.
-
-- [ ] **Step 3: Initialize Supabase files and generate the migration filename with the CLI**
-
-Run `supabase --version`, `supabase --help`, `supabase migration new site_global_chat`, and keep the CLI-generated migration filename. Do not invent a timestamp filename manually.
-
-- [ ] **Step 4: Implement the schema, constraints, explicit grants, and RLS policies**
-
-Required policy behavior: authenticated guests can read public history/profile-safe fields; guests cannot change `role`, mute/ban fields, or delete arbitrary messages; reactions are owned by `(auth.uid(), message_id)` and limited to the allowlist; reports are creatable by their reporter but readable/resolvable only by moderators/admins; announcements/audit writes are privileged only.
-
-- [ ] **Step 5: Add SQL security tests**
-
-`supabase/tests/site_global_chat_rls.sql` must exercise the Review Focus cases for self-promotion and cross-user deletion plus muted/banned posting preconditions exposed to the Edge Function.
-
-- [ ] **Step 6: Run local database verification**
-
-Run the current CLI help for local DB/testing commands first, then start/reset the local Supabase stack and execute the SQL tests. Expected: schema applies cleanly and every security assertion passes.
-
-- [ ] **Step 7: Run Supabase advisors before committing**
-
-Run the current Security/Performance Advisor command supported by the installed CLI or Supabase MCP. Expected: no unresolved critical RLS/security finding introduced by these objects.
-
-- [ ] **Step 8: Commit**
-
-```bash
-git add supabase tests/site-social-schema.test.mjs
-git commit -m "feat: add secure global chat schema"
-```
-
-### Task 2: Guest bootstrap, display-name rules, and browser-safe Supabase client
+### Task 2: Supabase schema, RLS, grants, and realtime authorization
 
 **Files:**
-- Create: `assets/site-social-auth.mjs`
-- Create: `assets/site-social-validation.mjs`
-- Create: `data/site-social-config.json`
-- Create: `tests/site-social-auth.test.mjs`
-- Create: `tests/site-social-validation.test.mjs`
+- Create migration via Supabase CLI `supabase migration new site_global_chat`.
+- Modify generated migration file only.
+- Create: `tests/site-chat-schema.sql` or equivalent SQL assertions used by local/connected test flow.
 
 **Interfaces:**
-- Consumes: Supabase project URL + browser-safe publishable key + Turnstile site key from `data/site-social-config.json`.
-- Produces: `bootstrapGuest({ captchaToken, displayName })`, `getCurrentSiteUser()`, `normalizeDisplayName(name)`, `validateDisplayName(name)`, `validateChatBody(body)`.
+- Produces tables: `site_profiles`, `site_chat_messages`, `site_chat_reactions`, `site_chat_reports`, `site_announcements`, `site_moderation_audit`, `site_chat_settings`.
+- Produces safe read view/API for public message history without exposing moderation-only fields.
 
-- [ ] **Step 1: Write failing validation tests**
+- [ ] Write security assertions first: guest cannot write role/mute/ban fields, cannot direct-insert messages, cannot delete another message, cannot read reports/audit, and unauthenticated realtime client is denied.
+- [ ] Create migration through CLI, then add tables, constraints, indexes, RLS, explicit `GRANT`s, private Realtime policies, and database trigger/broadcast support.
+- [ ] Use `security_invoker = true` for any exposed view where supported; otherwise keep it unexposed and query tables through RLS-safe paths.
+- [ ] Run schema/security assertions and Supabase advisors; fix findings before commit.
+- [ ] Commit: `feat: add secure global chat schema`.
 
-Assert: display names trim/collapse whitespace; reserved Hynoe/staff names are rejected for guests; empty/control-only names fail; chat bodies over 300 characters fail; `<script>` is treated as text/unsafe input and never returned as trusted HTML.
+### Task 3: Anonymous auth bootstrap and profile creation
 
-- [ ] **Step 2: Run validation tests to verify RED**
+**Files:**
+- Modify: `assets/site-social.mjs`
+- Modify: `assets/site-social.css`
+- Modify migration if a profile bootstrap RPC/trigger is required.
+- Test: `tests/site-social-browser.mjs`
 
-Run: `node --test tests/site-social-validation.test.mjs`
-Expected: FAIL because validation module does not exist.
+**Interfaces:**
+- Consumes Supabase URL + publishable key + Turnstile site key from public config.
+- Produces `ensureSiteSession()` and `ensureProfile(displayName)`.
 
-- [ ] **Step 3: Implement pure validation helpers**
+- [ ] Add failing browser tests for first-run Turnstile gate, anonymous sign-in, display-name creation, persisted session reload, and graceful auth failure.
+- [ ] Implement Supabase client bootstrap and `signInAnonymously({ options: { captchaToken } })`.
+- [ ] Ensure profile creation/update cannot set privileged columns.
+- [ ] Re-run browser/auth tests; expect PASS.
+- [ ] Commit: `feat: add guest site identity`.
 
-Keep every helper DOM-independent so Node tests can exercise it directly.
-
-- [ ] **Step 4: Run validation tests to GREEN**
-
-Run: `node --test tests/site-social-validation.test.mjs`
-Expected: PASS.
-
-- [ ] **Step 5: Write failing guest-bootstrap tests with a stub Supabase client**
-
-Assert `bootstrapGuest` refuses missing CAPTCHA, passes `captchaToken` to anonymous sign-in, persists no privileged key, and attempts only safe profile-field creation/update.
-
-- [ ] **Step 6: Implement `assets/site-social-auth.mjs`**
-
-Use Supabase anonymous auth; authorization never trusts `user_metadata`. Browser config contains only the project URL, publishable key, and Turnstile public site key.
-
-- [ ] **Step 7: Run auth tests**
-
-Run: `node --test tests/site-social-auth.test.mjs tests/site-social-validation.test.mjs`
-Expected: PASS.
-
-- [ ] **Step 8: Commit**
-
-```bash
-git add assets/site-social-auth.mjs assets/site-social-validation.mjs data/site-social-config.json tests/site-social-*.test.mjs
-git commit -m "feat: add secure site guest bootstrap"
-```
-
-### Task 3: Controlled message-send Edge Function and realtime broadcast
+### Task 4: Authenticated message creation Edge Function
 
 **Files:**
 - Create: `supabase/functions/send-site-message/index.ts`
-- Modify: `supabase/config.toml`
-- Modify: `supabase/migrations/<generated>-site_global_chat.sql`
-- Create: `tests/send-site-message.test.mjs`
+- Modify: `supabase/functions/_shared/site-chat-core.mjs`
+- Test: `tests/site-chat-function-core.test.mjs`
 
 **Interfaces:**
-- Consumes: authenticated user JWT, `site_profiles`, centralized rate constants, optional `reply_to`.
-- Produces: `POST send-site-message` response `{ id, created_at }`; database trigger broadcasts insert/update/delete events to private topic `site:global`.
+- Endpoint input: `{ body: string, reply_to?: string | null, request_id?: string }`.
+- Endpoint output: `{ id: string, created_at: string }` on success; structured non-secret errors otherwise.
 
-- [ ] **Step 1: Write failing function tests using dependency-injected/stubbed auth and data adapters**
+- [ ] Add failing tests for missing/invalid JWT context, muted/banned profile, cooldown, oversized message, invalid reply target, paused chat, and valid insert payload.
+- [ ] Keep Edge Function JWT verification enabled; derive user from auth token, never caller-supplied ID.
+- [ ] Perform privileged database insert only after all checks.
+- [ ] Add CORS allowlist for `https://hynoesmp.com` and `https://www.hynoesmp.com` plus explicit approved preview/dev origins.
+- [ ] Run unit/function integration tests; expect PASS.
+- [ ] Commit: `feat: add controlled site message endpoint`.
 
-Cover: unauthenticated request, body >300, blank/control-only body, banned user, muted user, second message inside 3 seconds, invalid `reply_to`, valid send, and direct forged author/display-name fields being ignored.
-
-- [ ] **Step 2: Run RED**
-
-Run: `node --test tests/send-site-message.test.mjs`
-Expected: FAIL because function/core handler does not exist.
-
-- [ ] **Step 3: Implement the Edge Function core and handler**
-
-Leave JWT verification enabled for this user-authenticated function. Use the caller JWT to identify the user and a server-only Supabase secret client for the privileged insert after validation.
-
-- [ ] **Step 4: Add the database broadcast trigger**
-
-Use supported Realtime broadcast functions from the database without creating/modifying objects in the `realtime` schema. Broadcast only safe public fields needed by clients.
-
-- [ ] **Step 5: Add private-channel authorization policies on `realtime.messages`**
-
-Allow authenticated site users to receive `site:global` Broadcast/Presence. Do not add arbitrary new tables/functions inside the locked `realtime` schema.
-
-- [ ] **Step 6: Run unit + local function/database tests**
-
-Run: `node --test tests/send-site-message.test.mjs` plus local Supabase function/database verification. Expected: PASS for all rejection and valid-send cases.
-
-- [ ] **Step 7: Commit**
-
-```bash
-git add supabase/functions/send-site-message supabase/config.toml supabase/migrations tests/send-site-message.test.mjs
-git commit -m "feat: add controlled global chat send path"
-```
-
-### Task 4: Realtime chat client, history reconciliation, presence, replies/reactions/reports
+### Task 5: History, realtime Broadcast, Presence, and reconnect
 
 **Files:**
-- Create: `assets/site-global-chat.mjs`
-- Create: `tests/site-global-chat.test.mjs`
-- Modify: `supabase/migrations/<generated>-site_global_chat.sql`
+- Modify: `assets/site-social.mjs`
+- Modify: `assets/site-social-core.mjs`
+- Test: `tests/site-social-browser.mjs`
 
 **Interfaces:**
-- Consumes: guest session from Task 2, `send-site-message` from Task 3, safe history/read endpoints/views.
-- Produces: `createGlobalChatController({ supabase, userId })` with methods `loadHistory()`, `connect()`, `disconnect()`, `sendMessage()`, `react()`, `report()`, and observable state for connection/presence/unread counts.
+- Produces `loadRecentMessages()`, `connectGlobalChannel()`, `disconnectGlobalChannel()`.
 
-- [ ] **Step 1: Write failing controller tests**
+- [ ] Add failing tests for history hydration, live append, dedupe by message ID, missed-event reconnect refresh, unread counter, and online-count changes.
+- [ ] Implement private channel `site:global` subscription and low-frequency Presence.
+- [ ] On reconnect, refresh authoritative recent history then dedupe before rendering.
+- [ ] Ensure subscriptions are removed on teardown/page lifecycle transitions.
+- [ ] Re-run tests; expect PASS.
+- [ ] Commit: `feat: add realtime global chat`.
 
-Cover initial history order, dedupe by message ID after reconnect, tombstone update, unread increment while hidden, reply linkage, allowlisted reaction, report creation, Presence connect/disconnect count, and cleanup/unsubscribe.
-
-- [ ] **Step 2: Run RED**
-
-Run: `node --test tests/site-global-chat.test.mjs`
-Expected: FAIL because controller does not exist.
-
-- [ ] **Step 3: Implement the controller**
-
-History comes from persisted rows first; Broadcast merges live events by ID/version/timestamp. Presence stores only low-frequency fields `{ user_id, display_name, page, last_seen }`.
-
-- [ ] **Step 4: Add any missing grants/RLS for reactions/reports/history reads**
-
-Keep direct message-table INSERT blocked; client write permissions are only for the specifically approved reaction/report operations.
-
-- [ ] **Step 5: Run tests**
-
-Run: `node --test tests/site-global-chat.test.mjs tests/site-social-validation.test.mjs`
-Expected: PASS.
-
-- [ ] **Step 6: Commit**
-
-```bash
-git add assets/site-global-chat.mjs supabase/migrations tests/site-global-chat.test.mjs
-git commit -m "feat: add realtime global chat client"
-```
-
-### Task 5: Site-wide panel shell and responsive UI
+### Task 6: Replies, reactions, reporting, announcements
 
 **Files:**
-- Create: `assets/site-social.mjs`
-- Create: `assets/site-social.css`
-- Create: `tests/site-social-ui.test.mjs`
-- Modify: root public HTML pages selected by the spec
+- Modify: `assets/site-social.mjs`
+- Modify: `assets/site-social.css`
+- Modify migration/RLS for reactions/reports/announcements as required.
+- Test: `tests/site-social-core.test.mjs`, `tests/site-social-browser.mjs`
 
 **Interfaces:**
-- Consumes: `site-social-auth.mjs`, `site-global-chat.mjs`; exposes a tab hook for the later Ask Hynoe plan.
-- Produces: persistent launcher/panel with `GLOBAL CHAT` and placeholder-ready `ASK HYNOE` tab, remembered panel/tab state, unread badge, online indicator, mobile bottom sheet, keyboard/focus behavior.
+- Produces reply composer state, allowlisted reaction set, report submission, active announcement banner.
 
-- [ ] **Step 1: Write failing static/UI contract tests**
+- [ ] Add failing tests for valid/invalid reply references, reaction uniqueness, report privacy, announcement expiry, and deleted-message tombstones.
+- [ ] Implement UI + safe database/Edge Function paths according to RLS.
+- [ ] Re-run tests; expect PASS.
+- [ ] Commit: `feat: add global chat interactions`.
 
-Assert every intended public page loads the same versioned `assets/site-social.css` + `assets/site-social.mjs`; `chat-admin.html` does not load visitor panel; markup created by the module contains text labels `GLOBAL CHAT` and `ASK HYNOE`; no user content path uses `innerHTML`.
-
-- [ ] **Step 2: Run RED**
-
-Run: `node --test tests/site-social-ui.test.mjs`
-Expected: FAIL.
-
-- [ ] **Step 3: Implement panel injection and responsive CSS**
-
-Desktop fixed bottom-right panel; mobile safe-area-aware bottom sheet; composer remains visible above virtual keyboard; `prefers-reduced-motion` respected; icon-only primary navigation prohibited.
-
-- [ ] **Step 4: Update CSP on public pages**
-
-Allow only exact Supabase project/auth/realtime/function origins and Turnstile origins required by the implementation; do not add broad `*` sources.
-
-- [ ] **Step 5: Run static tests and existing site regression tests**
-
-Run: `node --test tests/site-social-ui.test.mjs tests/navigation.test.mjs tests/mobile-outpost.test.mjs tests/mini-player.test.mjs`
-Expected: PASS with no existing navigation/player regression.
-
-- [ ] **Step 6: Commit**
-
-```bash
-git add assets/site-social.mjs assets/site-social.css ./*.html tests/site-social-ui.test.mjs
-git commit -m "feat: add site-wide social panel"
-```
-
-### Task 6: Moderation/admin surface and audit trail
+### Task 7: Moderation/admin operations
 
 **Files:**
 - Create: `site-admin.html`
 - Create: `assets/site-social-admin.mjs`
-- Create: `assets/site-social-admin.css`
-- Create: `supabase/functions/site-admin-action/index.ts`
-- Modify: `supabase/config.toml`
-- Modify: `supabase/migrations/<generated>-site_global_chat.sql`
-- Create: `tests/site-admin.test.mjs`
+- Create: `supabase/functions/moderate-site-chat/index.ts`
+- Modify migration for immutable admin authorization/audit.
+- Test: `tests/site-chat-function-core.test.mjs`, browser admin smoke test.
 
 **Interfaces:**
-- Consumes: permanent Supabase admin/moderator account; server-controlled role data.
-- Produces: authenticated moderation operations for tombstone/delete, mute, ban/unban, report resolve, announcement pin/unpin, pause/unpause posting, audit-log append.
+- Admin actions: tombstone message, mute user, ban/unban user, resolve report, pin/unpin announcement, pause/unpause posting.
 
-- [ ] **Step 1: Write failing admin authorization tests**
+- [ ] Add failing tests proving anonymous users cannot access admin actions or self-assign roles.
+- [ ] Authorize admin/moderator using server-controlled profile/app metadata, never user metadata.
+- [ ] Append moderation actions to `site_moderation_audit`.
+- [ ] Implement protected admin page without secret keys in browser storage/query params.
+- [ ] Re-run tests; expect PASS.
+- [ ] Commit: `feat: add site chat moderation`.
 
-Assert anonymous guest cannot perform any admin action; permanent non-admin cannot perform admin action; moderator/admin can perform only allowed actions; no role decision reads `user_metadata`; every successful action creates an audit record.
-
-- [ ] **Step 2: Run RED**
-
-Run: `node --test tests/site-admin.test.mjs`
-Expected: FAIL.
-
-- [ ] **Step 3: Implement authenticated admin Edge Function**
-
-Authorization is server-side and checks immutable role state. Do not store admin secrets in URL/query/localStorage.
-
-- [ ] **Step 4: Implement `site-admin.html` and admin client**
-
-Sections: chat status/pause, recent messages, reports, muted/banned users, pinned announcement editor, moderation audit. Keep Help Bot quality section as a placeholder hook for the second plan.
-
-- [ ] **Step 5: Run tests + local authorization smoke tests**
-
-Expected: guest escalation attempts fail; valid admin operations pass and broadcast resulting message/announcement updates.
-
-- [ ] **Step 6: Commit**
-
-```bash
-git add site-admin.html assets/site-social-admin.* supabase/functions/site-admin-action supabase/config.toml supabase/migrations tests/site-admin.test.mjs
-git commit -m "feat: add global chat moderation console"
-```
-
-### Task 7: Replace old relay UI, rules copy, and production verification
+### Task 8: Site-wide responsive UI and old relay cleanup
 
 **Files:**
-- Modify: `watch.html`
-- Modify: `assets/watch.mjs`
-- Modify: `community-rules.html`
-- Modify/Delete after verification: `data/chat-config.json`, `relay/` visitor-relay references only
-- Create: `tests/site-chat-rollout.test.mjs`
+- Modify: `assets/site-social.mjs`, `assets/site-social.css`
+- Modify intended root public HTML pages.
+- Modify: `watch.html`, `community-rules.html`
+- Test: `tests/site-social-browser.mjs`
 
 **Interfaces:**
-- Consumes: all Global Chat tasks.
-- Produces: live site experience where “chat” exclusively means site Global Chat and unrelated watch/game features continue working.
+- Desktop: fixed bottom-right launcher/panel.
+- Mobile: accessible bottom sheet; composer remains visible above virtual keyboard.
 
-- [ ] **Step 1: Write failing rollout regression test**
+- [ ] Add failing DOM/browser checks for clear `GLOBAL CHAT` / `ASK HYNOE` labels, keyboard focus, reduced-motion, mobile viewport, no admin-page launcher, and no old Minecraft-relay wording.
+- [ ] Add shared versioned asset includes to intended public pages and exact Supabase/Turnstile CSP origins only.
+- [ ] Preserve `watch.html` player/game features while removing old relay UI/config dependency.
+- [ ] Update community rules for public website chat.
+- [ ] Re-run existing site test suite plus social browser tests; expect PASS.
+- [ ] Commit: `feat: launch sitewide global chat ui`.
 
-Assert visitor-facing files contain no wording that website chat sends messages to Minecraft/Bloom, `watch.html` retains stream/game hooks, and Global Chat assets are present.
+### Task 9: Deployment and production verification
 
-- [ ] **Step 2: Run RED**
+**Files:**
+- Add/update setup docs only where required.
 
-Run: `node --test tests/site-chat-rollout.test.mjs`
-Expected: FAIL while old relay copy/code remains.
+**Interfaces:**
+- Produces verified live Global Chat independently of Ask Hynoe.
 
-- [ ] **Step 3: Replace old campfire/relay integration and update community rules**
+- [ ] Verify Supabase anonymous sign-in + Turnstile configuration and required server secrets without exposing them.
+- [ ] Deploy migrations/functions to the connected Supabase project and run security advisors.
+- [ ] Deploy preview site branch.
+- [ ] Run two-browser realtime smoke test: send/receive, reconnect, persistence, presence, report, moderation propagation.
+- [ ] Run secret scan against browser source/bundles/API responses and repository diff.
+- [ ] After preview passes, publish site changes and verify live production behavior.
+- [ ] Commit any verified configuration/docs fixes: `docs: finalize site global chat rollout`.
 
-Do not delete unrelated watch/game logic. Keep obsolete relay backend disabled until production smoke tests pass.
+## Definition of Done
 
-- [ ] **Step 4: Run the full repository test suite**
-
-Run: `node --test tests/*.test.mjs`
-Expected: all tests PASS.
-
-- [ ] **Step 5: Run production-like two-browser smoke tests**
-
-Verify anonymous bootstrap, two-browser send/receive, presence change, reply/reaction/report, moderation propagation, reconnect/dedupe, mobile keyboard composer visibility, and no secret in page source/network responses.
-
-- [ ] **Step 6: Verify Supabase security and health**
-
-Run current Supabase Security/Performance/Health advisors and inspect Auth/Realtime/Edge Function errors. Expected: no unresolved critical issue introduced by launch.
-
-- [ ] **Step 7: Remove obsolete relay assets/config only after smoke tests are green**
-
-If repository search shows no remaining visitor dependency, remove the old visitor relay config/code; otherwise leave disabled and document the remaining non-visitor use.
-
-- [ ] **Step 8: Commit**
-
-```bash
-git add watch.html assets/watch.mjs community-rules.html relay data/chat-config.json tests/site-chat-rollout.test.mjs
-git commit -m "feat: launch site-native global chat"
-```
+- Global Chat is clearly visible on intended public pages.
+- Two independent visitors can exchange persistent realtime messages without Minecraft/Bloom/Discord.
+- Anonymous guest auth + display names work with Turnstile.
+- Presence, unread counts, replies, reactions, reports, tombstones, announcements work.
+- Moderation/admin controls are server-authorized and audited.
+- Direct message-table insert is blocked from browser users.
+- Old website-to-Minecraft relay UX is removed.
+- Existing site/game/player features remain working.
+- No privileged secret is exposed.
+- Production smoke tests and security checks pass.
