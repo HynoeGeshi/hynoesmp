@@ -20,7 +20,9 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
   const params = searchParams ? await searchParams : {};
   const returnPath = sanitizeAuthReturnPath(first(params.next));
   const sent = first(params.sent) === '1';
-  const invalidLink = first(params.error) === 'invalid-link';
+  const error = first(params.error);
+  const invalidLink = error === 'invalid-link';
+  const sendFailed = error === 'send-failed';
 
   return (
     <main className="auth-page">
@@ -42,6 +44,11 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
         {invalidLink && (
           <p className="auth-message auth-message--error" role="alert">
             That sign-in link is invalid or expired. Request a new one below.
+          </p>
+        )}
+        {sendFailed && (
+          <p className="auth-message auth-message--error" role="alert">
+            We could not send a sign-in link. Try again in a moment.
           </p>
         )}
 
