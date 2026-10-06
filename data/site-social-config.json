@@ -1,0 +1,6 @@
+{
+  "enabled": false,
+  "supabaseUrl": "",
+  "supabasePublishableKey": "",
+  "turnstileSiteKey": ""
+}

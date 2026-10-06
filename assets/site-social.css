@@ -1,0 +1,2 @@
+/* Shared Hynoe community/help layer. Full panel styling is added in the site-wide UI task. */
+.hynoe-social-status[hidden] { display: none !important; }
