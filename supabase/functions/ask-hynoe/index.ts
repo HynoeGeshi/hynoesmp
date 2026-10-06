@@ -6,7 +6,7 @@ import { ASK_HYNOE_LIMITS, buildFeedbackRow } from "../_shared/ask-hynoe-core.mj
 
 const headers = (origin: string) => ({
   "Access-Control-Allow-Origin": origin,
-  "Access-Control-Allow-Headers": "authorization, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Content-Type": "application/json; charset=utf-8",
   "Vary": "Origin",
@@ -77,7 +77,6 @@ const userHandler = withSupabase({ auth: "user" }, async (req, ctx) => {
   const requestId = crypto.randomUUID();
   const started = Date.now();
 
-  // Atomic request limiting is backed by the server-only site_help_request_metrics table.
   const { data: claimed, error: rateError } = await admin.rpc("claim_site_help_request_slot", {
     p_user_id: userId,
     p_request_id: requestId,
