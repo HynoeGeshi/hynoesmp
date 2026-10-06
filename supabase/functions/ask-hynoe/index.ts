@@ -2,9 +2,8 @@ import "@supabase/functions-js/edge-runtime.d.ts";
 import { withSupabase } from "@supabase/server";
 import helpIndex from "../_shared/hynoe-help-index.mjs";
 import { isAllowedSiteOrigin } from "../_shared/site-chat-core.mjs";
-import { validateAskInput, confidenceNumber } from "../_shared/ask-hynoe-engine.mjs";
-import { rankHelpChunks, classifyRetrieval, buildFallbackAnswer } from "../_shared/help-retrieval.mjs";
-import { buildGroundedPrompt, answerWithProvider } from "../_shared/help-provider.mjs";
+import { validateAskInput, answerAskHynoe } from "../_shared/ask-hynoe-engine.mjs";
+import { ASK_HYNOE_LIMITS, buildFeedbackRow } from "../_shared/ask-hynoe-core.mjs";
 
 const headers = (origin: string) => ({
   "Access-Control-Allow-Origin": origin,
@@ -13,62 +12,115 @@ const headers = (origin: string) => ({
   "Content-Type": "application/json; charset=utf-8",
   "Vary": "Origin",
 });
-const fail = (origin:string,status:number,code:string,error:string) => new Response(JSON.stringify({error,code}),{status,headers:headers(origin)});
-const sourceList = (sources:Array<{heading?:string,title?:string,url:string}>) => sources.slice(0,3).map((source) => ({ label:String(source.heading || source.title || "Hynoe source").slice(0,120), url:source.url }));
+
+const fail = (origin: string, status: number, code: string, error: string) =>
+  new Response(JSON.stringify({ error, code }), { status, headers: headers(origin) });
+
+function configuredProvider() {
+  const rawUrl = (Deno.env.get("HYNOE_HELP_PROVIDER_URL") ?? "").trim();
+  const token = (Deno.env.get("HYNOE_HELP_PROVIDER_TOKEN") ?? "").trim();
+  if (!rawUrl) return null;
+  let url: URL;
+  try { url = new URL(rawUrl); } catch { return null; }
+  if (url.protocol !== "https:") return null;
+
+  return {
+    async generate(prompt: string, { signal }: { signal?: AbortSignal } = {}) {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { "Authorization": `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ prompt }),
+        signal,
+      });
+      if (!response.ok) throw new Error("provider request failed");
+      const data = await response.json();
+      return { text: data?.answer ?? data?.text ?? data?.output_text ?? "" };
+    },
+  };
+}
 
 const userHandler = withSupabase({ auth: "user" }, async (req, ctx) => {
-  const origin=req.headers.get("origin") ?? "";
-  if (!isAllowedSiteOrigin(origin)) return fail(origin,403,"origin_denied","Request origin is not allowed.");
-  if (req.method !== "POST") return fail(origin,405,"method_not_allowed","POST is required.");
+  const origin = req.headers.get("origin") ?? "";
+  if (!isAllowedSiteOrigin(origin)) return fail(origin, 403, "origin_denied", "Request origin is not allowed.");
+  if (req.method !== "POST") return fail(origin, 405, "method_not_allowed", "POST is required.");
+
   let payload: unknown;
-  try { payload=await req.json(); } catch { return fail(origin,400,"invalid_json","Request body must be valid JSON."); }
-  const checked=validateAskInput(payload as Record<string,unknown>);
-  if (!checked.ok) return fail(origin,checked.status,checked.code,checked.error);
-  const userId=String(ctx.userClaims?.sub ?? ctx.userClaims?.id ?? "");
-  if (!userId) return fail(origin,401,"unauthorized","Sign in is required.");
+  try { payload = await req.json(); }
+  catch { return fail(origin, 400, "invalid_json", "Request body must be valid JSON."); }
 
-  const admin=ctx.supabaseAdmin;
-  const requestId=crypto.randomUUID();
-  const started=Date.now();
-  const { data:claimed, error:rateError }=await admin.rpc("claim_site_help_request_slot",{p_user_id:userId,p_request_id:requestId,p_now:new Date(started).toISOString(),p_max_requests:8,p_window:"1 minute"});
-  if (rateError) return fail(origin,500,"rate_limit_failed","Could not verify request limits.");
-  if (!claimed) return fail(origin,429,"rate_limited","Ask Hynoe is getting too many questions from this session. Try again shortly.");
-  const ranked=rankHelpChunks(checked.value.question,helpIndex.chunks,{limit:8});
-  const classification=classifyRetrieval(ranked);
-  const fallback=buildFallbackAnswer(checked.value.question,ranked);
-  let answer=fallback.answer;
-  let mode:"model"|"retrieval"="retrieval";
+  const checked = validateAskInput(payload as Record<string, unknown>);
+  if (!checked.ok) return fail(origin, checked.status, checked.code, checked.error);
 
-  // No provider is required for launch. When a server-side provider is configured, this path
-  // can enhance a sufficiently grounded retrieval result without changing the browser contract.
-  const provider:null=null;
-  if (provider && classification.confidence !== "low" && !classification.conflict) {
-    const prompt=buildGroundedPrompt({question:checked.value.question,history:checked.value.history,pagePath:checked.value.page_path,chunks:ranked.slice(0,5).map((item)=>item.chunk)});
-    const generated=await answerWithProvider({provider,prompt,timeoutMs:5000});
-    if (generated.ok) { answer=generated.answer.slice(0,4000); mode="model"; }
-  }
+  const userId = String(ctx.userClaims?.sub ?? ctx.userClaims?.id ?? "");
+  if (!userId) return fail(origin, 401, "unauthorized", "Sign in is required.");
 
-  const confidence=confidenceNumber(classification.confidence);
-  const sources=sourceList(fallback.sources);
-  const latency=Date.now()-started;
-  const sourceIds=ranked.slice(0,12).map((item)=>item.chunk.id);
-  const unanswered=confidence <= .34;
-  const [metricWrite,feedbackWrite]=await Promise.all([
-    admin.from("site_help_request_metrics").update({mode,confidence:classification.confidence,source_count:sources.length,latency_ms:latency}).eq("request_id",requestId).eq("user_id",userId),
-    admin.from("site_help_feedback").insert({request_id:requestId,user_id:userId,question:checked.value.question,answer_summary:answer.slice(0,1200),helpful:null,unanswered,source_ids:sourceIds,mode:mode === "model" ? "provider" : "retrieval",confidence:classification.confidence,page_path:checked.value.page_path,created_at:new Date(started).toISOString()}),
+  const admin = ctx.supabaseAdmin;
+  const requestId = crypto.randomUUID();
+  const started = Date.now();
+
+  // Atomic request limiting is backed by the server-only site_help_request_metrics table.
+  const { data: claimed, error: rateError } = await admin.rpc("claim_site_help_request_slot", {
+    p_user_id: userId,
+    p_request_id: requestId,
+    p_now: new Date(started).toISOString(),
+    p_window: `${ASK_HYNOE_LIMITS.windowMs} milliseconds`,
+    p_max_requests: ASK_HYNOE_LIMITS.maxRequestsPerWindow,
+  });
+  if (rateError) return fail(origin, 500, "rate_limit_failed", "Could not verify request limits.");
+  if (!claimed) return fail(origin, 429, "rate_limited", "Ask Hynoe is getting too many questions from this session. Try again shortly.");
+
+  const result = await answerAskHynoe({
+    question: checked.value.question,
+    history: checked.value.history,
+    pagePath: checked.value.page_path,
+    chunks: helpIndex.chunks,
+    provider: configuredProvider(),
+    providerTimeoutMs: 7000,
+  });
+
+  const latency = Math.min(120000, Math.max(0, Date.now() - started));
+  const unanswered = result.confidence_label === "low" || result.conflict;
+  const feedbackRow = buildFeedbackRow({
+    userId,
+    requestId,
+    question: checked.value.question,
+    answer: result.answer,
+    sources: result.sources,
+    mode: result.mode,
+    confidence: result.confidence_label,
+    pagePath: checked.value.page_path,
+    unanswered,
+  });
+
+  const [metricWrite, feedbackWrite] = await Promise.all([
+    admin.from("site_help_request_metrics").update({
+      mode: result.mode,
+      confidence: result.confidence_label,
+      source_count: result.sources.length,
+      latency_ms: latency,
+    }).eq("request_id", requestId).eq("user_id", userId),
+    admin.from("site_help_feedback").insert([feedbackRow]),
   ]);
-  if (metricWrite.error) console.error("ask-hynoe metric write failed",metricWrite.error.code);
-  if (feedbackWrite.error) console.error("ask-hynoe feedback write failed",feedbackWrite.error.code);
-  return new Response(JSON.stringify({answer,sources,confidence,mode,request_id:requestId}),{status:200,headers:headers(origin)});
+  if (metricWrite.error) console.error("ask_hynoe_metric_write_failed", { requestId, code: metricWrite.error.code });
+  if (feedbackWrite.error) console.error("ask_hynoe_feedback_write_failed", { requestId, code: feedbackWrite.error.code });
+
+  return new Response(JSON.stringify({
+    answer: result.answer,
+    sources: result.sources.map(({ label, url }) => ({ label, url })),
+    confidence: result.confidence,
+    mode: result.mode,
+    request_id: requestId,
+  }), { status: 200, headers: headers(origin) });
 });
 
-export default {
-  async fetch(req:Request) {
-    const origin=req.headers.get("origin") ?? "";
-    if (req.method === "OPTIONS") {
-      if (!isAllowedSiteOrigin(origin)) return fail(origin,403,"origin_denied","Request origin is not allowed.");
-      return new Response(null,{status:204,headers:headers(origin)});
-    }
-    return userHandler(req);
-  },
-};
+Deno.serve((req) => {
+  const origin = req.headers.get("origin") ?? "";
+  if (req.method === "OPTIONS") {
+    if (!isAllowedSiteOrigin(origin)) return fail(origin, 403, "origin_denied", "Request origin is not allowed.");
+    return new Response(null, { status: 204, headers: headers(origin) });
+  }
+  return userHandler(req);
+});
