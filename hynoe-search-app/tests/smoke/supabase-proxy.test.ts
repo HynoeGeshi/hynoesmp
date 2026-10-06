@@ -27,4 +27,12 @@ describe('Next 16 Supabase auth proxy', () => {
     expect(proxy).toContain('_next/image');
     expect(proxy).toContain('favicon.ico');
   });
+
+  it('keeps public Hynoe routes available before Supabase is configured', () => {
+    const proxy = source('src/proxy.ts');
+
+    expect(proxy).toContain('NEXT_PUBLIC_SUPABASE_URL');
+    expect(proxy).toContain('NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY');
+    expect(proxy).toContain('NextResponse.next');
+  });
 });
