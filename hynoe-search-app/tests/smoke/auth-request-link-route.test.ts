@@ -13,7 +13,7 @@ describe('POST /auth/request-link', () => {
       message: 'Check your email for your secure Hynoe sign-in link.',
     });
     const { POST } = await import('@/app/auth/request-link/route');
-    const body = new URLSearchParams({ email: ' User@Example.COM ', next: '/command-center' });
+    const body = new URLSearchParams({ email: ' User@Example.COM ', next: '/command-center' }).toString();
 
     const response = await POST(
       new Request('https://hynoe.net/auth/request-link', {
@@ -35,7 +35,7 @@ describe('POST /auth/request-link', () => {
   it('sanitizes an external next value before using it in the response', async () => {
     requestPasswordlessSignIn.mockResolvedValue({ ok: true, message: 'sent' });
     const { POST } = await import('@/app/auth/request-link/route');
-    const body = new URLSearchParams({ email: 'user@example.com', next: 'https://evil.example/phish' });
+    const body = new URLSearchParams({ email: 'user@example.com', next: 'https://evil.example/phish' }).toString();
 
     const response = await POST(
       new Request('https://hynoe.net/auth/request-link', {
@@ -56,7 +56,7 @@ describe('POST /auth/request-link', () => {
   it('returns only a generic error code when the provider request fails', async () => {
     requestPasswordlessSignIn.mockResolvedValue({ ok: false, message: 'private provider details' });
     const { POST } = await import('@/app/auth/request-link/route');
-    const body = new URLSearchParams({ email: 'user@example.com', next: '/command-center' });
+    const body = new URLSearchParams({ email: 'user@example.com', next: '/command-center' }).toString();
 
     const response = await POST(
       new Request('https://hynoe.net/auth/request-link', {
