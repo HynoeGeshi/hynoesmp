@@ -1,0 +1,62 @@
+name: Apply mobile leaderboard v2 repair
+
+on:
+  push:
+    branches:
+      - fix-mobile-leaderboard-v2-2026-10-05
+
+permissions:
+  contents: write
+
+jobs:
+  integrate:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix-mobile-leaderboard-v2-2026-10-05
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Bring verified repair files onto latest main
+        run: |
+          git fetch origin fix-mobile-leaderboard-2026-10-05
+          for f in \
+            assets/watch-mobile.css \
+            assets/watch.mjs \
+            watch.html \
+            privacy.html \
+            data-deletion.html \
+            tests/browser-mobile.mjs \
+            tests/game.test.mjs \
+            tests/live-mobile-leaderboard-repair.test.mjs \
+            tests/privacy-hold-copy.test.mjs \
+            tests/privacy-surface.test.mjs; do
+            git show origin/fix-mobile-leaderboard-2026-10-05:"$f" > "$f"
+          done
+          python - <<'PY'
+          from pathlib import Path
+          # One coherent release token for the full browser module graph.
+          p=Path('assets/watch.mjs'); s=p.read_text().replace('20261005a','20261006b').replace('20261006a','20261006b'); p.write_text(s)
+          p=Path('assets/watch-mobile.mjs'); p.write_text(p.read_text().replace('20261006a','20261006b').replace('20261005a','20261006b'))
+          p=Path('assets/watch-game.mjs'); p.write_text(p.read_text().replace('20261006a','20261006b').replace('20261005a','20261006b'))
+          p=Path('tests/mobile-outpost.test.mjs'); p.write_text(p.read_text().replace("['20261006a']","['20261006b']"))
+          p=Path('docs/releases/2026-10-06-outpost-cache-release.md'); s=p.read_text(); s=s.replace('Global leaderboard transmission remains disabled under the existing privacy hold. Local Legend scoring remains available. This cache release does not re-enable external player-ID or score uploads.','The Hall of Legends now loads public site-wide rankings again. Publishing this browser’s own callsign and bounded gameplay metrics is optional, off by default, and requires the explicit in-game opt-in control. Turning that control off stops future score uploads; the Data Deletion page provides the private request route for existing server-side leaderboard records.'); p.write_text(s)
+          PY
+      - name: Verify integrated modules and full regression suite
+        run: |
+          node --check assets/leaderboard-live.mjs
+          node --check assets/watch.mjs
+          node --check assets/watch-mobile.mjs
+          node --check assets/watch-game.mjs
+          node --test tests/*.test.mjs
+      - name: Commit integrated repair
+        run: |
+          rm .github/workflows/apply-mobile-leaderboard-v2.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "fix: restore mobile mining art and live opt-in Hall of Legends"
+          git push origin HEAD:fix-mobile-leaderboard-v2-2026-10-05
