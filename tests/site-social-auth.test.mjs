@@ -37,9 +37,21 @@ test('ensureSiteSession passes Turnstile token to anonymous auth bootstrap', asy
   assert.deepEqual(received, { options: { captchaToken: 'captcha-123' } });
 });
 
-test('ensureSiteSession fails closed when bootstrap has no Turnstile token', async () => {
-  const client = { auth: { async getSession() { return { data: { session: null }, error: null }; } } };
-  await assert.rejects(() => ensureSiteSession(client, ''), /verification/i);
+test('ensureSiteSession bootstraps anonymously without Turnstile when CAPTCHA is not configured', async () => {
+  let received = 'not-called';
+  const session = { user: { id: 'user-3', is_anonymous: true } };
+  const client = {
+    auth: {
+      async getSession() { return { data: { session: null }, error: null }; },
+      async signInAnonymously(options) {
+        received = options;
+        return { data: { session }, error: null };
+      },
+    },
+  };
+  const result = await ensureSiteSession(client, '');
+  assert.equal(result, session);
+  assert.equal(received, undefined);
 });
 
 function profileClient(existing = null) {
@@ -73,9 +85,23 @@ test('ensureProfile updates only safe display fields when profile already exists
   assert.deepEqual(actions[0], ['update', { display_name: 'New Name', normalized_name: 'new name', avatar_seed: 'seed' }]);
 });
 
-test('loadSiteSocialConfig accepts disabled config but rejects unsafe enabled endpoints', async () => {
+test('loadSiteSocialConfig accepts disabled config, allows optional Turnstile, and rejects unsafe enabled endpoints', async () => {
   const disabled = await loadSiteSocialConfig(async () => ({ ok: true, async json() { return { enabled: false }; } }));
   assert.deepEqual(disabled, { enabled: false });
+
+  const enabled = await loadSiteSocialConfig(async () => ({
+    ok: true,
+    async json() {
+      return {
+        enabled: true,
+        supabaseUrl: 'https://example.supabase.co',
+        supabasePublishableKey: 'sb_publishable_test',
+        turnstileSiteKey: '',
+      };
+    },
+  }));
+  assert.equal(enabled.enabled, true);
+  assert.equal(enabled.turnstileSiteKey, '');
 
   await assert.rejects(
     () => loadSiteSocialConfig(async () => ({ ok: true, async json() { return { enabled: true, supabaseUrl: 'http://bad.example', supabasePublishableKey: 'sb_publishable_x', turnstileSiteKey: 'site' }; } })),
