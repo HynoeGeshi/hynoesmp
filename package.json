@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "test": "node --test tests/*.test.mjs",
-    "build:supabase-vendor": "esbuild assets/vendor/supabase-entry.mjs --bundle --format=esm --platform=browser --target=es2022 --minify --outfile=assets/vendor/supabase.mjs"
+    "build:supabase-vendor": "esbuild assets/vendor/supabase-entry.mjs --bundle --format=esm --platform=browser --target=es2022 --minify --outfile=assets/vendor/supabase.mjs",
+    "build:help-index": "node scripts/build-help-index.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.117.2"
