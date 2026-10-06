@@ -4,6 +4,13 @@
   const statusEl = document.querySelector('#admin-status');
   const esc = (s = '') => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[c]));
 
+  function auditMeta(a) {
+    const status = a.audit_status || 'missing';
+    const expires = a.audit_expires_at ? new Date(a.audit_expires_at) : null;
+    const expiryText = expires && !Number.isNaN(expires.getTime()) ? ` · expires ${expires.toLocaleDateString()}` : '';
+    return `<p class="admin-audit-meta"><strong>Starter audit:</strong> ${esc(status)}${esc(expiryText)}</p>`;
+  }
+
   function card(a) {
     return `<article class="admin-card">
       <div class="admin-card-head"><div><span class="eyebrow">${esc(a.status)}</span><h3>${esc(a.creator_name)}</h3></div><small>${esc(new Date(a.created_at).toLocaleString())}</small></div>
@@ -11,6 +18,7 @@
       <p><strong>Goal:</strong> ${esc(a.goal)}</p>
       <p><strong>Bottleneck:</strong> ${esc(a.bottleneck)}</p>
       <p><strong>Interest:</strong> ${esc(a.interest)} · <strong>Revenue:</strong> ${esc(a.revenue)}</p>
+      ${auditMeta(a)}
       <label>Status<select data-id="${esc(a.id)}"><option ${a.status === 'new' ? 'selected' : ''}>new</option><option ${a.status === 'reviewing' ? 'selected' : ''}>reviewing</option><option ${a.status === 'qualified' ? 'selected' : ''}>qualified</option><option ${a.status === 'contacted' ? 'selected' : ''}>contacted</option><option ${a.status === 'closed' ? 'selected' : ''}>closed</option></select></label>
     </article>`;
   }
