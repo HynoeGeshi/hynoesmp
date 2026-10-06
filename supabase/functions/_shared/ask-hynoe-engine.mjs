@@ -32,14 +32,14 @@ function sourceList(ranked=[], classification={}) {
 }
 
 export async function answerAskHynoe({question,history=[],pagePath='/',chunks=[],provider=null,providerTimeoutMs=5000}={}) {
-  const ranked=rankHelpChunks(question,chunks,{limit:5});
+  const ranked=rankHelpChunks(question,chunks,{limit:8});
   const classification=classifyRetrieval(ranked);
   const fallback=buildFallbackAnswer(question,ranked);
   const sources=sourceList(ranked,classification);
   const confidence=confidenceNumber(classification.confidence);
 
   if (provider && classification.confidence!=='low' && !classification.conflict) {
-    const prompt=buildGroundedPrompt({question,history,pagePath,chunks:ranked.slice(0,5).map((result)=>result.chunk)});
+    const prompt=buildGroundedPrompt({question,history,pagePath,chunks:ranked.slice(0,6).map((result)=>result.chunk)});
     const generated=await answerWithProvider({provider,prompt,timeoutMs:providerTimeoutMs});
     if (generated.ok) {
       return {answer:generated.answer.slice(0,4000),sources,confidence,mode:'model',confidence_label:classification.confidence,conflict:false};
