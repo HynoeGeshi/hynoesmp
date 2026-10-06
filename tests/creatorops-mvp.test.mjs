@@ -51,3 +51,28 @@ test('CreatorOps MVP ships a secure, monetizable creator funnel', () => {
   assert.match(js, /terms\.html/i);
   assert.match(js, /application summary|copy/i);
 });
+
+test('CreatorOps presents a premium Hynoe command-center visual system', () => {
+  const html = read(pagePath);
+  const css = read(cssPath);
+
+  assert.match(html, /class="[^"]*hero-kicker/i);
+  assert.match(html, /class="[^"]*command-center/i);
+  assert.match(html, /Creator Health/i);
+  assert.match(html, /class="[^"]*workflow-rail/i);
+  assert.match(html, /Discover/i);
+  assert.match(html, /Optimize/i);
+  assert.match(html, /Monetize/i);
+  assert.match(html, /class="[^"]*proof-spotlight/i);
+  assert.match(html, /Founding creator/i);
+  assert.match(html, /class="[^"]*audit-benefits/i);
+
+  assert.match(css, /--gold-glow/i);
+  assert.match(css, /backdrop-filter/i);
+  assert.match(css, /linear-gradient/i);
+  assert.match(css, /focus-visible/i);
+  assert.match(css, /prefers-reduced-motion/i);
+  assert.match(css, /command-center/i);
+  assert.match(css, /workflow-rail/i);
+  assert.match(css, /proof-spotlight/i);
+});
