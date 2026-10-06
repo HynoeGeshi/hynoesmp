@@ -1,0 +1,35 @@
+name: Generate Ask Hynoe knowledge index
+
+on:
+  push:
+    branches:
+      - feature/hynoe-community-20261006-final
+    paths:
+      - .github/workflows/generate-hynoe-knowledge.yml
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/hynoe-community-20261006-final
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node scripts/build_hynoe_knowledge.mjs
+      - run: node --test tests/hynoe-knowledge.test.mjs
+      - name: Commit generated index
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/hynoe-knowledge.json
+          if git diff --cached --quiet; then
+            echo "Knowledge index unchanged"
+          else
+            git commit -m "feat: generate Ask Hynoe knowledge index"
+            git push origin HEAD:feature/hynoe-community-20261006-final
+          fi
