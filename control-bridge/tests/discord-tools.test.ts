@@ -4,7 +4,7 @@ import type { DiscordClient } from '../src/discord/types';
 import { createDiscordTools } from '../src/tools/discord';
 
 const legacyConfig = { discordAllowedChannelIds: ['allowed'], discordGuildId: 'guild' } as AppConfig;
-const guildConfig = { discordAllowedChannelIds: [], discordGuildId: 'guild', discordGuildManagementEnabled: true } as AppConfig;
+const guildConfig = { discordAllowedChannelIds: [], discordGuildId: 'guild', discordGuildManagementEnabled: true } as unknown as AppConfig;
 
 function makeClient(): DiscordClient {
   return {
