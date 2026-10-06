@@ -1,0 +1,43 @@
+name: Generate Hynoe Community assets
+
+on:
+  push:
+    branches:
+      - feature/hynoe-community-chat-help
+    paths:
+      - '*.html'
+      - 'assets/**'
+      - 'data/**'
+      - 'scripts/build_hynoe_knowledge.mjs'
+      - '.github/scripts/apply-community-surface.py'
+      - '.github/workflows/community-assets.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/hynoe-community-chat-help
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate official Ask Hynoe knowledge
+        run: node scripts/build_hynoe_knowledge.mjs
+      - name: Apply site-wide community surface
+        run: python3 .github/scripts/apply-community-surface.py
+      - name: Commit generated assets
+        run: |
+          git config user.name "Hynoe Build Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/hynoe-knowledge.json '*.html' tests/*.mjs
+          if git diff --cached --quiet; then
+            echo "Generated assets already current"
+            exit 0
+          fi
+          git commit -m "chore: generate Hynoe Community assets [skip ci]"
+          git push origin HEAD:feature/hynoe-community-chat-help
