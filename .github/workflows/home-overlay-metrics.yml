@@ -1,0 +1,32 @@
+name: Home overlay metrics
+on:
+  push:
+    branches: [debug/live-mobile-production-20261006]
+    paths: ['.github/workflows/home-overlay-metrics.yml']
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - run: |
+          npm install --no-save --no-package-lock playwright@1.63.0
+          npx playwright install --with-deps chromium
+      - run: |
+          cat > probe-home.mjs <<'EOF'
+          import {chromium} from 'playwright';
+          const browser=await chromium.launch({headless:true});
+          for(const width of [320,360,375,390,412,430]){
+            const c=await browser.newContext({viewport:{width,height:844},isMobile:true,hasTouch:true});
+            const p=await c.newPage();
+            await p.goto('https://hynoesmp.com/?overlayprobe='+Date.now()+'-'+width,{waitUntil:'networkidle',timeout:60000});
+            const out=await p.evaluate(()=>Object.fromEntries(['.hotbar','.quest-journal','.journal-scrim','.world-context'].map(sel=>{const e=document.querySelector(sel);if(!e)return [sel,null];const r=e.getBoundingClientRect(),s=getComputedStyle(e);return [sel,{rect:r.toJSON(),position:s.position,display:s.display,visibility:s.visibility,opacity:s.opacity,pointerEvents:s.pointerEvents,transform:s.transform,z:s.zIndex,overflow:s.overflow,height:s.height,width:s.width}]})));
+            console.log(width,JSON.stringify(out));
+            await c.close();
+          }
+          await browser.close();
+          EOF
+          node probe-home.mjs
