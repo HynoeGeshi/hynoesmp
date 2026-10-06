@@ -1,0 +1,49 @@
+name: Mobile final verification
+
+on:
+  push:
+    branches:
+      - fix/mobile-sitewide-refresh-20261006
+    paths:
+      - '.github/workflows/mobile-final-verify.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify modules and full Node suite
+        run: |
+          node --check assets/watch.mjs
+          node --check assets/watch-mobile.mjs
+          node --check assets/watch-video.mjs
+          node --test tests/*.test.mjs
+      - name: Install pinned browser runtime
+        run: |
+          npm install --no-save --no-package-lock playwright@1.63.0
+          npx playwright install --with-deps chromium
+      - name: Start static site
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 > /tmp/hynoe-http.log 2>&1 &
+          for i in {1..20}; do
+            if curl -fsS http://127.0.0.1:4173/watch.html >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/hynoe-http.log
+          exit 1
+      - name: Verify phones, stream playback and every public page
+        run: node tests/browser-mobile.mjs
+      - name: Upload visual evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hynoe-mobile-final-screenshots
+          path: test-artifacts/*.png
+          if-no-files-found: ignore
+          retention-days: 7
