@@ -48,7 +48,6 @@ export function sanitizeKnowledgeChunk(chunk = {}) {
   };
 }
 
-
 const PRIVATE_QUERY_PATTERNS = [
   /\bsecret\b/i,
   /\bpassword\b/i,
@@ -60,11 +59,17 @@ const PRIVATE_QUERY_PATTERNS = [
   /\bvault\s+code\b/i,
 ];
 
+// Natural-language intent hints make common player questions land on the right
+// official guide even when the player does not know Hynoe's exact command/name.
 const INTENT_PAGE_HINTS = [
-  { pattern: /\b(?:campaign|progression|quests?|genesis\s+ages?)\b/i, url: '/progression.html', boost: 6 },
+  { pattern: /\b(?:campaign|progression|quests?|genesis\s+ages?|gear|armor|weapon|enderium|vulpus)\b/i, url: '/progression.html', boost: 6 },
   { pattern: /\b(?:updates?|changelog|release\s+notes?|what\s+changed|latest\s+changes?)\b/i, url: '/updates.html', boost: 6 },
-  { pattern: /\b(?:economy|jobs?|dollars?|tokens?|vault)\b/i, url: '/economy.html', boost: 6 },
+  { pattern: /\b(?:economy|jobs?|dollars?|tokens?|vault|shop|selling|balance)\b/i, url: '/economy.html', boost: 6 },
   { pattern: /\b(?:commands?|help\s+command|help)\b/i, url: '/start.html', boost: 6 },
+  { pattern: /\b(?:teleport(?:ing)?|travel|visit|\/tpa|tpa|tpaccept|tpdeny|\/rtp|rtp|random\s+teleport|homes?|waystones?)\b/i, url: '/start.html', boost: 8 },
+  { pattern: /\b(?:join|connect|server\s+(?:address|ip)|address|ip\s+address)\b/i, url: '/join.html', boost: 7 },
+  { pattern: /\b(?:install|download|modpack|client\s+pack|fabric|launcher)\b/i, url: '/modpack.html', boost: 7 },
+  { pattern: /\b(?:village|villager|mca|minecraft\s+comes\s+alive|marry|marriage|family|children|child|relationship)\b/i, url: '/mca.html', boost: 7 },
   { pattern: /\bboss(?:es)?\b/i, url: '/bosses.html', boost: 7 },
 ];
 
@@ -189,11 +194,15 @@ export function classifyRetrieval(results = []) {
   const topScore = usable[0].score;
   const topCoverage = Number.isFinite(usable[0].coverage) ? usable[0].coverage : 1;
   const privateQuery = usable.some((item) => item.privateQuery === true);
-  const confidence = (conflict || privateQuery || topCoverage < 0.4)
+
+  // Coverage alone should not veto a strong, clearly routed official match. Normal
+  // questions contain conversational words that never appear verbatim in a guide.
+  // Secrets and conflicts still always fail closed.
+  const confidence = (conflict || privateQuery)
     ? 'low'
-    : (topScore >= 12 && topCoverage >= 0.5)
+    : (topScore >= 12 && topCoverage >= 0.4)
       ? 'high'
-      : topScore >= 5
+      : (topScore >= 5 && (topCoverage >= 0.2 || topScore >= 8))
         ? 'medium'
         : 'low';
   return { confidence, conflict, topScore, topCoverage, privateQuery };
