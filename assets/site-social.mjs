@@ -216,3 +216,16 @@ export async function sendHelpFeedback(client, { requestId, helpful }) {
   if (error) throw new Error(error?.context?.body?.error || error?.message || 'Feedback could not be saved.');
   return data;
 }
+
+if (typeof document !== 'undefined') {
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Enter' || event.shiftKey || event.isComposing) return;
+    const target = event.target;
+    if (!(target instanceof HTMLTextAreaElement)) return;
+    if (target.getAttribute('aria-label') !== 'Global Chat message') return;
+    const composer = target.closest('form.site-social-composer');
+    if (!composer || typeof composer.requestSubmit !== 'function') return;
+    event.preventDefault();
+    composer.requestSubmit();
+  });
+}
