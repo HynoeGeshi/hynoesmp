@@ -3,6 +3,11 @@ import {mkdir} from 'node:fs/promises';
 import {chromium} from 'playwright';
 
 const base='http://127.0.0.1:4173';
+const leaderboardOrigin='https://hynoe-global-leaderboard.rellyoukno.chatgpt.site';
+const mockBoard={players:[
+  {playerId:'11111111-1111-4111-8111-111111111111',callsign:'ALPHA',score:1200,depth:55,legacy:1,rank:1},
+  {playerId:'22222222-2222-4222-8222-222222222222',callsign:'BRAVO',score:800,depth:34,legacy:0,rank:2},
+],me:null,total:2,generatedAt:Date.now()};
 const phoneViewports=[
   {width:320,height:800},
   {width:360,height:800},
@@ -21,6 +26,17 @@ function captureErrors(page,label){
   page.on('response',response=>{if(response.status()>=400)errors.push(`${label} HTTP ${response.status()}: ${response.url()}`);});
   page.on('console',msg=>{if(msg.type()==='error'&&!/Failed to load resource/i.test(msg.text()))errors.push(`${label} console: ${msg.text()}`);});
   return errors;
+}
+
+async function mockLeaderboard(page){
+  const calls={reads:0,posts:0};
+  await page.route(`${leaderboardOrigin}/**`,async route=>{
+    const request=route.request(),url=new URL(request.url());
+    if(url.pathname==='/v1/leaderboard')calls.reads++;
+    if(url.pathname==='/v1/score')calls.posts++;
+    await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(mockBoard)});
+  });
+  return calls;
 }
 
 async function assertNoHorizontalOverflow(page,label){
@@ -59,10 +75,17 @@ for(const viewport of [...phoneViewports,...extraViewports]){
   const isMobile=viewport.width<900;
   const context=await browser.newContext({viewport,hasTouch:isMobile,isMobile});
   const page=await context.newPage();
+  const leaderboardCalls=await mockLeaderboard(page);
   const label=`watch ${viewport.width}x${viewport.height}`;
   const errors=captureErrors(page,label);
   await page.goto(`${base}/watch.html`,{waitUntil:'domcontentloaded'});
   await page.waitForSelector('#vein-11');
+  await page.waitForFunction(()=>document.querySelector('#leaderboard-live')?.textContent==='LIVE · 2 PLAYERS');
+  const optIn=page.locator('#leader-opt-in');
+  assert.ok(await optIn.isVisible(),`${label}: leaderboard publish opt-in is missing`);
+  assert.equal(await optIn.isChecked(),false,`${label}: leaderboard publishing must default off`);
+  assert.ok(leaderboardCalls.reads>=1,`${label}: public leaderboard was not loaded`);
+  assert.equal(leaderboardCalls.posts,0,`${label}: fresh player score was published without opt-in`);
   await dismissFirstRunGuide(page,label);
   await assertNoHorizontalOverflow(page,label);
 
@@ -101,6 +124,7 @@ for(const viewport of [...phoneViewports,...extraViewports]){
     assert.equal(afterKeyboard,afterTouch-1,`${label}: keyboard activation must still mine exactly once`);
   }
 
+  assert.equal(leaderboardCalls.posts,0,`${label}: gameplay published a score while opt-in remained off`);
   if(viewport.width===390||viewport.width===1024){
     await page.screenshot({path:`test-artifacts/watch-${viewport.width}.png`,fullPage:true});
   }
@@ -144,4 +168,4 @@ for(const pageName of ['privacy.html','terms.html','data-deletion.html','communi
 }
 
 await browser.close();
-console.log('Browser verification passed for mobile mining, onboarding, homepage, legal pages, touch input, keyboard input, and overflow.');
+console.log('Browser verification passed for mobile mining artwork, live leaderboard reads, opt-in score publishing, onboarding, homepage, legal pages, touch input, keyboard input, and overflow.');
