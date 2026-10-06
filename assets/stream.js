@@ -16,6 +16,11 @@
     syncing:{short:'SYNCING',heading:'Latest Hynoe SMP stream'}
   };
 
+  watchEl.href='watch.html#video';
+  watchEl.textContent='WATCH HERE ON HYNOE';
+  watchEl.removeAttribute('target');
+  watchEl.removeAttribute('rel');
+
   function setStatus(status){
     const clean=labels[status]?status:'latest';
     root.dataset.status=clean;
@@ -28,16 +33,14 @@
     if(!data||!data.videoId){
       setStatus('syncing');
       titleEl.textContent='The broadcast beacon is waiting for its first YouTube sync.';
-      watchEl.href='https://www.youtube.com/@Hynoe/streams';
       return;
     }
 
     setStatus(data.status||'latest');
     titleEl.textContent=data.title||'Hynoe SMP livestream';
-    watchEl.href=data.url||('https://www.youtube.com/watch?v='+data.videoId);
 
     const iframe=document.createElement('iframe');
-    iframe.src='https://www.youtube-nocookie.com/embed/'+encodeURIComponent(data.videoId)+'?rel=0';
+    iframe.src='https://www.youtube-nocookie.com/embed/'+encodeURIComponent(data.videoId)+'?rel=0&playsinline=1';
     iframe.title=data.title||'Hynoe livestream';
     iframe.loading='lazy';
     iframe.allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
