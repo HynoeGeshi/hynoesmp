@@ -1,0 +1,8 @@
+{
+  "release": "visual-retention-foundation",
+  "source_sha": "7b603c0051a64d38fe42b5b0d675b72a7f3e6112",
+  "target": "render",
+  "service": "hynoe-search",
+  "verified_ci_run": 37535251584,
+  "date": "2026-10-06"
+}
