@@ -1,0 +1,60 @@
+name: Hynoe Search Render Release
+
+on:
+  push:
+    branches:
+      - hynoe-search-visual-retention
+    paths:
+      - docs/release/hynoe-search-visual-retention.release.json
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Resolve verified source
+        id: source
+        run: |
+          SOURCE_SHA=$(node -p "require('./docs/release/hynoe-search-visual-retention.release.json').source_sha")
+          test -n "$SOURCE_SHA"
+          git cat-file -e "$SOURCE_SHA^{commit}"
+          echo "sha=$SOURCE_SHA" >> "$GITHUB_OUTPUT"
+          git checkout "$SOURCE_SHA"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: hynoe-search-app/package-lock.json
+      - name: Install locked dependencies
+        working-directory: hynoe-search-app
+        run: npm ci --no-audit --no-fund
+      - name: Verify release source
+        working-directory: hynoe-search-app
+        run: npm test && npm run test:domain && npm run build
+      - name: Build Render bundle
+        run: |
+          tar --exclude='.next' --exclude='node_modules' --exclude='test-results' --exclude='.tmp' -czf /tmp/hynoe-search.tar.gz -C hynoe-search-app .
+          base64 -w0 /tmp/hynoe-search.tar.gz > /tmp/hynoe-search.tar.gz.b64
+      - name: Publish bundle to Render branch
+        env:
+          SOURCE_SHA: ${{ steps.source.outputs.sha }}
+        run: |
+          git fetch origin hynoe-search-render-app
+          git worktree add /tmp/hynoe-render origin/hynoe-search-render-app
+          mkdir -p /tmp/hynoe-render/deployment
+          cp /tmp/hynoe-search.tar.gz.b64 /tmp/hynoe-render/deployment/hynoe-search.tar.gz.b64
+          cd /tmp/hynoe-render
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add deployment/hynoe-search.tar.gz.b64
+          if git diff --cached --quiet; then
+            echo "Render bundle already matches source $SOURCE_SHA"
+            exit 0
+          fi
+          git commit -m "deploy: Hynoe visual retention release $SOURCE_SHA"
+          git push origin HEAD:hynoe-search-render-app

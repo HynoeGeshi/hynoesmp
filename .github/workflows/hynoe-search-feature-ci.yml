@@ -23,9 +23,9 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: hynoe-search-app/package.json
-      - name: Install dependencies
-        run: npm install --no-audit --no-fund
+          cache-dependency-path: hynoe-search-app/package-lock.json
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
       - name: Unit tests
         run: npm test
       - name: Domain and host-routing tests
@@ -45,9 +45,9 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: hynoe-search-app/package.json
-      - name: Install dependencies
-        run: npm install --no-audit --no-fund
+          cache-dependency-path: hynoe-search-app/package-lock.json
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
       - name: Build app for browser tests
         run: npm run build
       - name: Install Chromium
@@ -65,17 +65,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Generate exact npm lockfile
+      - name: Confirm lockfile is current
         working-directory: hynoe-search-app
-        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
-      - name: Commit lockfile when it changes
-        run: |
-          if git diff --quiet -- hynoe-search-app/package-lock.json && git ls-files --error-unmatch hynoe-search-app/package-lock.json >/dev/null 2>&1; then
-            echo "Lockfile already current"
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add hynoe-search-app/package-lock.json
-          git commit -m "chore: lock Hynoe Search dependencies"
-          git push origin HEAD:hynoe-search-visual-retention
+        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund && git diff --exit-code -- package-lock.json
