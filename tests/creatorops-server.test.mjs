@@ -31,7 +31,6 @@ async function start(server) {
     assert.equal(js.status, 200);
     assert.match(js.headers.get('content-type') || '', /javascript/);
 
-    // index.html is also served at /, where its relative assets resolve to these root paths.
     const rootCss = await fetch(`${base}/creatorops.css`);
     assert.equal(rootCss.status, 200);
     assert.match(rootCss.headers.get('content-type') || '', /text\/css/);
@@ -93,7 +92,7 @@ async function start(server) {
       body
     };
     res.writeHead(201, { 'content-type': 'application/json' });
-    res.end(JSON.stringify({ ok: true, id: '00000000-0000-0000-0000-000000000001' }));
+    res.end(JSON.stringify({ ok: true, duplicate: false, createdAt: new Date().toISOString() }));
   });
   const gatewayUrl = await start(gatewayServer);
   const app = createCreatorOpsServer({
@@ -134,11 +133,20 @@ async function start(server) {
       })
     });
     assert.equal(valid.status, 201);
+    const validJson = await valid.json();
+    assert.equal(validJson.ok, true);
+    assert.match(validJson.report.url, /^\/creatorops\/report\/[A-Za-z0-9_-]{43,}$/);
     assert.equal(seen.method, 'POST');
-    assert.equal(seen.operation, 'intake');
+    assert.equal(seen.operation, 'intake-with-report');
     assert.ok(seen.signature && seen.signature.length > 40);
     assert.ok(Number(seen.ts) > 0);
     assert.ok(!seen.body.includes('password'));
+    const signedPayload = JSON.parse(seen.body);
+    assert.match(signedPayload.tokenHash, /^[0-9a-f]{64}$/);
+    assert.equal(signedPayload.application.email, 'test@example.com');
+    assert.equal(signedPayload.report.priority_actions.length, 3);
+    assert.equal(signedPayload.report.seven_day_plan.length, 7);
+    assert.equal(seen.body.includes(validJson.report.url.split('/').pop()), false, 'raw report token must not be sent upstream');
 
     const limited = await fetch(`${base}/api/intake`, {
       method: 'POST',
