@@ -7,6 +7,11 @@ const statusEl=document.getElementById('stream-status');
 const youtubeEl=document.getElementById('youtube');
 let stream=null;
 
+if(playButton){
+  playButton.disabled=true;
+  playButton.textContent='▶ Loading stream…';
+}
+
 function setStatus(data){
   if(!data?.videoId){
     if(statusEl)statusEl.textContent='STREAM UNAVAILABLE';
