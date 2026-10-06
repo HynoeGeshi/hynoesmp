@@ -20,10 +20,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Remove forced guide and bump interactive release
+      - name: Fix first-load modal and stretched mobile hotbar
         run: |
           python3 <<'PY'
           from pathlib import Path
+
+          # 1) Do not force the field guide over a fresh mobile game.
           p=Path('assets/watch.mjs')
           s=p.read_text()
           old="""try{if(!localStorage.getItem('hynoeDeepDeeperGuideV3')){localStorage.setItem('hynoeDeepDeeperGuideV3','seen');setTimeout(()=>{if(!guide.open)guide.showModal();},450);}}catch{}"""
@@ -31,17 +33,31 @@ jobs:
               raise SystemExit('expected forced guide block not found')
           p.write_text(s.replace(old,''))
 
+          # 2) home-outpost.css leaves top:119px on the mobile hotbar. site-refresh then changes
+          # it to fixed + bottom without clearing top, stretching it across almost the whole viewport.
+          p=Path('assets/site-refresh.css')
+          s=p.read_text()
+          needle="""  body[data-page] .hotbar{\n    position:fixed;\n    z-index:999;\n    left:10px;"""
+          repl="""  body[data-page] .hotbar{\n    position:fixed;\n    z-index:999;\n    top:auto;\n    height:auto;\n    left:10px;"""
+          if needle not in s:
+              raise SystemExit('mobile hotbar rule not found')
+          p.write_text(s.replace(needle,repl,1))
+
+          # 3) Force every public page to fetch the corrected shared mobile layer.
+          pages=['index.html','start.html','mca.html','progression.html','economy.html','bosses.html','join.html','modpack.html','updates.html','modded-minecraft-server.html','watch.html','privacy.html','terms.html','data-deletion.html','community-rules.html']
+          for name in pages:
+              q=Path(name)
+              text=q.read_text()
+              text=text.replace('assets/site-refresh.css?v=20261006b','assets/site-refresh.css?v=20261006c')
+              q.write_text(text)
+
+          # 4) Force the whole Outpost entry graph to the same fresh release.
           graph=['watch.html','assets/watch.mjs','assets/watch-mobile.mjs','assets/watch-game.mjs','tests/mobile-outpost.test.mjs']
           for name in graph:
               q=Path(name)
-              text=q.read_text()
-              q.write_text(text.replace('20261006b','20261006c'))
-
-          # The shared site shell itself did not change; keep its site-wide release token consistent.
-          q=Path('watch.html')
-          q.write_text(q.read_text().replace('assets/site-refresh.css?v=20261006c','assets/site-refresh.css?v=20261006b'))
+              q.write_text(q.read_text().replace('20261006b','20261006c'))
           PY
-      - name: Update regressions for manual-only Help and c release
+      - name: Align regressions with manual Help and c release
         run: |
           python3 <<'PY'
           from pathlib import Path
@@ -51,27 +67,27 @@ jobs:
           if old not in s: raise SystemExit('old guide regression not found')
           p.write_text(s.replace(old,"assert.doesNotMatch(ui,/hynoeDeepDeeperGuideV3/);"))
 
-          p=Path('tests/live-mobile-leaderboard-repair.test.mjs')
-          p.write_text(p.read_text().replace('20261006b','20261006c'))
-
-          p=Path('tests/sitewide-mobile-refresh.test.mjs')
-          s=p.read_text()
-          s=s.replace('watch-mobile-v2\\.css\\?v=20261006b','watch-mobile-v2\\.css\\?v=20261006c')
-          s=s.replace('watch-video\\.mjs\\?v=20261006b','watch-video\\.mjs\\?v=20261006c')
-          p.write_text(s)
+          for name in ['tests/live-mobile-leaderboard-repair.test.mjs','tests/sitewide-mobile-refresh.test.mjs']:
+              p=Path(name)
+              p.write_text(p.read_text().replace('20261006b','20261006c'))
           PY
-      - name: Strengthen repeated touch test
+      - name: Strengthen real phone first-load and homepage coverage
         run: |
           python3 <<'PY'
           from pathlib import Path
           p=Path('tests/browser-first-load.mjs')
           s=p.read_text()
-          needle="""    assert.ok(after>before,`${label}: first physical tap did not register (${before} -> ${after})`);\n\n    await page.locator('#open-help').click();"""
-          repl="""    assert.ok(after>before,`${label}: first physical tap did not register (${before} -> ${after})`);\n\n    const repeatedBefore=after;\n    for(let i=0;i<20;i++){\n      await vein.tap({timeout:3000});\n      await page.waitForTimeout(18);\n    }\n    await page.waitForTimeout(150);\n    const repeatedAfter=Number((await page.locator('#ore').textContent())||0);\n    assert.ok(repeatedAfter>=repeatedBefore+20,`${label}: repeated physical taps were lost or blocked (${repeatedBefore} -> ${repeatedAfter})`);\n\n    await page.locator('#open-help').click();"""
-          if needle not in s: raise SystemExit('tap test insertion point not found')
-          p.write_text(s.replace(needle,repl))
+          tap_needle="""    assert.ok(after>before,`${label}: first physical tap did not register (${before} -> ${after})`);\n\n    await page.locator('#open-help').click();"""
+          tap_repl="""    assert.ok(after>before,`${label}: first physical tap did not register (${before} -> ${after})`);\n\n    const repeatedBefore=after;\n    for(let i=0;i<20;i++){\n      await vein.tap({timeout:3000});\n      await page.waitForTimeout(18);\n    }\n    await page.waitForTimeout(150);\n    const repeatedAfter=Number((await page.locator('#ore').textContent())||0);\n    assert.ok(repeatedAfter>=repeatedBefore+20,`${label}: repeated physical taps were lost or blocked (${repeatedBefore} -> ${repeatedAfter})`);\n\n    await page.locator('#open-help').click();"""
+          if tap_needle not in s: raise SystemExit('tap insertion point not found')
+          s=s.replace(tap_needle,tap_repl)
+
+          old_home="""    const home=await page.evaluate(()=>{\n      const covers=[...document.querySelectorAll('body *')].filter(el=>{\n        const r=el.getBoundingClientRect(),s=getComputedStyle(el);\n        return (s.position==='fixed'||s.position==='sticky')&&s.pointerEvents!=='none'&&s.display!=='none'&&s.visibility!=='hidden'&&Number(s.opacity)!==0&&r.width>=innerWidth*.9&&r.height>=innerHeight*.7;\n      });\n      return {covers:covers.map(el=>el.id||String(el.className)||el.tagName),scrollWidth:document.documentElement.scrollWidth,innerWidth};\n    });\n    assert.deepEqual(home.covers,[],`${label}: homepage has a viewport-covering fixed/sticky layer: ${home.covers.join(', ')}`);\n    assert.ok(home.scrollWidth<=home.innerWidth+1,`${label}: homepage horizontal overflow ${home.scrollWidth} > ${home.innerWidth}`);"""
+          new_home="""    const home=await page.evaluate(()=>{\n      const hotbar=document.querySelector('.hotbar');\n      const hr=hotbar?.getBoundingClientRect();\n      const covers=[...document.querySelectorAll('body *')].filter(el=>{\n        const r=el.getBoundingClientRect(),s=getComputedStyle(el);\n        const intersects=r.right>0&&r.left<innerWidth&&r.bottom>0&&r.top<innerHeight;\n        return intersects&&(s.position==='fixed'||s.position==='sticky')&&s.pointerEvents!=='none'&&s.display!=='none'&&s.visibility!=='hidden'&&Number(s.opacity)!==0&&r.width>=innerWidth*.9&&r.height>=innerHeight*.7;\n      });\n      return {hotbar:hr?hr.toJSON():null,covers:covers.map(el=>el.id||String(el.className)||el.tagName),scrollWidth:document.documentElement.scrollWidth,innerWidth,innerHeight};\n    });\n    assert.ok(home.hotbar,`${label}: homepage hotbar missing`);\n    assert.ok(home.hotbar.height<=96,`${label}: mobile hotbar stretched to ${home.hotbar.height}px`);\n    assert.ok(home.hotbar.top>=0&&home.hotbar.bottom<=home.innerHeight+1,`${label}: mobile hotbar is outside viewport`);\n    assert.deepEqual(home.covers,[],`${label}: homepage has a viewport-covering fixed/sticky layer: ${home.covers.join(', ')}`);\n    assert.ok(home.scrollWidth<=home.innerWidth+1,`${label}: homepage horizontal overflow ${home.scrollWidth} > ${home.innerWidth}`);"""
+          if old_home not in s: raise SystemExit('homepage coverage block not found')
+          p.write_text(s.replace(old_home,new_home))
           PY
-      - name: Verify syntax and full Node suite
+      - name: Verify syntax and all Node regressions
         run: |
           node --check assets/watch.mjs
           node --check assets/watch-mobile.mjs
@@ -97,5 +113,5 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A
-          git commit -m 'fix: keep Hynoe Outpost playable on first mobile load'
+          git commit -m 'fix: repair first-load mobile Outpost and homepage nav'
           git push origin HEAD:fix/mobile-first-load-blocker-20261006
