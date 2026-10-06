@@ -1,0 +1,150 @@
+/*! Copyright © 2026 Hynoe. All rights reserved. See /COPYRIGHT.md. */
+/* Final phone-first repair layer. This deliberately loads after watch.css/watch-mobile.css. */
+
+@media (max-width:899px){
+  html,body{max-width:100%;overflow-x:hidden}
+  .game button,.site-pages a,.tabs button,.outpost-jumps a,.play-broadcast{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+  .game>.panel-head{gap:10px;flex-wrap:wrap}
+  .game>.panel-head>div:first-child{min-width:0;flex:1 1 230px}
+  .game-head-actions{max-width:none;flex:1 1 180px;justify-content:flex-start}
+  .game-tagline{line-height:1.45;white-space:normal}
+  .stats{grid-template-columns:repeat(2,minmax(0,1fr));padding-inline:14px}
+  .stats div{min-width:0}
+  .stats strong{font-size:clamp(23px,8vw,31px);overflow-wrap:anywhere}
+  .campaign-strip,.next-goal{margin-inline:12px}
+  .next-goal{align-items:flex-start;gap:10px}
+  .next-goal>div{min-width:0}
+  .next-goal p{line-height:1.45}
+  .mine-purpose{grid-template-columns:1fr!important;margin-inline:12px!important;gap:8px!important}
+  .mine-purpose article{min-width:0}
+
+  .mine-scene.mine-v2{
+    height:auto;
+    min-height:0;
+    overflow:hidden;
+    padding:76px 10px 18px;
+    isolation:isolate;
+  }
+  .mine-scene.mine-v2 .cave-light,
+  .mine-scene.mine-v2 .mine-rails,
+  .mine-scene.mine-v2 .mountain,
+  .mine-scene.mine-v2 .tree{pointer-events:none;z-index:0}
+  .mine-scene.mine-v2 .mine-caption{z-index:8;inset:12px 12px auto;align-items:flex-start;line-height:1.35}
+  .mine-scene.mine-v2 .mining-hud{z-index:8;left:10px;right:10px;top:43px;gap:5px;pointer-events:none}
+  .mine-scene.mine-v2 .mining-hud button{pointer-events:auto}
+  .mine-scene.mine-v2 .vein-grid{
+    position:relative!important;
+    inset:auto!important;
+    z-index:6;
+    width:100%;
+    height:auto;
+    display:grid;
+    align-items:stretch;
+  }
+  .mine-scene.mine-v2 .vein{
+    position:relative;
+    z-index:1;
+    width:100%;
+    min-width:0;
+    overflow:hidden;
+    border-radius:10px;
+    touch-action:manipulation;
+    user-select:none;
+    -webkit-user-select:none;
+  }
+  .mine-scene.mine-v2 .vein:active{transform:scale(.975)}
+  .mine-scene.mine-v2 .vein .ore-crystal{pointer-events:none;flex:0 0 auto}
+  .mine-scene.mine-v2 .vein strong,
+  .mine-scene.mine-v2 .vein small{position:relative;z-index:2;display:block;width:100%;overflow:visible;text-overflow:clip;white-space:normal}
+  .mine-scene.mine-v2 .vein-health{position:relative;z-index:2;width:100%}
+  .mine-scene.mine-v2 .mine-hint{position:relative;left:auto;right:auto;bottom:auto;z-index:7;margin:13px 0 0;padding:10px 8px 2px;line-height:1.45;background:linear-gradient(90deg,transparent,#121814cc,transparent)}
+  .mine-scene.mine-v2 #float{z-index:20;pointer-events:none}
+
+  .tabs{scroll-padding-inline:8px;overscroll-behavior-inline:contain}
+  .tabs button{min-height:44px}
+  .tab-content{overflow:visible}
+  .category-scene,.crew-stage,.operations-stage,.leader-stage{max-width:100%;overflow:hidden}
+  .guardian-card,.leader-profile,.research-heading,.contract,.field-order{min-width:0}
+  .guardian-card>*{min-width:0}
+  .watch-sidebar{min-width:0}
+  .video{max-width:100%}
+  .video iframe{display:block;width:100%;height:100%;border:0}
+  .video-footer{align-items:flex-start}
+  .video-footer p{min-width:0;overflow-wrap:anywhere}
+  .play-broadcast{min-height:52px;max-width:calc(100% - 28px);white-space:normal;text-align:center}
+  .page-footer{flex-wrap:wrap}
+}
+
+@media (max-width:479px){
+  main{padding-inline:10px}
+  .topbar{gap:10px;flex-wrap:wrap;padding:10px 12px}
+  .topbar nav{width:100%;gap:7px;overflow-x:auto;padding-bottom:2px}
+  .topbar nav a{flex:0 0 auto;min-height:38px;display:flex;align-items:center;padding-inline:9px;border:1px solid #393529;border-radius:6px}
+  .site-pages{padding-inline:8px}
+  .site-pages a{min-height:40px;display:flex;align-items:center}
+  .outpost-jumps{gap:7px;margin-block:12px}
+  .outpost-jumps a{min-width:0;flex:1 1 calc(50% - 7px);padding:12px 9px;font-size:10px;line-height:1.35}
+  .game>.panel-head{padding:14px 12px}
+  .game>.panel-head h1{font-size:clamp(35px,12vw,48px);margin-block:6px 11px}
+  .game-head-actions{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:7px}
+  .game-head-actions .pill{grid-column:1/-1;width:auto}
+  .quiet-action{min-height:42px;font-size:9px}
+  .game-note{margin:12px;padding:10px;font-size:11px;line-height:1.5}
+  .stats{gap:7px;padding:0 12px 14px}
+  .stats div{padding:9px 8px 9px 10px;border:1px solid #4e432f;border-left:3px solid #80693d;border-radius:7px;background:#171813}
+  .stats small{font-size:8px;letter-spacing:.8px}
+  .stats strong{font-size:24px}
+  .stream-run{margin-inline:8px;padding:12px}
+  .stream-run-head h2{font-size:25px}
+  .watch-milestones{grid-template-columns:1fr 1fr}
+  .campaign-strip,.next-goal{margin-inline:8px;padding:12px}
+  .next-goal{display:block}
+  .next-goal button{width:100%;min-height:44px;margin-top:10px}
+
+  .mine-scene.mine-v2{height:auto;padding:78px 8px 18px}
+  .mine-scene.mine-v2 .mine-caption{font-size:9px;gap:7px}
+  .mine-scene.mine-v2 .mine-caption span{max-width:52%;white-space:normal}
+  .mine-scene.mine-v2 .mining-hud{font-size:8px;overflow-x:auto;white-space:nowrap}
+  .mine-scene.mine-v2 .vein-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .mine-scene.mine-v2 .vein{min-height:128px;padding:10px 7px 9px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:3px}
+  .mine-scene.mine-v2 .vein .ore-crystal{width:min(92px,100%);height:58px;margin:0 auto 2px}
+  .mine-scene.mine-v2 .vein strong{font-size:13px;line-height:1.2;min-height:16px;color:#fff1cf}
+  .mine-scene.mine-v2 .vein small{font-size:11px;line-height:1.35;min-height:30px;color:#d5c9b1}
+  .mine-scene.mine-v2 .vein-health{margin-top:auto;height:5px}
+  .mine-scene.mine-v2 .mine-hint{font-size:10px}
+  .mine-result,.depth-track,.field-order,.realm-route,.guardian-card{margin-inline:8px!important}
+  .guardian-card{display:block;padding:12px}
+  .guardian-portrait{margin:0 auto 9px}
+  .guardian-actions{min-width:0;margin-top:10px}
+  .guardian-actions button{min-height:44px}
+  .tabs{margin-inline:-1px}
+  .tabs button{font-size:10px;padding-inline:10px}
+  .tab-content{padding-inline:12px}
+  .run-head,.leader-profile,.research-heading,.contract,.field-order{display:block}
+  .run-head>strong,.leader-score{display:inline-block;margin-top:8px}
+  .run-stats{grid-template-columns:1fr 1fr}
+  .leader-categories{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .callsign-edit{display:grid;grid-template-columns:1fr;gap:6px}
+  .callsign-edit button{min-height:42px}
+  .upgrade{align-items:flex-start;flex-wrap:wrap}
+  .upgrade .details{min-width:calc(100% - 56px)}
+  .upgrade button{width:100%;min-height:44px}
+  .savebar{padding-inline:12px}
+  .video-footer{display:grid;grid-template-columns:1fr;gap:8px}
+  .video-footer a{white-space:normal;min-height:40px;display:flex;align-items:center}
+  .video.docked iframe{left:10px;right:10px;bottom:max(10px,env(safe-area-inset-bottom));width:calc(100vw - 20px);height:auto;aspect-ratio:16/9}
+  .dock-toggle{left:10px;bottom:calc((100vw - 20px)*.5625 + 16px + env(safe-area-inset-bottom))}
+}
+
+@media (min-width:480px) and (max-width:899px){
+  .mine-scene.mine-v2{height:auto;padding:76px 12px 18px}
+  .mine-scene.mine-v2 .vein-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+  .mine-scene.mine-v2 .vein{min-height:120px;padding:9px 7px;display:flex;flex-direction:column;align-items:center}
+  .mine-scene.mine-v2 .vein .ore-crystal{width:84px;height:55px}
+  .mine-scene.mine-v2 .vein strong{font-size:13px;line-height:1.2}
+  .mine-scene.mine-v2 .vein small{font-size:10px;line-height:1.35;min-height:28px}
+}
+
+@media (prefers-reduced-motion:reduce){
+  .mine-scene.mine-v2 .vein:active{transform:none}
+}
