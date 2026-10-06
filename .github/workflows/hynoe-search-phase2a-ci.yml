@@ -1,0 +1,26 @@
+name: Hynoe Search Phase 2A CI
+
+on:
+  push:
+    branches:
+      - hynoe-search-phase2a-impl
+    paths:
+      - 'hynoe-search-app/**'
+      - '.github/workflows/hynoe-search-phase2a-ci.yml'
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: hynoe-search-app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: hynoe-search-app/package-lock.json
+      - run: npm ci
+      - run: npm test -- tests/smoke/supabase-security.test.ts
