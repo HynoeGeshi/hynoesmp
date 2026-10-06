@@ -36,3 +36,5 @@ jobs:
           git add assets/site-social.mjs assets/site-social-panel.mjs
           git commit -m "feat: make Turnstile optional for guest auth"
           git push origin HEAD:feature/site-help-global-chat-final
+
+# rerun after updating the optional-Turnstile regression contract
