@@ -18,6 +18,7 @@ import {
   presenceOnlineCount,
   messageDisplayBody,
 } from './site-social-core.mjs';
+import { askHynoe, appendPrivateHistory } from './ask-hynoe.mjs';
 
 const DISPLAY_NAME_KEY = 'hynoeSiteDisplayName';
 const FOCUSABLE = 'button:not([disabled]),a[href],input:not([disabled]),textarea:not([disabled]),select:not([disabled]),[tabindex]:not([tabindex="-1"])';
@@ -40,6 +41,8 @@ const state = {
   captchaToken: '',
   turnstileWidget: null,
   refreshBusy: false,
+  askHistory: [],
+  askBusy: false,
 };
 
 function el(tag, attrs = {}, text = '') {
@@ -146,19 +149,19 @@ chatPane.append(composer);
 
 const askIntro = el('div', { className: 'site-social-ask-intro' });
 askIntro.append(el('strong', {}, 'Ask Hynoe anything about Hynoe SMP'));
-askIntro.append(el('p', {}, 'Commands, campaign progress, joining, server systems, website features, and common troubleshooting—all in one place.'));
+askIntro.append(el('p', {}, 'Private help grounded in official Hynoe information. Your questions are never posted to Global Chat.'));
 askPane.append(askIntro);
 const askTranscript = el('div', { className: 'site-social-ask-log', role: 'log', 'aria-live': 'polite' });
 const askWelcome = el('article', { className: 'site-social-ask-message bot' });
 askWelcome.append(el('strong', {}, 'HYNOE'));
-askWelcome.append(el('p', {}, 'The Ask Hynoe answer engine is being connected to this panel. Global Chat is built first so both tools can share the same safe identity and moderation layer.'));
+askWelcome.append(el('p', {}, 'Ask me about joining, campaign progression, commands, economy, bosses, mods, village life, or site features. I will tell you when the official Hynoe sources do not verify an answer.'));
 askTranscript.append(askWelcome);
 askPane.append(askTranscript);
 const askForm = el('form', { className: 'site-social-composer ask' });
-const askInput = el('textarea', { rows: 2, maxlength: 500, placeholder: 'Ask Hynoe a server question…', 'aria-label': 'Ask Hynoe question' });
+const askInput = el('textarea', { rows: 2, maxlength: 600, placeholder: 'Ask Hynoe a server question…', 'aria-label': 'Ask Hynoe question', disabled: true });
 const askFoot = el('div', { className: 'site-social-composer-foot' });
-const askStatus = el('small', {}, 'ANSWER ENGINE CONNECTING');
-const askButton = el('button', { type: 'submit', className: 'site-social-primary' }, 'ASK');
+const askStatus = el('small', {}, 'JOIN THE COMMUNITY TO ASK');
+const askButton = el('button', { type: 'submit', className: 'site-social-primary', disabled: true }, 'ASK');
 askFoot.append(askStatus, askButton);
 askForm.append(askInput, askFoot);
 askPane.append(askForm);
@@ -166,7 +169,7 @@ askPane.append(askForm);
 const safety = el('footer', { className: 'site-social-safety' });
 const rulesLink = el('a', { href: 'community-rules.html' }, 'Community rules');
 const privacyLink = el('a', { href: 'privacy.html' }, 'Privacy');
-safety.append(el('span', {}, 'Public community space.'), rulesLink, privacyLink);
+safety.append(el('span', {}, 'Global Chat is public. Ask Hynoe is private from public chat.'), rulesLink, privacyLink);
 panel.append(safety);
 
 document.body.append(backdrop, launcher, panel);
@@ -401,6 +404,9 @@ async function connectCommunity() {
   setupCard.hidden = true;
   messages.hidden = false;
   composer.hidden = false;
+  askInput.disabled = false;
+  askButton.disabled = false;
+  askStatus.textContent = 'PRIVATE HELP READY';
   connectionText.textContent = '● LIVE';
   connectionText.classList.add('live');
   setHeadStatus(`Signed in as ${state.profile.display_name}`);
@@ -511,19 +517,56 @@ composer.addEventListener('submit', async (event) => {
   }
 });
 
-askForm.addEventListener('submit', (event) => {
+function renderAskTurn(role, content, result = null) {
+  const article = el('article', { className: `site-social-ask-message ${role === 'user' ? 'user' : 'bot'}` });
+  article.append(el('strong', {}, role === 'user' ? (state.profile?.display_name || 'YOU') : 'HYNOE'));
+  article.append(el('p', {}, content));
+  if (result) {
+    const confidence = el('small', { className: `site-social-help-confidence${result.confidence < 0.5 ? ' uncertain' : ''}` }, result.confidence < 0.5 ? 'COULD NOT FULLY VERIFY' : 'GROUNDED IN HYNOE SOURCES');
+    article.append(confidence);
+    if (result.sources.length) {
+      const sourceBox = el('div', { className: 'site-social-help-sources' });
+      sourceBox.append(el('span', {}, 'Sources'));
+      for (const source of result.sources) sourceBox.append(el('a', { href: source.url }, source.label));
+      article.append(sourceBox);
+    }
+  }
+  return article;
+}
+
+askForm.addEventListener('submit', async (event) => {
   event.preventDefault();
+  if (state.askBusy) return;
   const question = askInput.value.trim();
   if (!question) return;
-  const userMessage = el('article', { className: 'site-social-ask-message user' });
-  userMessage.append(el('strong', {}, state.profile?.display_name || 'YOU'));
-  userMessage.append(el('p', {}, question));
-  const botMessage = el('article', { className: 'site-social-ask-message bot' });
-  botMessage.append(el('strong', {}, 'HYNOE'));
-  botMessage.append(el('p', {}, 'Ask Hynoe is not answering yet. Its grounded knowledge engine is the next build stage; Global Chat is the live foundation it shares.'));
-  askTranscript.append(userMessage, botMessage);
-  askInput.value = '';
+  if (!state.client || !state.session || !state.profile) {
+    askStatus.textContent = 'JOIN THE COMMUNITY TO ASK';
+    return;
+  }
+  const previousHistory = state.askHistory;
+  askTranscript.append(renderAskTurn('user', question));
   askTranscript.scrollTop = askTranscript.scrollHeight;
+  state.askBusy = true;
+  askButton.disabled = true;
+  askInput.disabled = true;
+  askStatus.textContent = 'ASKING HYNOE…';
+  try {
+    const result = await askHynoe(state.client, { question, history: previousHistory, pagePath: location.pathname });
+    askTranscript.append(renderAskTurn('assistant', result.answer, result));
+    state.askHistory = appendPrivateHistory(previousHistory, { role: 'user', content: question.slice(0, 500) });
+    state.askHistory = appendPrivateHistory(state.askHistory, { role: 'assistant', content: result.answer.slice(0, 500) });
+    askInput.value = '';
+    askStatus.textContent = result.confidence < 0.5 ? 'ANSWER NEEDS MORE OFFICIAL INFO' : 'PRIVATE HELP READY';
+  } catch (error) {
+    askTranscript.append(renderAskTurn('assistant', error.message || 'I could not answer that right now.'));
+    askStatus.textContent = 'TRY AGAIN';
+  } finally {
+    state.askBusy = false;
+    askButton.disabled = false;
+    askInput.disabled = false;
+    askTranscript.scrollTop = askTranscript.scrollHeight;
+    askInput.focus();
+  }
 });
 
 async function initialize() {
@@ -535,6 +578,9 @@ async function initialize() {
       identityStatus.textContent = 'The panel is installed site-wide. The dedicated community backend still needs its production connection.';
       nameInput.disabled = true;
       joinButton.disabled = true;
+      askInput.disabled = true;
+      askButton.disabled = true;
+      askStatus.textContent = 'BACKEND SETUP PENDING';
       return;
     }
     state.client = createSiteSocialClient(state.config);
