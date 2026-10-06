@@ -63,13 +63,12 @@ test('recovery copies the richer legacy save forward without deleting the backup
   assert.equal(JSON.parse(store.get(LEGACY_SAVE_KEY)).total, 250_000);
 });
 
-test('watch page loads recovery preloader before the game module', () => {
-  const html = readFileSync(new URL('../watch.html', import.meta.url), 'utf8');
-  const recovery = html.indexOf('assets/save-recovery.mjs');
-  const game = html.indexOf('assets/watch.mjs');
-  assert.ok(recovery >= 0, 'save recovery preloader must be included');
-  assert.ok(game >= 0, 'watch module must be included');
-  assert.ok(recovery < game, 'save recovery must run before watch.mjs');
+test('interaction layer runs save recovery and performs at most one guarded reload', () => {
+  const source = readFileSync(new URL('../assets/watch-mobile.mjs', import.meta.url), 'utf8');
+  assert.match(source, /save-recovery\.mjs/);
+  assert.match(source, /recoveryResult\.recovered/);
+  assert.match(source, /sessionStorage\.getItem/);
+  assert.match(source, /location\.reload\(\)/);
 });
 
 test('legacy save is never deleted by recovery code', () => {
