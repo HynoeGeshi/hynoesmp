@@ -34,3 +34,11 @@ test('ask-hynoe allows Supabase browser client headers through CORS',()=>{
   assert.match(source,/Access-Control-Allow-Headers[^\n]*x-client-info/i);
   assert.match(source,/Access-Control-Allow-Methods[^\n]*POST[^\n]*OPTIONS/i);
 });
+
+test('ask-hynoe conditionally fetches live Hynoe SMP player status with a bounded timeout',()=>{
+  assert.match(source,/api\.mcstatus\.io\/v2\/status\/java\/hynoesmp\.com/i);
+  assert.match(source,/query=false/);
+  assert.match(source,/AbortController/);
+  assert.match(source,/isLiveServerStatusQuestion/);
+  assert.match(source,/liveServerStatus/);
+});
