@@ -62,4 +62,4 @@ export function recoverBestLocalSave(storage=globalThis.localStorage){
   }catch{return {source:'none',recovered:false};}
 }
 
-recoverBestLocalSave();
+export const recoveryResult=recoverBestLocalSave();
