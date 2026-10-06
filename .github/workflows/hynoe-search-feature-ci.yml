@@ -47,4 +47,4 @@ jobs:
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
       - name: Public browser tests
-        run: npx playwright test e2e/home.spec.ts e2e/search.spec.ts --project=desktop --project=mobile
+        run: npx playwright test e2e/home.spec.ts e2e/search.spec.ts e2e/page.spec.ts --project=desktop --project=mobile
