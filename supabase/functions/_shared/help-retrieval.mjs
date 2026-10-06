@@ -111,21 +111,35 @@ export function rankHelpChunks(question, chunks = [], options = {}) {
     .slice(0, limit);
 }
 
-function normalizedClaims(text) {
-  const claims = normalize(text).toLowerCase().match(/\b\d+\b|\b(?:enabled|disabled|required|optional|yes|no|true|false)\b/g) ?? [];
-  return new Set(claims);
+function numericClaims(text) {
+  const out = new Map();
+  const normalized = normalize(text).toLowerCase();
+  for (const match of normalized.matchAll(/\b(\d+)\s+([a-z][a-z'-]{2,})\b/g)) {
+    const [, value, noun] = match;
+    if (!out.has(noun)) out.set(noun, new Set());
+    out.get(noun).add(value);
+  }
+  return out;
 }
 
 function likelyConflict(a, b) {
   if (!a?.chunk || !b?.chunk) return false;
-  const aTokens = new Set(tokenize(`${a.chunk.title} ${a.chunk.heading} ${a.chunk.text}`));
-  const bTokens = new Set(tokenize(`${b.chunk.title} ${b.chunk.heading} ${b.chunk.text}`));
-  const overlap = [...aTokens].filter((token) => bTokens.has(token)).length;
-  if (overlap < 2) return false;
-  const ca = normalizedClaims(a.chunk.text);
-  const cb = normalizedClaims(b.chunk.text);
-  if (!ca.size || !cb.size) return false;
-  return [...ca].some((claim) => !cb.has(claim)) && [...cb].some((claim) => !ca.has(claim));
+  const aHeading = normalize(a.chunk.heading || a.chunk.title).toLowerCase();
+  const bHeading = normalize(b.chunk.heading || b.chunk.title).toLowerCase();
+  if ((aHeading || bHeading) && aHeading !== bHeading) return false;
+
+  const ca = numericClaims(a.chunk.text);
+  const cb = numericClaims(b.chunk.text);
+  for (const [noun, valuesA] of ca) {
+    const valuesB = cb.get(noun);
+    if (!valuesB) continue;
+    if ([...valuesA].some((value) => !valuesB.has(value)) && [...valuesB].some((value) => !valuesA.has(value))) return true;
+  }
+
+  const ta = normalize(a.chunk.text).toLowerCase();
+  const tb = normalize(b.chunk.text).toLowerCase();
+  const opposites = [['enabled','disabled'],['required','optional'],['yes','no'],['true','false']];
+  return opposites.some(([left,right]) => (ta.includes(left) && tb.includes(right)) || (ta.includes(right) && tb.includes(left)));
 }
 
 export function classifyRetrieval(results = []) {
@@ -162,7 +176,7 @@ export function buildFallbackAnswer(question, results = []) {
       answer: classification.conflict
         ? 'I found conflicting official Hynoe information, so I cannot verify a single answer yet. Check the linked official pages for the newest confirmed details.'
         : 'I couldn’t verify that from the current official Hynoe information, so I don’t want to guess.',
-      sources,
+      sources: classification.conflict ? sources : [],
       confidence: 'low',
       conflict: classification.conflict,
     };
