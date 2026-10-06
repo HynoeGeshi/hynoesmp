@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ANALYTICS_EVENTS, sanitizeAnalyticsProperties } from '@/lib/analytics/events';
+import { trackEvent } from '@/lib/analytics/track-event';
 
 describe('Hynoe analytics event contract', () => {
   it('exposes only the five approved public retention/discovery events', () => {
@@ -43,5 +44,14 @@ describe('Hynoe analytics event contract', () => {
       query_length: 12,
       page_slug: 'hynoe-flicks',
     });
+  });
+
+  it('is a safe no-op when PostHog is not configured', () => {
+    const originalKey = process.env.NEXT_PUBLIC_POSTHOG_KEY;
+    delete process.env.NEXT_PUBLIC_POSTHOG_KEY;
+
+    expect(() => trackEvent('page_viewed', { page_slug: 'hynoe-smp' })).not.toThrow();
+
+    if (originalKey) process.env.NEXT_PUBLIC_POSTHOG_KEY = originalKey;
   });
 });
