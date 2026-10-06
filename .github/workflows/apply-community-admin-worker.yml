@@ -1,0 +1,42 @@
+name: Wire Hynoe moderation announcements
+
+on:
+  push:
+    branches:
+      - feature/hynoe-community-20261006-final
+    paths:
+      - .github/workflows/apply-community-admin-worker.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/hynoe-community-20261006-final
+      - name: Add system announcement endpoint
+        shell: python
+        run: |
+          from pathlib import Path
+          p=Path('relay/worker.mjs')
+          text=p.read_text()
+          old="if(path==='/admin/pause'){if(typeof b.paused!=='boolean')return fail('A boolean paused value is required.');await s.put('paused',b.paused);this.broadcast(statusEvent(b.paused));return json({ok:true});}"
+          addition=old+"if(path==='/admin/announce'){let message;try{message=validateMessage(b);}catch(e){return fail(e.message);}const moderation=moderateMessage(message.text);if(moderation.action==='block')return fail('Announcement blocked by community safety rules.');const stamp=Date.now(),record={id:crypto.randomUUID(),displayName:'HYNOE SYSTEM',displayKind:'system',text:moderation.text,createdAt:stamp,at:stamp};await s.transaction(async tx=>{let list=(await tx.get('messages')||[]).filter(m=>(m.at??m.createdAt)>now-DAY);list.push(record);await tx.put('messages',list.slice(-100));});const event=messageEvent(record);this.broadcast(event);return json({ok:true,message:event.message},201);}"
+          if '/admin/announce' not in text:
+            if old not in text: raise SystemExit('pause endpoint insertion point not found')
+            text=text.replace(old,addition,1)
+          p.write_text(text)
+      - name: Commit backend integration
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add relay/worker.mjs
+          if git diff --cached --quiet; then
+            echo "No backend integration changes"
+          else
+            git commit -m "feat: add Hynoe system announcements"
+            git push origin HEAD:feature/hynoe-community-20261006-final
+          fi
