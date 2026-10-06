@@ -5,6 +5,7 @@ export type AppConfig = {
   discordBotToken: string;
   discordGuildId: string;
   discordAllowedChannelIds: string[];
+  discordGuildManagementEnabled?: boolean;
   supabaseUrl: string;
   supabasePublishableKey: string;
   allowedSupabaseUserId: string;
@@ -17,17 +18,20 @@ const REQUIRED = [
   'BLOOM_SERVER_ID',
   'DISCORD_BOT_TOKEN',
   'DISCORD_GUILD_ID',
-  'DISCORD_ALLOWED_CHANNEL_IDS',
   'SUPABASE_URL',
   'SUPABASE_PUBLISHABLE_KEY',
   'ALLOWED_SUPABASE_USER_ID',
   'PUBLIC_BASE_URL',
 ] as const;
 
-function required(env: NodeJS.ProcessEnv, key: (typeof REQUIRED)[number]): string {
+function required(env: NodeJS.ProcessEnv, key: (typeof REQUIRED)[number] | 'DISCORD_ALLOWED_CHANNEL_IDS'): string {
   const value = env[key]?.trim();
   if (!value) throw new Error(`Missing required environment variable: ${key}`);
   return value;
+}
+
+function enabled(value: string | undefined): boolean {
+  return (value ?? '').trim().toLowerCase() === 'true';
 }
 
 function assertHttps(name: string, value: string): string {
@@ -43,9 +47,15 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
   if (new URL(bloomPanelUrl).hostname !== 'mc.bloom.host') {
     throw new Error('BLOOM_PANEL_URL must point to mc.bloom.host');
   }
-  const discordAllowedChannelIds = required(env, 'DISCORD_ALLOWED_CHANNEL_IDS')
-    .split(',').map((v) => v.trim()).filter(Boolean);
-  if (discordAllowedChannelIds.length === 0) throw new Error('DISCORD_ALLOWED_CHANNEL_IDS must contain at least one channel ID');
+
+  const discordGuildManagementEnabled = enabled(env.DISCORD_GUILD_MANAGEMENT_ENABLED);
+  const rawAllowedChannels = env.DISCORD_ALLOWED_CHANNEL_IDS?.trim() ?? '';
+  const discordAllowedChannelIds = rawAllowedChannels
+    ? rawAllowedChannels.split(',').map((v) => v.trim()).filter(Boolean)
+    : [];
+  if (!discordGuildManagementEnabled && discordAllowedChannelIds.length === 0) {
+    throw new Error('Missing required environment variable: DISCORD_ALLOWED_CHANNEL_IDS');
+  }
 
   return {
     bloomPanelUrl,
@@ -54,6 +64,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     discordBotToken: required(env, 'DISCORD_BOT_TOKEN'),
     discordGuildId: required(env, 'DISCORD_GUILD_ID'),
     discordAllowedChannelIds,
+    discordGuildManagementEnabled,
     supabaseUrl: assertHttps('SUPABASE_URL', required(env, 'SUPABASE_URL')),
     supabasePublishableKey: required(env, 'SUPABASE_PUBLISHABLE_KEY'),
     allowedSupabaseUserId: required(env, 'ALLOWED_SUPABASE_USER_ID'),
