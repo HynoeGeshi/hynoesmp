@@ -1,3 +1,4 @@
+import {handleExternalHelp} from './external-help.mjs';
 const DAY=86400000;
 const SESSION_TTL=DAY;
 const json=(data,status=200)=>Response.json(data,{status,headers:{'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
@@ -86,11 +87,11 @@ export class ChatRoom{
   if(typeof WebSocketPair==='undefined')return fail('Realtime transport unavailable.',501);
   const pair=new WebSocketPair(),client=pair[0],server=pair[1];server.accept();this.sockets.add(server);const cleanup=()=>this.sockets.delete(server);server.addEventListener('close',cleanup);server.addEventListener('error',cleanup);return new Response(null,{status:101,webSocket:client});
  }
- async alarm(){const s=this.ctx.storage,now=Date.now(),rows=await s.list();for(const [k,v] of rows){if(k==='messages')await s.put(k,(v||[]).filter(m=>(m.at??m.createdAt)>now-DAY));else if(k==='reports')await s.put(k,(v||[]).filter(m=>m.at>now-DAY));else if((k.startsWith('ip:')||k.startsWith('mute:')||k.startsWith('actor:')||k.startsWith('actor-rate:'))&&v.expires<=now)await s.delete(k);}await s.setAlarm(now+3600000);}
+ async alarm(){const s=this.ctx.storage,now=Date.now(),rows=await s.list();for(const [k,v] of rows){if(k==='messages')await s.put(k,(v||[]).filter(m=>(m.at??m.createdAt)>now-DAY));else if(k==='reports')await s.put(k,(v||[]).filter(m=>m.at>now-DAY));else if((k.startsWith('ip:')||k.startsWith('mute:')||k.startsWith('actor:')||k.startsWith('actor-rate:')||k.startsWith('help:'))&&v.expires<=now)await s.delete(k);}await s.setAlarm(now+3600000);}
  async verified(token,ip,origin){if(typeof token!=='string'||!token||token.length>2048)return false;try{const r=await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({secret:this.env.TURNSTILE_SECRET,response:token,remoteip:ip}),signal:AbortSignal.timeout(6000)});const data=await r.json();return data.success===true&&data.hostname===new URL(origin).hostname;}catch{return false;}}
  async guest(request,now){const auth=request.headers.get('Authorization')||'';if(!auth.startsWith('Guest '))return null;const payload=await verifySessionToken(auth.slice(6),this.env.SESSION_SECRET,now);if(!payload)return null;const actor=await this.ctx.storage.get('actor:'+payload.sub);if(!actor||actor.actorId!==payload.sub||actor.expires<=now)return null;return actor;}
  async fetch(request){
-  const path=new URL(request.url).pathname,s=this.ctx.storage,now=Date.now();if(!await s.getAlarm())await s.setAlarm(now+3600000);if(path.startsWith('/admin'))return this.admin(request,path);
+  const path=new URL(request.url).pathname,s=this.ctx.storage,now=Date.now();if(!await s.getAlarm())await s.setAlarm(now+3600000);if(path.startsWith('/admin'))return this.admin(request,path);if(path==='/help/external'&&request.method==='POST'){let b;try{b=await body(request);}catch{return fail('Invalid or oversized request.');}return handleExternalHelp({request,env:this.env,storage:s,body:b,now});}
   const configured=!!(this.env.TURNSTILE_SECRET&&this.env.IP_SALT&&this.env.SESSION_SECRET);
   if(path==='/socket'&&request.method==='GET')return this.socketResponse(request);
   if(path==='/messages'&&request.method==='GET'){const messages=(await s.get('messages')||[]).filter(m=>(m.at??m.createdAt)>now-DAY).map(publicMessage).sort((a,b)=>a.createdAt-b.createdAt||String(a.id).localeCompare(String(b.id)));return json({enabled:configured&&this.env.CHAT_ENABLED==='true'&&!(await s.get('paused')),messages});}

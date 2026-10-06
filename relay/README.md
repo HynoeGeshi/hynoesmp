@@ -13,6 +13,11 @@ This Cloudflare Worker powers the Hynoe website and Hynoe Outpost community chat
 
 The static site and Hynoe Outpost remain usable while the backend is unconfigured or offline.
 
+## Optional Ask Hynoe external fallback
+
+Official Hynoe answers are generated from the site and do not require an external provider. To add general Minecraft/mod fallback for questions the Hynoe knowledge index cannot answer, configure private Worker secrets `HELP_PROVIDER_URL` and `HELP_PROVIDER_KEY`. The provider endpoint must use HTTPS and accept `{question, context}` JSON. Its credentials never appear in browser code. If the provider is absent or fails, Ask Hynoe returns a clear unavailable result rather than inventing an answer.
+
+
 ## Moderation and limits
 
 - User text is validated and moderated server-side before publication.
