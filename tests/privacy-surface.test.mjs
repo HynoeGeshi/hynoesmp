@@ -27,7 +27,7 @@ test('homepage and Watch & Play surface privacy, terms and deletion routes', () 
   }
 });
 
-test('privacy notice describes local saves and opt-in leaderboard publishing accurately', () => {
+test('privacy notice describes local saves, opt-in leaderboard, and site-only Global Chat accurately', () => {
   const html = read('privacy.html');
   assert.match(html, /cloud (?:accounts|saves)[^<]*(?:are not|aren't|not yet) live/i);
   assert.match(html, /localStorage|stored on your device|browser storage/i);
@@ -35,7 +35,11 @@ test('privacy notice describes local saves and opt-in leaderboard publishing acc
   assert.match(html, /publishing your own score[^<]*optional[^<]*off by default/i);
   assert.match(html, /random local player ID|random player ID/i);
   assert.match(html, /bounded gameplay metrics/i);
-  assert.match(html, /website chat[^<]*(?:not connected|inactive|not active)/i);
+  assert.match(html, /Website Global Chat/i);
+  assert.match(html, /site-only public community feature/i);
+  assert.match(html, /not connected to Minecraft or Bloom/i);
+  assert.match(html, /pseudonymous guest session/i);
+  assert.match(html, /Ask Hynoe conversations are separate from public chat/i);
   assert.match(html, /under 18|18\+/i);
   assert.doesNotMatch(html, /we guarantee|100% secure|fully compliant/i);
 });
