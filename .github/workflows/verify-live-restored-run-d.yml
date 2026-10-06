@@ -1,0 +1,150 @@
+name: Verify live restored-run mobile release d
+
+on:
+  push:
+    branches:
+      - verify/live-restored-run-20261006d
+    paths:
+      - '.github/workflows/verify-live-restored-run-d.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  live:
+    strategy:
+      fail-fast: false
+      matrix:
+        engine: [chromium, webkit]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser runtime
+        run: |
+          npm install --no-save --no-package-lock playwright@1.63.0
+          npx playwright install --with-deps ${{ matrix.engine }}
+      - name: Verify deployed Tap Mine with saved mobile states
+        env:
+          ENGINE: ${{ matrix.engine }}
+        run: |
+          cat > /tmp/live-restored-run.mjs <<'EOF'
+          import { chromium, webkit } from 'playwright';
+          import * as G from '${{ github.workspace }}/assets/watch-game.mjs';
+
+          const engineName = process.env.ENGINE;
+          const engine = engineName === 'webkit' ? webkit : chromium;
+          const now = Date.now();
+
+          function freshState() {
+            const s = G.fresh(now);
+            G.ensureVeins(s);
+            s.veins[0] = { id: 'coal', left: 2 };
+            return s;
+          }
+
+          function activeRunState() {
+            const s = freshState();
+            s.ore = 1_000_000;
+            s.total = 1_000_000;
+            s.run = 100_000;
+            s.blocks = 100;
+            s.progress.chapter = 8;
+            if (!G.startSurvey(s, 2)) throw new Error('Could not build active-run verification save.');
+            return s;
+          }
+
+          const legacyTrip = {
+            version: 1,
+            ore: 4000,
+            total: 8000,
+            run: 5000,
+            blocks: 100,
+            progress: {
+              schema: 1,
+              chapter: 4,
+              insight: 12,
+              research: { precision: 2, industry: 1, survey: 1 },
+              gear: { chisel: 1, engine: 1, lens: 0 },
+              bag: { coal: 50, copper: 20, gold: 10, amethyst: 5, diamond: 0, ender: 0, astral: 0 },
+              surveys: 3,
+              sectorWins: [3, 1, 0, 0, 0, 0],
+              trip: { sector: 1, amount: 33 },
+              crewDeck: { cards: { coalhand: { stars: 1, shards: 0 } }, active: ['coalhand'], caches: 2 }
+            }
+          };
+
+          const scenarios = [
+            ['fresh-current', JSON.stringify(freshState()), false],
+            ['active-run', JSON.stringify(activeRunState()), true],
+            ['legacy-trip-current', JSON.stringify(legacyTrip), false]
+          ];
+
+          const browser = await engine.launch({ headless: true });
+          for (const [name, save, shouldTap] of scenarios) {
+            const context = await browser.newContext({
+              viewport: { width: 390, height: 844 },
+              isMobile: true,
+              hasTouch: true,
+              userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_6_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.6 Mobile/15E148 Safari/604.1'
+            });
+            const page = await context.newPage();
+            const errors = [];
+            page.on('pageerror', error => errors.push(String(error)));
+            page.on('console', msg => { if (msg.type() === 'error') errors.push('console: ' + msg.text()); });
+
+            await page.addInitScript(raw => {
+              localStorage.clear();
+              sessionStorage.clear();
+              localStorage.setItem('hynoeOutpostV1', raw);
+            }, save);
+
+            await page.goto(`https://hynoesmp.com/watch.html?release-d-${engineName}-${name}-${Date.now()}`, { waitUntil: 'domcontentloaded' });
+            await page.waitForFunction(() => document.querySelectorAll('.vein').length === 12, null, { timeout: 15000 });
+
+            const state = await page.evaluate(() => {
+              const button = document.querySelector('#vein-0');
+              const face = button?.querySelector('.gem-face');
+              const strong = button?.querySelector('strong');
+              const small = button?.querySelector('small');
+              const health = button?.querySelector('.vein-health i');
+              const assets = [...document.querySelectorAll('script[src],link[href]')].map(el => el.src || el.href || '');
+              return {
+                count: document.querySelectorAll('.vein').length,
+                name: strong?.textContent?.trim() || '',
+                detail: small?.textContent?.trim() || '',
+                oreColor: button?.style.getPropertyValue('--ore') || '',
+                faceFill: face ? getComputedStyle(face).fill : '',
+                healthWidth: health?.style.width || '',
+                releaseD: assets.some(url => url.includes('20261006d')),
+                watchEntryD: assets.some(url => url.includes('watch.mjs?v=20261006d'))
+              };
+            });
+
+            if (!state.releaseD || !state.watchEntryD) throw new Error(`${engineName}/${name}: production did not load release 20261006d: ${JSON.stringify(state)}`);
+            if (errors.some(e => !e.includes('favicon'))) throw new Error(`${engineName}/${name}: page errors: ${errors.join(' | ')}`);
+            if (state.count !== 12 || !state.name || !state.detail || !state.oreColor || !state.healthWidth) {
+              throw new Error(`${engineName}/${name}: blank/unpainted mine card: ${JSON.stringify(state)}`);
+            }
+            if (!state.faceFill || state.faceFill === 'rgb(0, 0, 0)' || state.faceFill === 'rgba(0, 0, 0, 0)' || state.faceFill === 'none') {
+              throw new Error(`${engineName}/${name}: black/empty gem face: ${JSON.stringify(state)}`);
+            }
+
+            if (shouldTap) {
+              const before = await page.locator('#vein-0 small').textContent();
+              await page.locator('#vein-0').tap();
+              await page.waitForFunction(prev => document.querySelector('#vein-0 small')?.textContent !== prev, before, { timeout: 3000 });
+              const after = await page.locator('#vein-0 small').textContent();
+              if (before === after) throw new Error(`${engineName}/${name}: physical tap did not change mine card.`);
+            }
+
+            console.log(`LIVE ${engineName.toUpperCase()} ${name} PASS: ${state.name} / ${state.detail} / ${state.faceFill}`);
+            await context.close();
+          }
+          await browser.close();
+          console.log(`LIVE ${engineName.toUpperCase()} PASS: release 20261006d renders saved Tap Mine states and accepts touch.`);
+          EOF
+          node /tmp/live-restored-run.mjs
