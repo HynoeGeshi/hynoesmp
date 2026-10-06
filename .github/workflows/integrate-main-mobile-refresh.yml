@@ -77,6 +77,14 @@ jobs:
             text=text.replace(/v=20261006a/g,'v=20261006b');
             fs.writeFileSync(file,text);
           }
+          let browser=fs.readFileSync('tests/browser-mobile.mjs','utf8');
+          if(!/ore-crystal\s+svg/.test(browser)){
+            const needle="  assert.ok(minVeinHeight>=88,`${label}: vein target only ${minVeinHeight}px tall`);\n";
+            const block="  assert.ok(minVeinHeight>=88,`${label}: vein target only ${minVeinHeight}px tall`);\n  const miningArtwork=await page.locator('#vein-0 .ore-crystal svg').evaluate(el=>{const box=el.getBoundingClientRect(),style=getComputedStyle(el),face=el.querySelector('.gem-face');return {width:box.width,height:box.height,display:style.display,visibility:style.visibility,opacity:Number(style.opacity),fill:face?getComputedStyle(face).fill:''};});\n  assert.ok(miningArtwork.width>=40&&miningArtwork.height>=30,`${label}: mining artwork has no rendered geometry (${miningArtwork.width}x${miningArtwork.height})`);\n  assert.notEqual(miningArtwork.display,'none',`${label}: mining artwork is display:none`);\n  assert.notEqual(miningArtwork.visibility,'hidden',`${label}: mining artwork is hidden`);\n  assert.ok(miningArtwork.opacity>0,`${label}: mining artwork is transparent`);\n  assert.ok(miningArtwork.fill&&miningArtwork.fill!=='none',`${label}: mining artwork gem face has no fill`);\n";
+            if(!browser.includes(needle))throw new Error('Could not inject mining artwork browser assertion');
+            browser=browser.replace(needle,block);
+            fs.writeFileSync('tests/browser-mobile.mjs',browser);
+          }
           NODE
       - name: Remove temporary integration workflows before verification
         run: |
