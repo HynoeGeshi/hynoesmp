@@ -293,3 +293,11 @@ revoke all on function public.broadcast_site_chat_message_change() from public;
 create trigger site_chat_messages_broadcast_trigger
 after insert or update or delete on public.site_chat_messages
 for each row execute function public.broadcast_site_chat_message_change();
+
+create trigger site_chat_reactions_broadcast_trigger
+after insert or delete on public.site_chat_reactions
+for each row execute function public.broadcast_site_chat_message_change();
+
+create trigger site_announcements_broadcast_trigger
+after insert or update or delete on public.site_announcements
+for each row execute function public.broadcast_site_chat_message_change();

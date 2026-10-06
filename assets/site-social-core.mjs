@@ -51,3 +51,32 @@ export function presenceOnlineCount(state) {
   if (!state || typeof state !== 'object') return 0;
   return new Set(Object.keys(state).filter(Boolean)).size;
 }
+
+export const SITE_REACTIONS = Object.freeze(['like', 'love', 'laugh', 'fire', 'wow']);
+export const SITE_REPORT_REASONS = Object.freeze(['spam', 'harassment', 'hate', 'unsafe', 'other']);
+
+export function validateReaction(value) {
+  const reaction = String(value ?? '').trim().toLowerCase();
+  if (!SITE_REACTIONS.includes(reaction)) return { ok: false, error: 'Unsupported reaction.' };
+  return { ok: true, value: reaction };
+}
+
+export function validateReport(reason, details = '') {
+  const normalizedReason = String(reason ?? '').trim().toLowerCase();
+  const normalizedDetails = String(details ?? '').trim();
+  if (!SITE_REPORT_REASONS.includes(normalizedReason)) return { ok: false, error: 'Choose a valid report reason.' };
+  if (normalizedDetails.length > 500) return { ok: false, error: 'Report details are too long.' };
+  return { ok: true, value: { reason: normalizedReason, details: normalizedDetails || null } };
+}
+
+export function messageDisplayBody(message) {
+  if (message?.is_deleted || message?.deleted_at) return 'Message removed by moderation.';
+  return String(message?.body ?? '');
+}
+
+export function isAnnouncementActive(announcement, now = Date.now()) {
+  if (!announcement?.active) return false;
+  if (!announcement.expires_at) return true;
+  const expiry = Date.parse(announcement.expires_at);
+  return Number.isFinite(expiry) && expiry > now;
+}

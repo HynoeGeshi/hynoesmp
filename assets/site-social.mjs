@@ -1,5 +1,5 @@
 import { createClient } from './vendor/supabase.mjs';
-import { normalizeDisplayName, validateDisplayName } from './site-social-core.mjs';
+import { normalizeDisplayName, validateDisplayName, validateClientMessage, validateReaction, validateReport, isAnnouncementActive } from './site-social-core.mjs';
 
 export const SITE_SOCIAL_CONFIG_PATH = 'data/site-social-config.json';
 
@@ -140,4 +140,72 @@ export async function connectGlobalChannel(client, {
       else if (channel.unsubscribe) await channel.unsubscribe();
     },
   };
+}
+
+export async function sendSiteMessage(client, { body, replyTo = null, requestId = crypto.randomUUID() } = {}) {
+  const checked = validateClientMessage(body);
+  if (!checked.ok) throw new Error(checked.error);
+  const { data, error } = await client.functions.invoke('send-site-message', {
+    body: { body: checked.value, reply_to: replyTo || null, request_id: requestId },
+  });
+  if (error || !data?.id) throw new Error('Message could not be sent.');
+  return data;
+}
+
+export async function setMessageReaction(client, { messageId, userId, reaction, active }) {
+  if (!messageId || !userId) throw new Error('A message and signed-in user are required.');
+  const checked = validateReaction(reaction);
+  if (!checked.ok) throw new Error(checked.error);
+  if (active) {
+    const { error } = await client.from('site_chat_reactions').insert([{
+      message_id: messageId,
+      user_id: userId,
+      reaction: checked.value,
+    }]);
+    if (error && error.code !== '23505') throw new Error('Reaction could not be saved.');
+    return;
+  }
+  const { error } = await client
+    .from('site_chat_reactions')
+    .delete()
+    .eq('message_id', messageId)
+    .eq('user_id', userId)
+    .eq('reaction', checked.value);
+  if (error) throw new Error('Reaction could not be removed.');
+}
+
+export async function reportSiteMessage(client, { messageId, userId, reason, details = '' }) {
+  if (!messageId || !userId) throw new Error('A message and signed-in user are required.');
+  const checked = validateReport(reason, details);
+  if (!checked.ok) throw new Error(checked.error);
+  const { error } = await client.from('site_chat_reports').insert([{
+    message_id: messageId,
+    reporter_id: userId,
+    reason: checked.value.reason,
+    details: checked.value.details,
+  }]);
+  if (error && error.code !== '23505') throw new Error('Report could not be submitted.');
+}
+
+export async function loadMessageReactions(client, messageIds = []) {
+  const ids = [...new Set((messageIds ?? []).filter(Boolean))].slice(0, 100);
+  if (!ids.length) return [];
+  const { data, error } = await client
+    .from('site_chat_reactions')
+    .select('message_id,user_id,reaction,created_at')
+    .in('message_id', ids);
+  if (error) throw new Error('Could not load reactions.');
+  return data ?? [];
+}
+
+export async function loadActiveAnnouncement(client, now = Date.now()) {
+  const { data, error } = await client
+    .from('site_announcements')
+    .select('id,body,link_url,active,created_at,expires_at')
+    .eq('active', true)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) throw new Error('Could not load the site announcement.');
+  return isAnnouncementActive(data, now) ? data : null;
 }
