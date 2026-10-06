@@ -9,9 +9,23 @@ export type AuditEntry = {
   at?: string;
 };
 
+const SENSITIVE_AUDIT_KEY = /^(?:content|messageBody|body|password|authorization|token|secret|apiKey|cookie|set-cookie)$/i;
+
+function sanitizeAuditDetail(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map((item) => sanitizeAuditDetail(item));
+  if (value == null || typeof value !== 'object' || value instanceof Error) return value;
+  const output: Record<string, unknown> = {};
+  for (const [key, item] of Object.entries(value as Record<string, unknown>)) {
+    if (SENSITIVE_AUDIT_KEY.test(key)) continue;
+    output[key] = sanitizeAuditDetail(item);
+  }
+  return output;
+}
+
 export function auditAction(config: AppConfig, entry: AuditEntry): void {
   if (!config.auditLogEnabled) return;
-  const safe = redactSecrets({ ...entry, at: entry.at ?? new Date().toISOString() }, [config.bloomApiKey, config.discordBotToken]);
+  const sanitized = { ...entry, detail: sanitizeAuditDetail(entry.detail), at: entry.at ?? new Date().toISOString() };
+  const safe = redactSecrets(sanitized, [config.bloomApiKey, config.discordBotToken]);
   console.info(JSON.stringify({ event: 'hynoe_control_bridge_audit', ...safe as Record<string, unknown> }));
 }
 
