@@ -2,7 +2,7 @@
 export const OPT_IN_KEY='hynoeLegendOptInV1';
 export const PUBLIC_BOARD_PATH='/v1/leaderboard';
 export const SCORE_PATH='/v1/score';
-// Public rankings are readable without enrollment; score publication is a separate opt-in action.
+// Public rankings are readable without enrollment; score publication is a separate explicit opt-in action.
 
 export function readOptIn(storage=globalThis.localStorage){
   try{return storage?.getItem(OPT_IN_KEY)==='yes';}catch{return false;}
