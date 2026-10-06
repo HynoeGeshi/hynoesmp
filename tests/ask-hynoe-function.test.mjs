@@ -29,3 +29,8 @@ test('ask-hynoe has explicit allowed origin and no browser-supplied user id',()=
   assert.doesNotMatch(source,/payload\.(user_id|userId)/);
   assert.doesNotMatch(source,/service_role|sb_secret_/i);
 });
+
+test('ask-hynoe allows Supabase browser client headers through CORS',()=>{
+  assert.match(source,/Access-Control-Allow-Headers[^\n]*x-client-info/i);
+  assert.match(source,/Access-Control-Allow-Methods[^\n]*POST[^\n]*OPTIONS/i);
+});
