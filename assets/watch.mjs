@@ -2,8 +2,8 @@
 import {mountCommand} from './watch-command.mjs?v=20261005a';
 import * as G from './watch-game.mjs?v=20261005a';
 import * as S from './watch-session.mjs?v=20261005a';
-const $=id=>document.getElementById(id),KEY='hynoeDeepDeeperV1',fmt=n=>new Intl.NumberFormat('en',{notation:n>=10000?'compact':'standard',maximumFractionDigits:1}).format(n);
-let state;try{state=G.restore(localStorage.getItem(KEY));}catch{state=G.fresh();}
+const $=id=>document.getElementById(id),KEY='hynoeOutpostV1',LEGACY_KEY='hynoeDeepDeeperV1',fmt=n=>new Intl.NumberFormat('en',{notation:n>=10000?'compact':'standard',maximumFractionDigits:1}).format(n);
+let state;try{const current=localStorage.getItem(KEY),legacy=current?null:localStorage.getItem(LEGACY_KEY);state=G.restore(current||legacy);if(!current&&legacy)localStorage.setItem(KEY,JSON.stringify(state));}catch{state=G.fresh();}
 const SESSION_KEY='hynoeStreamRunV1',SESSION_DAY=S.todayKey();
 let streamRun;try{streamRun=S.restore(localStorage.getItem(SESSION_KEY),SESSION_DAY,state);}catch{streamRun=S.fresh(SESSION_DAY,state);}
 const newPlayerId=()=>typeof crypto.randomUUID==='function'?crypto.randomUUID():'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0;return(c==='x'?r:r&3|8).toString(16);});
