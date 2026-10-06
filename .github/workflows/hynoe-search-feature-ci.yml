@@ -29,6 +29,7 @@ jobs:
         run: npm run build
 
   public-browser:
+    needs: unit-build
     runs-on: ubuntu-latest
     defaults:
       run:
