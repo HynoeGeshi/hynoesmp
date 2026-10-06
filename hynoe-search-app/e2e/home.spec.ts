@@ -22,7 +22,13 @@ test('homepage disables decorative motion when reduced motion is requested', asy
 test('homepage search reaches a real Hynoe Page and keyboard focus stays visible', async ({ page }) => {
   await page.goto('/');
   const search = page.getByRole('textbox', { name: 'Search Hynoe' });
-  await search.focus();
+
+  for (let attempt = 0; attempt < 10; attempt += 1) {
+    await page.keyboard.press('Tab');
+    if (await search.evaluate((element) => element === document.activeElement)) break;
+  }
+
+  await expect(search).toBeFocused();
   const outlineStyle = await search.evaluate((element) => getComputedStyle(element).outlineStyle);
   expect(outlineStyle).not.toBe('none');
 
