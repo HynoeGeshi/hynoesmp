@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#090806"><meta name="application-name" content="hynoesmp"><meta property="og:site_name" content="Hynoe SMP"><link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="assets/images/favicon.png">
-<link rel="stylesheet" href="assets/styles.css?v=20261005a">
+<link rel="stylesheet" href="assets/styles.css?v=20261005a"><link rel="stylesheet" href="assets/home-outpost.css?v=20261005a">
 <title>Hynoe SMP | Modded Minecraft Survival, Campaign &amp; Community</title>
 <meta name="description" content="Build your home in Hynoe SMP: long-term modded Java survival, a 31-stage campaign, player economy, MCA villages, rare gear and bosses. Get the pack and join.">
 <link rel="canonical" href="https://hynoesmp.com/">
@@ -66,9 +66,9 @@
     <h1>A Minecraft world that <em>keeps unfolding.</em></h1>
     <p class="hero-lead">Build a home. Grow a settlement. Make money. Earn rare gear. Fight bosses. Start a family. Explore for months — not hours.</p>
     <div class="hero-actions">
-      <a class="mc-button gold" href="modpack.html">↓ DOWNLOAD MODPACK</a>
-      <a class="mc-button purple" href="https://discord.gg/wYTePCkXd5" target="_blank" rel="noreferrer">JOIN DISCORD</a>
-      <a class="mc-button stone" href="watch.html">WATCH, PLAY &amp; CHAT →</a>
+      <a class="mc-button gold" href="join.html">JOIN HYNOE SMP</a>
+      <a class="mc-button emerald" href="modpack.html">GET THE PACK</a>
+      <a class="mc-button stone" href="watch.html">WATCH &amp; PLAY</a>
     </div>
     <div class="hero-subactions">
       <a href="modded-minecraft-server.html">Looking for a modded Minecraft server to join? Start here →</a>
@@ -78,12 +78,13 @@
     </div>
   </div>
   <div class="world-compass" aria-hidden="true"><span>N</span><i></i><b>HYNOE</b></div>
-  <div class="gate-status reveal">
-    <div><small>GENESIS</small><b>Ages Active</b></div>
-    <div><small>VILLAGE LIFE</small><b>MCA 8.1.9</b></div>
-    <div><small>GEAR PATH</small><b>7 Tiers</b></div>
-    <div><small>CAMPAIGN</small><b>31 Stages</b></div>
-  </div>
+  <section class="world-dashboard" aria-label="Explore Hynoe SMP systems">
+    <a href="progression.html#genesis-ages"><span>WORLD RULE</span><strong>Genesis Ages</strong><small>Earn access to stronger tools, armor, dimensions, and story milestones.</small><b>OPEN AGE MAP →</b></a>
+    <a href="progression.html"><span>LONG-TERM PATH</span><strong>Campaign &amp; Progression</strong><small>31 stages connect exploration, gear, villages, farming, and endgame goals.</small><b>SEE THE CAMPAIGN →</b></a>
+    <a href="mca.html"><span>SETTLEMENT SYSTEM</span><strong>Village Life</strong><small>Build relationships, families, jobs, guards, homes, and a living settlement.</small><b>EXPLORE VILLAGE LIFE →</b></a>
+    <a href="economy.html"><span>PLAYER NETWORK</span><strong>Economy</strong><small>Jobs, Hynoe Dollars, Tokens, shops, and trade make other players matter.</small><b>OPEN ECONOMY →</b></a>
+    <a href="bosses.html"><span>ENDGAME ROUTE</span><strong>Bosses &amp; Gear</strong><small>Rare equipment has somewhere meaningful to go when the world fights back.</small><b>STUDY THE ROUTE →</b></a>
+  </section>
 </section>
 <section class="quick-start" aria-labelledby="quick-start-title">
   <div><span class="eyebrow">YOUR ADVENTURE STARTS HERE</span><h2 id="quick-start-title">One world. Find your way in.</h2><p>New player or returning explorer? Pick your next step.</p></div>
@@ -105,7 +106,10 @@
   </div>
   <div class="updates-actions"><a class="mc-button gold" href="updates.html">READ THE FULL UPDATE</a><a class="mc-button stone" href="start.html#player-help">FIND YOUR NEXT STEP</a></div>
 </section>
-<section class="viewer-feature" aria-labelledby="viewer-feature-title"><div><span class="eyebrow">HANG OUT EVEN WHEN YOU’RE NOT IN MINECRAFT</span><h2 id="viewer-feature-title">A whole side quest<br>for the whole stream.</h2><p>Build your mining empire, uncover rare gems, challenge guardians, and keep your progress for the next stream.</p><div class="viewer-links"><a class="mc-button gold" href="watch.html#game">⛏ PLAY THE GAME</a><a class="mc-button purple" href="watch.html#campfire">OPEN SERVER CHAT →</a></div><small>Game is open now. Minecraft chat is awaiting connection.</small></div><div class="viewer-feature-art" aria-hidden="true"><span>⛏</span><b>DEEP<br>&amp; DEEPER</b><small>YOUR NEXT DISCOVERY IS ONE STRIKE AWAY</small></div></section>
+<section class="viewer-feature hynoe-outpost-feature" aria-labelledby="viewer-feature-title">
+  <div class="outpost-feature-copy"><span class="eyebrow">AN ORIGINAL HYNOE BROWSER GAME</span><h2 id="viewer-feature-title">Your outpost keeps growing<br>between every stream.</h2><p><strong>Hynoe Outpost</strong> is an original Hynoe browser game built into the community hub. It is separate from Minecraft progress, so you can play whenever you visit.</p><p class="outpost-loop">Mine → build → collect crew → explore → legacy.</p><div class="viewer-links"><a class="mc-button gold" href="watch.html#game">⛏ PLAY HYNOE OUTPOST</a><a class="mc-button stone" href="watch.html">WATCH &amp; PLAY HUB →</a></div><small>Local play is available without an account. Cloud accounts are not live yet.</small></div>
+  <div class="viewer-feature-art outpost-terminal" aria-hidden="true"><span>HYNOE ARCADE</span><b>HYNOE<br>OUTPOST</b><small>MINE · BUILD · COLLECT · EXPLORE · LEGACY</small><i></i><i></i><i></i></div>
+</section>
 <section class="world-intro">
   <div class="wood-sign reveal">
     <span>WELCOME, TRAVELER</span>
@@ -130,7 +134,7 @@
 </section>
 <section class="world-route" aria-label="Hynoe SMP world guide route">
   <div class="route-spine" aria-hidden="true"></div>
-  <article class="route-scene scene-start reveal" style="--scene:url('assets/images/first_day.webp')">
+  <article class="route-scene scene-start reveal" style="--scene:url('images/first_day.webp')">
     <a class="scene-marker" href="start.html"><span>01</span><b>FIRST DAY</b></a>
     <div class="scene-sign">
       <small>QUEST 01 // ARRIVAL</small>
@@ -139,7 +143,7 @@
       <a href="start.html">Open the First-Day Guide →</a>
     </div>
   </article>
-  <article class="route-scene scene-village reveal" style="--scene:url('assets/images/community.webp')">
+  <article class="route-scene scene-village reveal" style="--scene:url('images/community.webp')">
     <a class="scene-marker" href="mca.html"><span>02</span><b>VILLAGE LIFE</b></a>
     <div class="scene-sign right">
       <small>QUEST 02 // SETTLEMENT</small>
@@ -148,7 +152,7 @@
       <a href="mca.html">Meet Minecraft Comes Alive →</a>
     </div>
   </article>
-  <article class="route-scene scene-progression reveal" style="--scene:url('assets/images/progression.webp')">
+  <article class="route-scene scene-progression reveal" style="--scene:url('images/progression.webp')">
     <a class="scene-marker" href="progression.html"><span>03</span><b>PROGRESSION</b></a>
     <div class="scene-sign">
       <small>QUEST 03 // POWER</small>
@@ -157,7 +161,7 @@
       <a href="progression.html">See the Gear Roadmap →</a>
     </div>
   </article>
-  <article class="route-scene scene-economy reveal" style="--scene:url('assets/images/community.webp')">
+  <article class="route-scene scene-economy reveal" style="--scene:url('images/community.webp')">
     <a class="scene-marker" href="economy.html"><span>04</span><b>ECONOMY</b></a>
     <div class="scene-sign right">
       <small>QUEST 04 // TRADE</small>
@@ -166,7 +170,7 @@
       <a href="economy.html">Enter the Economy Network →</a>
     </div>
   </article>
-  <article class="route-scene scene-bosses reveal" style="--scene:url('assets/images/adventure.webp')">
+  <article class="route-scene scene-bosses reveal" style="--scene:url('images/adventure.webp')">
     <a class="scene-marker" href="bosses.html"><span>05</span><b>BOSSES</b></a>
     <div class="scene-sign">
       <small>QUEST 05 // ENDGAME</small>
@@ -252,8 +256,8 @@
     <img src="assets/images/hynoe-logo.webp" alt="">
     <div><strong>HYNOE SMP</strong><span>One long-term world. Progression, community, discovery, and stories worth keeping.</span></div>
   </div>
-  <div class="footer-links"><a href="updates.html">Latest Update</a><a href="start.html">Start Here</a><a href="mca.html">Village Life</a><a href="progression.html">Progression</a><a href="economy.html">Economy</a><a href="bosses.html">Bosses</a><a href="https://streamlabs.com/hynoe_geshi" target="_blank" rel="noreferrer">Support</a><a href="join.html">Join</a></div>
-  <small>© 2026 Hynoe. All rights reserved. Hynoe SMP is independent and is not affiliated with Mojang or Microsoft. <a href="COPYRIGHT.md">Usage rights</a></small>
+  <div class="footer-links"><a href="updates.html">Latest Update</a><a href="start.html">Start Here</a><a href="mca.html">Village Life</a><a href="progression.html">Progression</a><a href="economy.html">Economy</a><a href="bosses.html">Bosses</a><a href="join.html">Join</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="data-deletion.html">Data deletion</a><a href="community-rules.html">Community rules</a><a href="https://streamlabs.com/hynoe_geshi" target="_blank" rel="noreferrer">Support</a></div>
+  <small>Copyright © 2026 Hynoe. All rights reserved. Hynoe SMP is independent and is not affiliated with Mojang or Microsoft. <a href="COPYRIGHT.md">Usage rights</a></small>
 </footer>
 <script src="assets/common.js?v=20261005b"></script>
 <script src="assets/stream.js"></script>
