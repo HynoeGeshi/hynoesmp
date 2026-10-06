@@ -1,5 +1,6 @@
 import type { HynoePage } from '@/domain/pages/types';
 import { SaveFollowControls } from '@/components/retention/save-follow-controls';
+import { PageViewTracker } from '@/lib/analytics/page-view-tracker';
 import { ModuleRenderer } from './module-renderer';
 import { PageActions } from './page-actions';
 import { PageHeader } from './page-header';
@@ -22,6 +23,7 @@ export function PageShell({ page }: { page: HynoePage }) {
       : '';
 
   return <main className={`site-shell ${styles.shell}`}>
+    <PageViewTracker slug={page.slug} pageType={page.pageType} />
     <PageHeader />
     <section className={styles.hero}>
       <div className="eyebrow">{page.categories.join(' · ') || pageTypeLabels[page.pageType]}</div>

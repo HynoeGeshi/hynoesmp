@@ -28,7 +28,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
       <div><div className="eyebrow">Hynoe Search</div><h1>{query.trim() ? `Results for “${query}”` : 'Discover on Hynoe'}</h1></div>
       <span className={styles.count}>{results.length} {results.length === 1 ? 'result' : 'results'}</span>
     </section>
-    {results.length ? <section className="results-grid">{results.map((result) => <ResultCard key={result.page.id} result={result} />)}</section>
+    {results.length ? <section className="results-grid">{results.map((result, index) => <ResultCard key={result.page.id} result={result} position={index + 1} />)}</section>
       : <section className="empty-state"><div className="eyebrow">Keep exploring</div><h2>No matches yet.</h2><p>Try a broader search or explore what is already on Hynoe.</p><Link className="secondary-cta" href="/search">Explore Hynoe</Link></section>}
   </main>;
 }
