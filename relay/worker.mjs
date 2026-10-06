@@ -3,7 +3,13 @@ const json=(data,status=200)=>Response.json(data,{status,headers:{'Cache-Control
 const fail=(error,status=400,reason)=>json({error,...(reason?{reason}:{})},status);
 
 const STAFF_RE=/\b(admin|administrator|moderator|mod|owner|hynoe|system|staff)\b/i;
-const PROFANITY=['fuck','shit','bitch','asshole','damn'];
+const PROFANITY=[
+ {stem:'fuck',normalized:/\bfuck(?:ing|ed|er|ers|s)?\b/i,display:/\bfuck(?:ing|ed|er|ers|s)?\b/gi},
+ {stem:'shit',normalized:/\bshit(?:ty|ting|ted|s)?\b/i,display:/\bshit(?:ty|ting|ted|s)?\b/gi},
+ {stem:'bitch',normalized:/\bbitch(?:es|ing|y)?\b/i,display:/\bbitch(?:es|ing|y)?\b/gi},
+ {stem:'asshole',normalized:/\basshole(?:s)?\b/i,display:/\basshole(?:s)?\b/gi},
+ {stem:'damn',normalized:/\bdamn(?:ed|ing)?\b/i,display:/\bdamn(?:ed|ing)?\b/gi}
+];
 const SEVERE=[
  {reason:'hateful-abuse',re:/\bnigger\b/i},
  {reason:'hateful-abuse',re:/\bfaggot\b/i},
@@ -24,25 +30,22 @@ export function normalizeForModeration(input=''){
  return s;
 }
 
-function censorWord(text,word){
- const safe=word.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
- const re=new RegExp(`\\b${safe}\\b`,'gi');
- return text.replace(re,m=>m[0]+'*'.repeat(Math.max(2,m.length-1)));
-}
-
+const mask=m=>m[0]+'*'.repeat(Math.max(2,m.length-1));
 export function moderateMessage(text=''){
  const original=String(text);
  const normalized=normalizeForModeration(original);
  for(const rule of SEVERE){if(rule.re.test(normalized))return {action:'block',text:'',reason:rule.reason};}
  let out=original,changed=false;
- for(const word of PROFANITY){
-  if(new RegExp(`\\b${word}\\b`,'i').test(normalized)){
-   const before=out;out=censorWord(out,word);changed=changed||before!==out;
-   if(before===out){
-    const spaced=new RegExp(word.split('').join('[^A-Za-z0-9]*'),'ig');
-    out=out.replace(spaced,m=>m[0]+'*'.repeat(Math.max(2,m.length-1)));changed=true;
-   }
+ for(const rule of PROFANITY){
+  if(!rule.normalized.test(normalized))continue;
+  const before=out;
+  out=out.replace(rule.display,mask);
+  if(out===before){
+   const chars=rule.stem.split('').map(ch=>ch.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'));
+   const evasion=new RegExp(`\\b${chars.join('[^A-Za-z0-9]*')}(?:ing|ed|er|ers|s|ty|ting|ted|es|y)?\\b`,'ig');
+   out=out.replace(evasion,mask);
   }
+  changed=changed||out!==before;
  }
  return {action:changed?'censor':'allow',text:out};
 }
