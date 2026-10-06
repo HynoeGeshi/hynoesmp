@@ -81,12 +81,16 @@ for(const viewport of [...phoneViewports,...extraViewports]){
   await page.goto(`${base}/watch.html`,{waitUntil:'domcontentloaded'});
   await page.waitForSelector('#vein-11');
   await page.waitForFunction(()=>document.querySelector('#leaderboard-live')?.textContent==='LIVE · 2 PLAYERS');
+  await dismissFirstRunGuide(page,label);
   const optIn=page.locator('#leader-opt-in');
-  assert.ok(await optIn.isVisible(),`${label}: leaderboard publish opt-in is missing`);
+  assert.equal(await optIn.count(),1,`${label}: leaderboard publish opt-in is missing from the DOM`);
+  await page.locator('#tab-leaderboard').click();
+  await page.waitForTimeout(50);
+  assert.ok(await optIn.isVisible(),`${label}: leaderboard publish opt-in is not visible when Leaderboard is open`);
   assert.equal(await optIn.isChecked(),false,`${label}: leaderboard publishing must default off`);
+  assert.equal(await page.locator('#leader-list article').count(),2,`${label}: global leaderboard rows did not render`);
   assert.ok(leaderboardCalls.reads>=1,`${label}: public leaderboard was not loaded`);
   assert.equal(leaderboardCalls.posts,0,`${label}: fresh player score was published without opt-in`);
-  await dismissFirstRunGuide(page,label);
   await assertNoHorizontalOverflow(page,label);
 
   const cols=await gridColumns(page);
