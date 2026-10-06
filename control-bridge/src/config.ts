@@ -34,6 +34,14 @@ function enabled(value: string | undefined): boolean {
   return (value ?? '').trim().toLowerCase() === 'true';
 }
 
+export function diagnoseConfigEnv(env: NodeJS.ProcessEnv = process.env): { missing: string[] } {
+  const missing = REQUIRED.filter((key) => !env[key]?.trim()) as string[];
+  if (!enabled(env.DISCORD_GUILD_MANAGEMENT_ENABLED) && !env.DISCORD_ALLOWED_CHANNEL_IDS?.trim()) {
+    missing.push('DISCORD_ALLOWED_CHANNEL_IDS');
+  }
+  return { missing };
+}
+
 function assertHttps(name: string, value: string): string {
   let url: URL;
   try { url = new URL(value); } catch { throw new Error(`${name} must be a valid URL`); }
