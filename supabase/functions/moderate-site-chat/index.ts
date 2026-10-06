@@ -4,6 +4,7 @@ import { isAllowedSiteOrigin } from "../_shared/site-chat-core.mjs";
 import {
   isSiteModeratorRole,
   normalizeAnnouncementInput,
+  normalizeHelpReviewInput,
   parseModerationUntil,
   validateModerationAction,
 } from "../_shared/site-moderation-core.mjs";
@@ -36,21 +37,43 @@ const userHandler = withSupabase({ auth: "user" }, async (req, ctx) => {
   const action = actionCheck.value;
 
   if (action === "dashboard") {
-    const [messages, reports, users, announcements, settings, audit] = await Promise.all([
+    const [messages, reports, users, announcements, settings, audit, helpFeedback] = await Promise.all([
       admin.from("site_chat_public_messages").select("*").order("created_at", { ascending: false }).limit(50),
       admin.from("site_chat_reports").select("id,message_id,reporter_id,reason,details,created_at,resolved_at").is("resolved_at", null).order("created_at", { ascending: false }).limit(50),
       admin.from("site_profiles").select("user_id,display_name,role,muted_until,banned_until,is_banned").or(`is_banned.eq.true,muted_until.gt.${new Date().toISOString()}`).limit(100),
       admin.from("site_announcements").select("*").order("created_at", { ascending: false }).limit(20),
       admin.from("site_chat_settings").select("posting_paused,pause_message,updated_at").eq("id", true).maybeSingle(),
       admin.from("site_moderation_audit").select("id,action_type,moderator_id,target_user_id,target_message_id,reason,metadata,created_at").order("created_at", { ascending: false }).limit(50),
+      admin.from("site_help_feedback").select("id,user_id,request_id,question,answer_summary,helpful,unanswered,source_ids,mode,confidence,page_path,review_status,review_note,created_at,updated_at").neq("review_status", "resolved").neq("review_status", "ignored").or("unanswered.eq.true,helpful.eq.false").order("created_at", { ascending: false }).limit(100),
     ]);
-    const failed = [messages, reports, users, announcements, settings, audit].find((r) => r.error);
+    const failed = [messages, reports, users, announcements, settings, audit, helpFeedback].find((r) => r.error);
     if (failed?.error) return respond(origin, 500, { error: "Admin dashboard could not be loaded.", code: "dashboard_failed" });
     return respond(origin, 200, {
       ok: true,
       messages: messages.data ?? [], reports: reports.data ?? [], moderated_users: users.data ?? [],
       announcements: announcements.data ?? [], settings: settings.data ?? null, audit: audit.data ?? [],
+      help_feedback: helpFeedback.data ?? [],
     });
+  }
+
+  if (action === "review_help_feedback") {
+    const reviewCheck = normalizeHelpReviewInput(payload);
+    if (!reviewCheck.ok) return respond(origin, 400, { error: reviewCheck.error, code: "invalid_help_review" });
+    const { feedback_id, review_status, review_note } = reviewCheck.value;
+    const { data: updated, error: reviewError } = await admin
+      .from("site_help_feedback")
+      .update({ review_status, review_note, reviewed_by: moderatorId, reviewed_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+      .eq("id", feedback_id)
+      .select("id,user_id,request_id,review_status")
+      .maybeSingle();
+    if (reviewError) return respond(origin, 500, { error: "Ask Hynoe review could not be saved.", code: "help_review_failed" });
+    if (!updated) return respond(origin, 404, { error: "Ask Hynoe feedback item was not found.", code: "help_feedback_not_found" });
+    const { error: auditError } = await admin.from("site_moderation_audit").insert({
+      action_type: action, moderator_id: moderatorId, target_user_id: updated.user_id, target_message_id: null,
+      reason: review_note, metadata: { feedback_id, request_id: updated.request_id, review_status },
+    });
+    if (auditError) return respond(origin, 500, { error: "Action succeeded, but audit logging failed.", code: "audit_failed" });
+    return respond(origin, 200, { ok: true, feedback_id, review_status });
   }
 
   const reason = String(payload.reason ?? "").trim().slice(0, 500) || null;

@@ -9,6 +9,7 @@ export const SITE_MODERATION_ACTIONS = Object.freeze([
   'set_announcement',
   'deactivate_announcement',
   'set_chat_pause',
+  'review_help_feedback',
 ]);
 
 export function isSiteModeratorRole(role) {
@@ -44,4 +45,16 @@ export function normalizeAnnouncementInput(input = {}) {
     expiresAt = new Date(parsed).toISOString();
   }
   return { ok: true, value: { body, link_url: link || null, expires_at: expiresAt } };
+}
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+export function normalizeHelpReviewInput(input = {}) {
+  const feedbackId = String(input.feedback_id ?? '').trim();
+  const reviewStatus = String(input.review_status ?? '').trim();
+  const reviewNote = String(input.review_note ?? '').replace(/\s+/g, ' ').trim();
+  if (!UUID_RE.test(feedbackId)) return { ok:false, error:'A valid Ask Hynoe feedback id is required.' };
+  if (!['reviewed','resolved','ignored'].includes(reviewStatus)) return { ok:false, error:'Choose reviewed, resolved, or ignored.' };
+  if (reviewNote.length > 1000) return { ok:false, error:'Review notes must be 1000 characters or fewer.' };
+  return { ok:true, value:{ feedback_id:feedbackId, review_status:reviewStatus, review_note:reviewNote || null } };
 }

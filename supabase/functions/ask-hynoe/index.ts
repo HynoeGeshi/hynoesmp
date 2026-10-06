@@ -47,17 +47,34 @@ const userHandler = withSupabase({ auth: "user" }, async (req, ctx) => {
   if (!isAllowedSiteOrigin(origin)) return fail(origin, 403, "origin_denied", "Request origin is not allowed.");
   if (req.method !== "POST") return fail(origin, 405, "method_not_allowed", "POST is required.");
 
-  let payload: unknown;
+  let payload: Record<string, unknown>;
   try { payload = await req.json(); }
   catch { return fail(origin, 400, "invalid_json", "Request body must be valid JSON."); }
 
-  const checked = validateAskInput(payload as Record<string, unknown>);
-  if (!checked.ok) return fail(origin, checked.status, checked.code, checked.error);
-
   const userId = String(ctx.userClaims?.sub ?? ctx.userClaims?.id ?? "");
   if (!userId) return fail(origin, 401, "unauthorized", "Sign in is required.");
-
   const admin = ctx.supabaseAdmin;
+
+  if (payload.action === "feedback") {
+    const feedbackRequestId = String(payload.request_id ?? "");
+    const helpful = payload.helpful;
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(feedbackRequestId) || typeof helpful !== "boolean") {
+      return fail(origin, 400, "invalid_feedback", "Feedback request is invalid.");
+    }
+    const { data: updated, error: updateError } = await admin
+      .from("site_help_feedback")
+      .update({ helpful, updated_at: new Date().toISOString() })
+      .eq("request_id", feedbackRequestId)
+      .eq("user_id", userId)
+      .select("id")
+      .maybeSingle();
+    if (updateError) return fail(origin, 500, "feedback_failed", "Feedback could not be saved.");
+    if (!updated) return fail(origin, 404, "feedback_not_found", "That Ask Hynoe response was not found for this user.");
+    return new Response(JSON.stringify({ ok: true }), { status: 200, headers: headers(origin) });
+  }
+
+  const checked = validateAskInput(payload);
+  if (!checked.ok) return fail(origin, checked.status, checked.code, checked.error);
   const requestId = crypto.randomUUID();
   const started = Date.now();
 

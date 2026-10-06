@@ -10,6 +10,7 @@ import {
   reportSiteMessage,
   loadMessageReactions,
   loadActiveAnnouncement,
+  sendHelpFeedback,
 } from './site-social.mjs';
 import {
   SITE_REACTIONS,
@@ -148,8 +149,11 @@ composer.append(messageInput, composerFoot, composerStatus);
 chatPane.append(composer);
 
 const askIntro = el('div', { className: 'site-social-ask-intro' });
-askIntro.append(el('strong', {}, 'Ask Hynoe anything about Hynoe SMP'));
-askIntro.append(el('p', {}, 'Private help grounded in official Hynoe information. Your questions are never posted to Global Chat.'));
+const askIntroCopy = el('div');
+askIntroCopy.append(el('strong', {}, 'Ask Hynoe anything about Hynoe SMP'));
+askIntroCopy.append(el('p', {}, 'Private help grounded in official Hynoe information. Your questions are never posted to Global Chat.'));
+const askClearButton = el('button', { type: 'button', className: 'site-social-ask-clear' }, 'CLEAR CONVERSATION');
+askIntro.append(askIntroCopy, askClearButton);
 askPane.append(askIntro);
 const askTranscript = el('div', { className: 'site-social-ask-log', role: 'log', 'aria-live': 'polite' });
 const askWelcome = el('article', { className: 'site-social-ask-message bot' });
@@ -530,9 +534,49 @@ function renderAskTurn(role, content, result = null) {
       for (const source of result.sources) sourceBox.append(el('a', { href: source.url }, source.label));
       article.append(sourceBox);
     }
+    if (result.requestId) {
+      const feedback = el('div', { className: 'site-social-ask-feedback' });
+      feedback.append(el('small', {}, 'Was this helpful?'));
+      const helpfulButton = el('button', { type: 'button', 'aria-label': 'Helpful' }, '👍 Helpful');
+      const unhelpfulButton = el('button', { type: 'button', 'aria-label': 'Not helpful' }, '👎 Not helpful');
+      const saveFeedback = async (helpful) => {
+        helpfulButton.disabled = true;
+        unhelpfulButton.disabled = true;
+        try {
+          await sendHelpFeedback(state.client, { requestId: result.requestId, helpful });
+          feedback.replaceChildren(el('small', {}, 'Thanks — feedback saved.'));
+        } catch (error) {
+          helpfulButton.disabled = false;
+          unhelpfulButton.disabled = false;
+          askStatus.textContent = error.message || 'Feedback could not be saved.';
+        }
+      };
+      helpfulButton.addEventListener('click', () => saveFeedback(true));
+      unhelpfulButton.addEventListener('click', () => saveFeedback(false));
+      feedback.append(helpfulButton, unhelpfulButton);
+      article.append(feedback);
+    }
   }
   return article;
 }
+
+function renderStoredAskHistory() {
+  if (!state.askHistory.length) {
+    askTranscript.replaceChildren(askWelcome);
+    return;
+  }
+  askTranscript.replaceChildren(...state.askHistory.map((turn) => renderAskTurn(turn.role, turn.content)));
+  askTranscript.scrollTop = askTranscript.scrollHeight;
+}
+
+askClearButton.addEventListener('click', () => {
+  state.askHistory = [];
+  renderStoredAskHistory();
+  askStatus.textContent = 'PRIVATE HISTORY CLEARED';
+  askInput.focus();
+});
+
+renderStoredAskHistory();
 
 askForm.addEventListener('submit', async (event) => {
   event.preventDefault();

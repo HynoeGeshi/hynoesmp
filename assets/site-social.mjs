@@ -209,3 +209,12 @@ export async function loadActiveAnnouncement(client, now = Date.now()) {
   if (error) throw new Error('Could not load the site announcement.');
   return isAnnouncementActive(data, now) ? data : null;
 }
+
+export async function sendHelpFeedback(client, { requestId, helpful }) {
+  if (!client?.functions?.invoke) throw new Error('Ask Hynoe feedback is unavailable.');
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(requestId ?? ''))) throw new Error('Invalid Ask Hynoe request.');
+  if (typeof helpful !== 'boolean') throw new Error('Feedback must be helpful or not helpful.');
+  const { data, error } = await client.functions.invoke('ask-hynoe', { body: { action:'feedback', request_id:requestId, helpful } });
+  if (error) throw new Error(error?.context?.body?.error || error?.message || 'Feedback could not be saved.');
+  return data;
+}
