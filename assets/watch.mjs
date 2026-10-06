@@ -1,8 +1,8 @@
 /*! Copyright © 2026 Hynoe. All rights reserved. See /COPYRIGHT.md. */
-import {mountCommand} from './watch-command.mjs?v=20261006b';
-import * as G from './watch-game.mjs?v=20261006b';
-import * as S from './watch-session.mjs?v=20261006b';
-import * as L from './leaderboard-live.mjs?v=20261006b';
+import {mountCommand} from './watch-command.mjs?v=20261006c';
+import * as G from './watch-game.mjs?v=20261006c';
+import * as S from './watch-session.mjs?v=20261006c';
+import * as L from './leaderboard-live.mjs?v=20261006c';
 const $=id=>document.getElementById(id),KEY='hynoeOutpostV1',LEGACY_KEY='hynoeDeepDeeperV1',fmt=n=>new Intl.NumberFormat('en',{notation:n>=10000?'compact':'standard',maximumFractionDigits:1}).format(n);
 let state;try{const current=localStorage.getItem(KEY),legacy=current?null:localStorage.getItem(LEGACY_KEY);state=G.restore(current||legacy);if(!current&&legacy)localStorage.setItem(KEY,JSON.stringify(state));}catch{state=G.fresh();}
 const SESSION_KEY='hynoeStreamRunV1',SESSION_DAY=S.todayKey();
@@ -102,7 +102,7 @@ document.querySelectorAll('[data-go]').forEach(button=>button.onclick=()=>openRo
 $('next-action').onclick=()=>openRoom($('next-action').dataset.target||'mine');
 const guide=$('how-to-play');
 $('open-help').onclick=()=>{if(!guide.open)guide.showModal();};
-try{if(!localStorage.getItem('hynoeDeepDeeperGuideV3')){localStorage.setItem('hynoeDeepDeeperGuideV3','seen');setTimeout(()=>{if(!guide.open)guide.showModal();},450);}}catch{}
+
 $('focus-mode').onclick=()=>{const enabled=document.body.classList.toggle('game-focus');$('focus-mode').setAttribute('aria-pressed',String(enabled));$('focus-mode').textContent=enabled?'▣ Exit streamer view':'◫ Streamer view';if(enabled)$('game').scrollIntoView({block:'start'});};
 const commandUI=mountCommand({G,state,save,render,toast});
 setInterval(()=>{let now=Date.now(),elapsed=(now-last)/1000;const badges=G.tick(state,elapsed,now),sessionEvents=S.tick(streamRun,state,elapsed,!document.hidden);last=now;if(badges.length)toast('Achievement unlocked: '+badges.join(', '));if(sessionEvents.length){toast(sessionEvents.map(e=>e.text).join(' '));save();saveStreamRun();}render();},1000);setInterval(()=>{save();saveStreamRun();},10000);setInterval(()=>syncLeaderboard(),30000);document.addEventListener('visibilitychange',()=>{if(document.hidden){save();saveStreamRun();}else syncLeaderboard();});window.addEventListener('pagehide',()=>{save();saveStreamRun();});render();if(GLOBAL_BOARD_ENABLED)connectLeaderboard();
