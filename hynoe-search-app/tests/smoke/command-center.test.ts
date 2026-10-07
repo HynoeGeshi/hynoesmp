@@ -24,4 +24,13 @@ describe('Command Center ownership surface', () => {
     expect(page).toContain('scorePageHealth');
     expect(page).toContain('Page Health');
   });
+
+  it('uses the HYNOE product shell and keeps owner actions obvious', () => {
+    const layout = source('src/app/command-center/layout.tsx');
+    expect(layout).toContain('HynoeWordmark');
+    expect(layout).toContain('command-center.module.css');
+    expect(layout).toContain('Owner workspace');
+    expect(layout).toContain('/command-center/pages/new');
+    expect(layout).toContain('Create Page');
+  });
 });
