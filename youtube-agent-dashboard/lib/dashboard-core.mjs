@@ -66,7 +66,7 @@ export async function attachPreview(videoElement, supabase, candidate) {
         videoElement.load?.();
       }
     } catch {
-      // UI owns the visible playback error state.
+      videoElement.dispatchEvent?.(new Event('hynoe-preview-sign-failed'));
     }
   });
 }
