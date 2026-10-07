@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { CommandCenterTracker } from '@/lib/analytics/command-center-tracker';
 import { requireUser } from '@/lib/auth/require-user';
 import { getOwnedPages } from '@/lib/pages/owned-pages';
 import { scorePageHealth } from '@/lib/pages/page-health';
@@ -9,6 +10,7 @@ export default async function CommandCenterPage() {
 
   return (
     <section>
+      <CommandCenterTracker pageCount={pages.length} />
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 20, alignItems: 'end', flexWrap: 'wrap', marginBottom: 24 }}>
         <div>
           <p style={{ margin: 0, opacity: 0.62, textTransform: 'uppercase', letterSpacing: '.12em', fontSize: 12 }}>Owner workspace</p>
