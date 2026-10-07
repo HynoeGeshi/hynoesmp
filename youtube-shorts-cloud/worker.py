@@ -8,6 +8,10 @@ import time
 import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
+REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if REPO_ROOT not in sys.path:
+    sys.path.insert(0, REPO_ROOT)
+
 from youtube_shorts_cloud.worker_policy import youtube_client_strategies
 
 GATEWAY_URL = os.environ.get("SHORTS_GATEWAY_URL", "")
