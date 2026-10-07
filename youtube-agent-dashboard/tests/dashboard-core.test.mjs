@@ -5,21 +5,21 @@ import {
   signPreview, attachPreview, submitApproval,
 } from '../lib/dashboard-core.mjs';
 
-test('candidate buckets match review priority', () => {
+test('candidate buckets keep every watchable clip above the render queue', () => {
   assert.equal(candidateBucket({ render_status: 'ready', approval_state: 'pending' }), 'review');
+  assert.equal(candidateBucket({ render_status: 'ready', approval_state: 'approved' }), 'ready');
   assert.equal(candidateBucket({ render_status: 'rendering', approval_state: 'pending' }), 'processing');
-  assert.equal(candidateBucket({ render_status: 'ready', approval_state: 'approved' }), 'approved');
   assert.equal(candidateBucket({ render_status: 'failed', approval_state: 'pending' }), 'terminal');
 });
 
-test('sortCandidates prioritizes review clips', () => {
+test('sortCandidates puts watchable clips before queued clips', () => {
   const rows = [
     { id:'terminal', render_status:'failed', approval_state:'pending', score:99 },
     { id:'processing', render_status:'pending', approval_state:'pending', score:99 },
     { id:'approved', render_status:'ready', approval_state:'approved', score:99 },
     { id:'review', render_status:'ready', approval_state:'pending', score:90 },
   ];
-  assert.deepEqual(sortCandidates(rows).map((x) => x.id), ['review','processing','approved','terminal']);
+  assert.deepEqual(sortCandidates(rows).map((x) => x.id), ['review','approved','processing','terminal']);
 });
 
 test('loadCandidates reads clip_candidates and sorts', async () => {
@@ -78,7 +78,6 @@ test('submitApproval uses approve_clip for allowed actions', async () => {
   await assert.rejects(()=>submitApproval(supabase,'clip','publish'),/invalid approval action/i);
   assert.equal(calls.length,1);
 });
-
 
 test('attachPreview surfaces a failed automatic re-sign to the UI', async () => {
   let signed=0;
