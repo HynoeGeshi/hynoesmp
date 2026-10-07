@@ -1,6 +1,5 @@
 import json
 import os
-import shutil
 import subprocess
 import sys
 import tempfile
@@ -8,6 +7,8 @@ import threading
 import time
 import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+from youtube_shorts_cloud.worker_policy import youtube_client_strategies
 
 GATEWAY_URL = os.environ.get("SHORTS_GATEWAY_URL", "")
 WORKER_TOKEN = os.environ.get("SHORTS_WORKER_TOKEN", "")
@@ -60,33 +61,53 @@ def ensure_runtime_packages():
 
 
 def download_section(clip, output_path):
+    import imageio_ffmpeg
+
     start = max(0.0, float(clip["start_ms"]) / 1000.0)
     end = max(start + 1.0, float(clip["end_ms"]) / 1000.0)
     url = f"https://www.youtube.com/watch?v={clip['youtube_video_id']}"
-    template = os.path.join(os.path.dirname(output_path), "source.%(ext)s")
-    cmd = [
-        sys.executable,
-        "-m",
-        "yt_dlp",
-        "--no-playlist",
-        "--quiet",
-        "--no-warnings",
-        "--download-sections",
-        f"*{start:.3f}-{end:.3f}",
-        "--force-keyframes-at-cuts",
-        "-f",
-        "bestvideo[height<=1080]+bestaudio/best[height<=1080]/best",
-        "--merge-output-format",
-        "mp4",
-        "-o",
-        template,
-        url,
-    ]
-    subprocess.check_call(cmd, timeout=900)
-    candidates = [p for p in os.listdir(os.path.dirname(output_path)) if p.startswith("source.")]
-    if not candidates:
-        raise RuntimeError("yt-dlp produced no source clip")
-    return os.path.join(os.path.dirname(output_path), candidates[0])
+    directory = os.path.dirname(output_path)
+    template = os.path.join(directory, "source.%(ext)s")
+    ffmpeg = imageio_ffmpeg.get_ffmpeg_exe()
+    errors = []
+
+    for strategy in youtube_client_strategies():
+        for name in os.listdir(directory):
+            if name.startswith("source."):
+                try:
+                    os.remove(os.path.join(directory, name))
+                except OSError:
+                    pass
+        cmd = [
+            sys.executable,
+            "-m",
+            "yt_dlp",
+            "--no-playlist",
+            "--no-warnings",
+            "--download-sections",
+            f"*{start:.3f}-{end:.3f}",
+            "--force-keyframes-at-cuts",
+            "--ffmpeg-location",
+            ffmpeg,
+            "-f",
+            "bestvideo[height<=1080]+bestaudio/best[height<=1080]/best",
+            "--merge-output-format",
+            "mp4",
+            *strategy,
+            "-o",
+            template,
+            url,
+        ]
+        result = subprocess.run(cmd, timeout=900, text=True, capture_output=True)
+        if result.returncode == 0:
+            candidates = [p for p in os.listdir(directory) if p.startswith("source.")]
+            if candidates:
+                return os.path.join(directory, candidates[0])
+        detail = (result.stderr or result.stdout or f"exit {result.returncode}").strip().splitlines()
+        errors.append(detail[-1] if detail else f"exit {result.returncode}")
+        print(f"yt-dlp strategy failed: {errors[-1]}", flush=True)
+
+    raise RuntimeError("all YouTube extraction strategies failed: " + " | ".join(errors)[-900:])
 
 
 def render_vertical(source_path, output_path):
@@ -218,8 +239,12 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(data)
 
+    def do_HEAD(self):
+        self.send_response(200 if self.path in ("/", "/health") else 404)
+        self.end_headers()
+
     def do_GET(self):
-        if self.path == "/health":
+        if self.path in ("/", "/health"):
             self._json({"ok": True, "worker": WORKER_ID, "busy": _work_lock.locked(), "last_run": _last_run})
         else:
             self._json({"error": "not found"}, 404)
