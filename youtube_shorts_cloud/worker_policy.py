@@ -22,3 +22,11 @@ def choose_refill_windows(windows, limit: int):
         if len(selected) >= max(0, int(limit)):
             break
     return selected
+
+
+def youtube_client_strategies():
+    return [
+        ["--extractor-args", "youtube:player_client=web_embedded;player_skip=webpage,configs"],
+        ["--extractor-args", "youtube:player_client=android_vr;player_skip=webpage,configs"],
+        ["--extractor-args", "youtube:player_client=tv_simply,web_safari;player_skip=webpage,configs"],
+    ]
