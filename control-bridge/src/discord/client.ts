@@ -1,4 +1,5 @@
 import type { AppConfig } from '../config';
+import { auditAction } from '../audit';
 import type {
   DiscordChannel,
   DiscordChannelPatch,
@@ -19,7 +20,7 @@ export function createDiscordClient(config: AppConfig): DiscordClient {
   function withReason(init: RequestInit, reason?: string): RequestInit {
     if (!reason?.trim()) return init;
     const headers = new Headers(init.headers);
-    headers.set('x-audit-log-reason', reason.trim().slice(0, 512));
+    headers.set('x-audit-log-reason', encodeURIComponent(reason.trim().slice(0, 512)));
     return { ...init, headers };
   }
 
@@ -28,10 +29,11 @@ export function createDiscordClient(config: AppConfig): DiscordClient {
     headers.set('authorization', `Bot ${config.discordBotToken}`);
     headers.set('accept', 'application/json');
     if (init.body != null && !headers.has('content-type')) headers.set('content-type', 'application/json');
-    const response = await fetch(`${API}${path}`, { ...init, headers, cache: 'no-store' });
+    const response = await fetch(`${API}${path}`, { ...init, headers, cache: 'no-store', signal: AbortSignal.timeout(15000) });
+    if (init.method && init.method !== 'GET') auditAction(config, { tool: 'discord_provider_write', target: path.split('?')[0], status: response.ok ? 'success' : 'error', detail: { method: init.method, httpStatus: response.status } });
     if (!response.ok) {
-      const detail = await response.text().catch(() => '');
-      throw new Error(`Discord API request failed (${response.status})${detail ? `: ${detail.slice(0, 500)}` : ''}`);
+      const detail = await response.json().catch(() => ({})) as { code?: number; retry_after?: number };
+      throw new Error(`Discord API request failed (${response.status}), code ${typeof detail.code === 'number' ? detail.code : 'unknown'}${response.status === 429 ? `; rate limited, retry after ${Number(detail.retry_after) || 1}s. Write not retried.` : ''}`);
     }
     if (response.status === 204) return undefined as T;
     const text = await response.text();
@@ -43,10 +45,15 @@ export function createDiscordClient(config: AppConfig): DiscordClient {
   const empty = (method: string, reason?: string): RequestInit => withReason({ method }, reason);
 
   return {
+    getGuildMember: (userId) => request(`/guilds/${guildId}/members/${encodeURIComponent(userId)}`),
+    getApplication: () => request('/oauth2/applications/@me'),
+    sendMessagePayload: (channelId, payload) => request(`/channels/${encodeURIComponent(channelId)}/messages`, json(payload, 'POST')),
+    editMessage: (channelId, messageId, payload) => request(`/channels/${encodeURIComponent(channelId)}/messages/${encodeURIComponent(messageId)}`, json(payload, 'PATCH')),
+    crosspostMessage: (channelId, messageId) => request(`/channels/${encodeURIComponent(channelId)}/messages/${encodeURIComponent(messageId)}/crosspost`, empty('POST')),
     getGuild: () => request<DiscordGuild>(`/guilds/${guildId}`),
     listGuildChannels: () => request<DiscordChannel[]>(`/guilds/${guildId}/channels`),
     listGuildRoles: () => request<DiscordRole[]>(`/guilds/${guildId}/roles`),
-    listGuildWebhooks: () => request<DiscordWebhook[]>(`/guilds/${guildId}/webhooks`),
+    listGuildWebhooks: async () => (await request<DiscordWebhook[]>(`/guilds/${guildId}/webhooks`)).map(({ id, type, guild_id, channel_id, name, application_id }) => ({ id, type, guild_id, channel_id, name, application_id })),
     getGuildOnboarding: () => request<DiscordOnboarding>(`/guilds/${guildId}/onboarding`),
     recentMessages: (channelId, limit) => request<DiscordMessage[]>(`/channels/${encodeURIComponent(channelId)}/messages?limit=${Math.max(1, Math.min(100, Math.trunc(limit)))}`),
     sendMessage: (channelId, content, allowMassMention = false) => request<DiscordMessage>(`/channels/${encodeURIComponent(channelId)}/messages`, {

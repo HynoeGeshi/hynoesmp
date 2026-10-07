@@ -63,7 +63,7 @@ describe('Discord client', () => {
     expect(calls[1][1].method).toBe('PATCH');
     expect(calls[2][1].method).toBe('PATCH');
     expect(calls[3][1].method).toBe('DELETE');
-    expect(new Headers(calls[0][1].headers).get('x-audit-log-reason')).toBe('Hynoe overhaul');
+    expect(new Headers(calls[0][1].headers).get('x-audit-log-reason')).toBe('Hynoe%20overhaul');
   });
 
   it('creates, edits, reorders, and deletes roles', async () => {

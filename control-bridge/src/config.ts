@@ -14,8 +14,6 @@ export type AppConfig = {
 };
 
 const REQUIRED = [
-  'BLOOM_API_KEY',
-  'BLOOM_SERVER_ID',
   'DISCORD_BOT_TOKEN',
   'DISCORD_GUILD_ID',
   'SUPABASE_URL',
@@ -67,8 +65,8 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
 
   return {
     bloomPanelUrl,
-    bloomApiKey: required(env, 'BLOOM_API_KEY'),
-    bloomServerId: required(env, 'BLOOM_SERVER_ID'),
+    bloomApiKey: env.BLOOM_API_KEY?.trim() ?? '',
+    bloomServerId: env.BLOOM_SERVER_ID?.trim() ?? '',
     discordBotToken: required(env, 'DISCORD_BOT_TOKEN'),
     discordGuildId: required(env, 'DISCORD_GUILD_ID'),
     discordAllowedChannelIds,

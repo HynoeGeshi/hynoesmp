@@ -45,6 +45,11 @@ describe('verifyMcpAccessToken', () => {
     expect(auth).toEqual({ userId: 'owner-user', clientId: 'chatgpt-client', email: 'owner@example.com', scopes: ['openid', 'email'] });
   });
 
+  it('rejects OAuth clients when a direct dashboard session is required', async () => {
+    const jwt = await token('owner-user');
+    await expect(verifyMcpAccessToken(new Request('https://bridge.example.com/api/discord/approval', { headers: { authorization: `Bearer ${jwt}` } }), config, { directSessionOnly: true })).rejects.toMatchObject({ status: 403 });
+  });
+
   it('rejects expired tokens', async () => {
     const jwt = await token('owner-user', '-1s');
     await expect(verifyMcpAccessToken(new Request('https://bridge.example.com/api/mcp', { headers: { authorization: `Bearer ${jwt}` } }), config))

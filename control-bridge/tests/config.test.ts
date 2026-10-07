@@ -16,7 +16,7 @@ function baseEnv(): NodeJS.ProcessEnv {
 
 describe('loadConfig', () => {
   it('loadConfig_rejects_missing_required_server_secrets', () => {
-    expect(() => loadConfig({} as unknown as NodeJS.ProcessEnv)).toThrow(/BLOOM_API_KEY/);
+    expect(() => loadConfig({} as unknown as NodeJS.ProcessEnv)).toThrow(/DISCORD_BOT_TOKEN/);
   });
 
   it('reports only missing configuration names for safe production diagnosis', () => {
@@ -26,7 +26,7 @@ describe('loadConfig', () => {
       BLOOM_API_KEY: '',
       DISCORD_BOT_TOKEN: '',
     } as NodeJS.ProcessEnv;
-    expect(diagnoseConfigEnv(env)).toEqual({ missing: ['BLOOM_API_KEY', 'DISCORD_BOT_TOKEN'] });
+    expect(diagnoseConfigEnv(env)).toEqual({ missing: ['DISCORD_BOT_TOKEN'] });
     expect(JSON.stringify(diagnoseConfigEnv(env))).not.toContain('server');
   });
 

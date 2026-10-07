@@ -10,18 +10,18 @@ export type HealthProbes = {
 
 export async function runHealthChecks(probes: HealthProbes) {
   const entries = await Promise.all(Object.entries(probes).map(async ([name, probe]) => {
-    try { await probe(); return [name, 'ok'] as const; }
+    try { const status = await probe(); return [name, status === 'not_configured' ? 'not_configured' : 'ok'] as const; }
     catch { return [name, 'error'] as const; }
   }));
-  const checks = Object.fromEntries(entries) as Record<keyof HealthProbes, 'ok' | 'error'>;
-  return { ok: Object.values(checks).every((value) => value === 'ok'), checks };
+  const checks = Object.fromEntries(entries) as Record<keyof HealthProbes, 'ok' | 'error' | 'not_configured'>;
+  return { ok: Object.values(checks).every((value) => value !== 'error'), checks };
 }
 
 export function defaultHealthProbes(config: AppConfig): HealthProbes {
   const bloom = createBloomClient(config);
   const discord = createDiscordClient(config);
   return {
-    bloom: async () => bloom.getResources(),
+    bloom: async () => config.bloomApiKey && config.bloomServerId ? bloom.getResources() : 'not_configured',
     discord: async () => discord.getCurrentUser(),
     supabase: async () => {
       const response = await fetch(`${config.supabaseUrl}/auth/v1/.well-known/jwks.json`, { cache: 'no-store' });

@@ -8,6 +8,7 @@ function unwrapAttributes<T>(value: unknown): T {
 export function createBloomClient(config: AppConfig): BloomClient {
   const base = `${config.bloomPanelUrl}/api/client/servers/${encodeURIComponent(config.bloomServerId)}`;
   async function request(path: string, init: RequestInit = {}, expectText = false): Promise<unknown> {
+    if (!config.bloomApiKey || !config.bloomServerId) throw new Error('Bloom integration is not configured; Discord management remains available');
     const headers = new Headers(init.headers);
     headers.set('authorization', `Bearer ${config.bloomApiKey}`);
     headers.set('accept', ACCEPT);

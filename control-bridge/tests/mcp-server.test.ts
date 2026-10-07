@@ -16,12 +16,14 @@ it('registers the full approved tool surface', () => {
     'hynoe_status','bloom_server_status','bloom_recent_console','bloom_send_command','bloom_power','bloom_list_files','bloom_read_file','bloom_write_file','bloom_list_backups',
     ...discordReads,
     ...discordWrites,
+    'discord_capabilities', 'discord_send_embed', 'discord_edit_message', 'discord_publish_announcement', 'discord_delete_channel_permission',
   ]);
 });
 
 it('classifies every mutation as a write tool', () => {
   expect(WRITE_TOOL_NAMES).toEqual(new Set([
     'bloom_send_command','bloom_power','bloom_write_file', ...discordWrites,
+    'discord_send_embed', 'discord_edit_message', 'discord_publish_announcement', 'discord_delete_channel_permission',
   ]));
 });
 

@@ -14,6 +14,9 @@ export type DiscordChannel = {
   parent_id?: string | null;
   position?: number;
   topic?: string | null;
+  nsfw?: boolean;
+  rate_limit_per_user?: number;
+  last_message_id?: string | null;
   permission_overwrites?: DiscordPermissionOverwrite[];
 };
 
@@ -25,6 +28,13 @@ export type DiscordMessage = {
   channel_id?: string;
   message_reference?: { message_id?: string; channel_id?: string; guild_id?: string };
 };
+
+export type DiscordEmbed = {
+  title?: string; description?: string; url?: string; color?: number;
+  fields?: Array<{ name: string; value: string; inline?: boolean }>;
+  footer?: { text: string }; thumbnail?: { url: string }; image?: { url: string };
+};
+export type DiscordMessagePayload = { content?: string; embeds?: DiscordEmbed[]; allowed_mentions: { parse: string[] } };
 
 export type DiscordGuild = {
   id: string;
@@ -87,6 +97,11 @@ export type DiscordRolePatch = {
 };
 
 export interface DiscordClient {
+  getGuildMember(userId: string): Promise<{ roles: string[] }>;
+  getApplication(): Promise<{ id: string; flags?: number }>;
+  sendMessagePayload(channelId: string, payload: DiscordMessagePayload): Promise<DiscordMessage>;
+  editMessage(channelId: string, messageId: string, payload: DiscordMessagePayload): Promise<DiscordMessage>;
+  crosspostMessage(channelId: string, messageId: string): Promise<DiscordMessage>;
   getGuild(): Promise<DiscordGuild>;
   listGuildChannels(): Promise<DiscordChannel[]>;
   listGuildRoles(): Promise<DiscordRole[]>;

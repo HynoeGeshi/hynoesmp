@@ -18,7 +18,7 @@ function parseScopes(payload: JWTPayload): string[] {
   return [];
 }
 
-export async function verifyMcpAccessToken(request: Request, config: AppConfig): Promise<AuthContext> {
+export async function verifyMcpAccessToken(request: Request, config: AppConfig, options: { directSessionOnly?: boolean } = {}): Promise<AuthContext> {
   const header = request.headers.get('authorization') ?? '';
   const match = /^Bearer\s+(.+)$/i.exec(header);
   if (!match) throw new AuthError(401, 'Missing bearer token', oauthChallenge(config));
@@ -37,6 +37,7 @@ export async function verifyMcpAccessToken(request: Request, config: AppConfig):
     });
     if (!payload.sub) throw new AuthError(401, 'Access token has no subject', oauthChallenge(config));
     if (payload.sub !== config.allowedSupabaseUserId) throw new AuthError(403, 'This account is not authorized for Hynoe control tools');
+    if (options.directSessionOnly && payload.client_id !== undefined) throw new AuthError(403, 'Direct owner login required for approval');
 
     return {
       userId: payload.sub,

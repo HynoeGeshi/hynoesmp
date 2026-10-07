@@ -3,7 +3,7 @@ import { z } from 'zod';
 import type { AppConfig } from '../config';
 import { audited } from '../audit';
 import { createBloomTools } from '../tools/bloom';
-import { createDiscordTools } from '../tools/discord';
+import { createManagedDiscordTools } from '../discord/control';
 
 export const TOOL_NAMES = [
   'hynoe_status',
@@ -42,6 +42,11 @@ export const TOOL_NAMES = [
   'discord_bulk_delete_member_messages',
   'discord_mass_member_role_change',
   'discord_remove_webhook',
+  'discord_capabilities',
+  'discord_send_embed',
+  'discord_edit_message',
+  'discord_publish_announcement',
+  'discord_delete_channel_permission',
 ] as const;
 
 export const WRITE_TOOL_NAMES = new Set<string>([
@@ -67,6 +72,10 @@ export const WRITE_TOOL_NAMES = new Set<string>([
   'discord_bulk_delete_member_messages',
   'discord_mass_member_role_change',
   'discord_remove_webhook',
+  'discord_send_embed',
+  'discord_edit_message',
+  'discord_publish_announcement',
+  'discord_delete_channel_permission',
 ]);
 
 export const DESTRUCTIVE_TOOL_NAMES = new Set<string>([
@@ -82,6 +91,8 @@ export const DESTRUCTIVE_TOOL_NAMES = new Set<string>([
   'discord_bulk_delete_member_messages',
   'discord_mass_member_role_change',
   'discord_remove_webhook',
+  'discord_publish_announcement',
+  'discord_delete_channel_permission',
 ]);
 
 const READ_ONLY = { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false } as const;
@@ -90,6 +101,13 @@ const DESTRUCTIVE = { readOnlyHint: false, destructiveHint: true, idempotentHint
 const EXTERNAL_WRITE = { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true } as const;
 
 const reasonSchema = z.string().min(1).max(512).optional();
+const controlSchema = { dryRun: z.boolean().optional(), approvalId: z.string().regex(/^[a-f0-9]{64}$/).optional() };
+const embedSchema = z.object({
+  title: z.string().max(256).optional(), description: z.string().max(4096).optional(), url: z.string().url().optional(),
+  color: z.number().int().min(0).max(0xffffff).optional(),
+  fields: z.array(z.object({ name: z.string().min(1).max(256), value: z.string().min(1).max(1024), inline: z.boolean().optional() })).max(25).optional(),
+  footer: z.object({ text: z.string().max(2048) }).optional(), image: z.object({ url: z.string().url() }).optional(), thumbnail: z.object({ url: z.string().url() }).optional(),
+});
 const idSchema = z.string().min(1).max(100);
 const decimalBitfieldSchema = z.string().regex(/^\d+$/).max(64);
 const rolePatchSchema = {
@@ -105,9 +123,14 @@ function result(value: unknown) {
 
 export function createHynoeMcpHandler(config: AppConfig) {
   const bloom = createBloomTools(config);
-  const discord = createDiscordTools(config);
+  const discord = createManagedDiscordTools(config);
 
   return createMcpHandler((server) => {
+    server.registerTool('discord_capabilities', { title: 'Verify Discord Management Access', description: 'Check bot membership, effective target permissions, role hierarchy and Message Content intent without exposing credentials.', inputSchema: z.object({ channelId: idSchema.optional() }), annotations: READ_ONLY }, async input => result(await discord.discord_capabilities(input)));
+    server.registerTool('discord_send_embed', { title: 'Send Hynoe Embed', description: 'Send a branded embed. Preview with dryRun; mass mentions require owner dashboard approval.', inputSchema: z.object({ channelId: idSchema, content: z.string().max(2000).optional(), embeds: z.array(embedSchema).min(1).max(10), allowMassMention: z.boolean().optional(), ...controlSchema }), annotations: EXTERNAL_WRITE }, async input => result(await discord.discord_send_embed(input)));
+    server.registerTool('discord_edit_message', { title: 'Edit Bot Message', description: 'Edit content or embeds on a bot-authored message.', inputSchema: z.object({ channelId: idSchema, messageId: idSchema, content: z.string().max(2000).optional(), embeds: z.array(embedSchema).max(10).optional(), allowMassMention: z.boolean().optional(), ...controlSchema }), annotations: EXTERNAL_WRITE }, async input => result(await discord.discord_edit_message(input)));
+    server.registerTool('discord_publish_announcement', { title: 'Publish Announcement', description: 'Crosspost a bot-authored announcement to following servers. Requires owner dashboard approval.', inputSchema: z.object({ channelId: idSchema, messageId: idSchema, ...controlSchema }), annotations: DESTRUCTIVE }, async input => result(await discord.discord_publish_announcement(input)));
+    server.registerTool('discord_delete_channel_permission', { title: 'Remove Permission Overwrite', description: 'Preview or remove an overwrite. Requires owner dashboard approval because inherited access can broaden.', inputSchema: z.object({ channelId: idSchema, overwriteId: idSchema, reason: reasonSchema, ...controlSchema }), annotations: DESTRUCTIVE }, async input => result(await discord.discord_delete_channel_permission(input)));
     server.registerTool('hynoe_status', {
       title: 'Hynoe Control Bridge Status',
       description: 'Show whether the Hynoe Bloom and Discord integrations are configured, without exposing credentials.',
@@ -197,100 +220,100 @@ export function createHynoeMcpHandler(config: AppConfig) {
 
     server.registerTool('discord_send_message', {
       title: 'Send Discord Message', description: 'Send a message to a Hynoe Discord channel. Mass mentions are disabled unless explicitly requested.',
-      inputSchema: z.object({ channelId: idSchema, content: z.string().min(1).max(2000), allowMassMention: z.boolean().optional() }), annotations: EXTERNAL_WRITE,
+      inputSchema: z.object({ channelId: idSchema, content: z.string().min(1).max(2000), allowMassMention: z.boolean().optional() }).extend(controlSchema), annotations: EXTERNAL_WRITE,
     }, async (input) => result(await audited(config, 'discord_send_message', input.channelId, { contentBytes: Buffer.byteLength(input.content, 'utf8'), allowMassMention: input.allowMassMention }, () => discord.discord_send_message(input))));
 
     server.registerTool('discord_send_announcement', {
       title: 'Send Discord Announcement', description: 'Send an announcement. @everyone/@here requires explicit mass-mention approval.',
-      inputSchema: z.object({ channelId: idSchema, content: z.string().min(1).max(2000), allowMassMention: z.boolean().optional() }), annotations: EXTERNAL_WRITE,
+      inputSchema: z.object({ channelId: idSchema, content: z.string().min(1).max(2000), allowMassMention: z.boolean().optional() }).extend(controlSchema), annotations: EXTERNAL_WRITE,
     }, async (input) => result(await audited(config, 'discord_send_announcement', input.channelId, { contentBytes: Buffer.byteLength(input.content, 'utf8'), allowMassMention: input.allowMassMention }, () => discord.discord_send_announcement(input))));
 
     server.registerTool('discord_delete_own_message', {
       title: 'Delete Bot Discord Message', description: 'Delete a message only if it was authored by the Hynoe bot.',
-      inputSchema: z.object({ channelId: idSchema, messageId: idSchema }), annotations: DESTRUCTIVE,
+      inputSchema: z.object({ channelId: idSchema, messageId: idSchema }).extend(controlSchema), annotations: DESTRUCTIVE,
     }, async (input) => result(await audited(config, 'discord_delete_own_message', input.channelId, { messageId: input.messageId }, () => discord.discord_delete_own_message(input))));
 
     server.registerTool('discord_create_channel', {
       title: 'Create Discord Channel', description: 'Create a reversible Hynoe community channel or category.',
-      inputSchema: z.object({ name: z.string().min(1).max(100), type: z.number().int().min(0).max(15).optional(), parentId: idSchema.nullable().optional(), topic: z.string().max(1024).nullable().optional(), position: z.number().int().min(0).optional(), reason: reasonSchema }), annotations: WRITE,
+      inputSchema: z.object({ name: z.string().min(1).max(100), type: z.number().int().min(0).max(15).optional(), parentId: idSchema.nullable().optional(), topic: z.string().max(1024).nullable().optional(), position: z.number().int().min(0).optional(), reason: reasonSchema }).extend(controlSchema), annotations: WRITE,
     }, async (input) => result(await audited(config, 'discord_create_channel', config.discordGuildId, { name: input.name, type: input.type, parentId: input.parentId }, () => discord.discord_create_channel(input))));
 
     server.registerTool('discord_update_channel', {
       title: 'Update Discord Channel', description: 'Rename, move, or update a Hynoe Discord channel without deleting its history.',
-      inputSchema: z.object({ channelId: idSchema, name: z.string().min(1).max(100).optional(), topic: z.string().max(1024).nullable().optional(), parentId: idSchema.nullable().optional(), position: z.number().int().min(0).optional(), reason: reasonSchema }), annotations: WRITE,
+      inputSchema: z.object({ channelId: idSchema, name: z.string().min(1).max(100).optional(), topic: z.string().max(1024).nullable().optional(), parentId: idSchema.nullable().optional(), position: z.number().int().min(0).optional(), reason: reasonSchema }).extend(controlSchema), annotations: WRITE,
     }, async (input) => result(await audited(config, 'discord_update_channel', input.channelId, { name: input.name, parentId: input.parentId, position: input.position }, () => discord.discord_update_channel(input))));
 
     server.registerTool('discord_reorder_channels', {
       title: 'Reorder Discord Channels', description: 'Reorder or move Discord channels/categories without deleting history.',
-      inputSchema: z.object({ channels: z.array(z.object({ id: idSchema, position: z.number().int().min(0).optional(), parentId: idSchema.nullable().optional(), lockPermissions: z.boolean().optional() })).min(1).max(100), reason: reasonSchema }), annotations: WRITE,
+      inputSchema: z.object({ channels: z.array(z.object({ id: idSchema, position: z.number().int().min(0).optional(), parentId: idSchema.nullable().optional(), lockPermissions: z.boolean().optional() })).min(1).max(100), reason: reasonSchema }).extend(controlSchema), annotations: WRITE,
     }, async (input) => result(await audited(config, 'discord_reorder_channels', config.discordGuildId, { count: input.channels.length }, () => discord.discord_reorder_channels(input))));
 
     server.registerTool('discord_create_role', {
       title: 'Create Discord Role', description: 'Create a low-risk Discord role.',
-      inputSchema: z.object({ name: z.string().min(1).max(100), ...rolePatchSchema, reason: reasonSchema }), annotations: WRITE,
+      inputSchema: z.object({ name: z.string().min(1).max(100), ...rolePatchSchema, reason: reasonSchema }).extend(controlSchema), annotations: WRITE,
     }, async (input) => result(await audited(config, 'discord_create_role', config.discordGuildId, { name: input.name }, () => discord.discord_create_role(input))));
 
     server.registerTool('discord_update_role', {
       title: 'Update Discord Role', description: 'Update a low-risk Discord role. Discord role hierarchy limits still apply.',
-      inputSchema: z.object({ roleId: idSchema, name: z.string().min(1).max(100).optional(), ...rolePatchSchema, reason: reasonSchema }), annotations: WRITE,
+      inputSchema: z.object({ roleId: idSchema, name: z.string().min(1).max(100).optional(), ...rolePatchSchema, reason: reasonSchema }).extend(controlSchema), annotations: WRITE,
     }, async (input) => result(await audited(config, 'discord_update_role', input.roleId, { name: input.name }, () => discord.discord_update_role(input))));
 
     server.registerTool('discord_reorder_roles', {
       title: 'Reorder Discord Roles', description: 'Reorder manageable Discord roles. Discord role hierarchy limits still apply.',
-      inputSchema: z.object({ roles: z.array(z.object({ id: idSchema, position: z.number().int().min(0) })).min(1).max(100), reason: reasonSchema }), annotations: WRITE,
+      inputSchema: z.object({ roles: z.array(z.object({ id: idSchema, position: z.number().int().min(0) })).min(1).max(100), reason: reasonSchema }).extend(controlSchema), annotations: WRITE,
     }, async (input) => result(await audited(config, 'discord_reorder_roles', config.discordGuildId, { count: input.roles.length }, () => discord.discord_reorder_roles(input))));
 
     server.registerTool('discord_update_channel_permission', {
       title: 'Update Discord Channel Permission', description: 'Update one channel permission overwrite. Any access broadening requires explicit confirmation at runtime.',
-      inputSchema: z.object({ channelId: idSchema, overwriteId: idSchema, type: z.union([z.literal(0), z.literal(1)]), allow: decimalBitfieldSchema, deny: decimalBitfieldSchema, confirmed: z.boolean().optional(), reason: reasonSchema }), annotations: WRITE,
+      inputSchema: z.object({ channelId: idSchema, overwriteId: idSchema, type: z.union([z.literal(0), z.literal(1)]), allow: decimalBitfieldSchema, deny: decimalBitfieldSchema, confirmed: z.boolean().optional(), reason: reasonSchema }).extend(controlSchema), annotations: WRITE,
     }, async (input) => result(await audited(config, 'discord_update_channel_permission', input.channelId, { overwriteId: input.overwriteId, type: input.type, confirmed: input.confirmed }, () => discord.discord_update_channel_permission(input))));
 
     server.registerTool('discord_delete_channel', {
       title: 'Delete Discord Channel', description: 'Permanently delete a Discord channel/category. Explicit confirmation is required.',
-      inputSchema: z.object({ channelId: idSchema, confirmed: z.boolean(), reason: reasonSchema }), annotations: DESTRUCTIVE,
+      inputSchema: z.object({ channelId: idSchema, confirmed: z.boolean().optional(), reason: reasonSchema }).extend(controlSchema), annotations: DESTRUCTIVE,
     }, async (input) => result(await audited(config, 'discord_delete_channel', input.channelId, { confirmed: input.confirmed }, () => discord.discord_delete_channel(input))));
 
     server.registerTool('discord_delete_role', {
       title: 'Delete Discord Role', description: 'Permanently delete a Discord role. Explicit confirmation is required.',
-      inputSchema: z.object({ roleId: idSchema, confirmed: z.boolean(), reason: reasonSchema }), annotations: DESTRUCTIVE,
+      inputSchema: z.object({ roleId: idSchema, confirmed: z.boolean().optional(), reason: reasonSchema }).extend(controlSchema), annotations: DESTRUCTIVE,
     }, async (input) => result(await audited(config, 'discord_delete_role', input.roleId, { confirmed: input.confirmed }, () => discord.discord_delete_role(input))));
 
     server.registerTool('discord_timeout_member', {
       title: 'Timeout Discord Member', description: 'Apply or clear a member timeout. Explicit confirmation is required.',
-      inputSchema: z.object({ userId: idSchema, until: z.string().datetime({ offset: true }).nullable(), confirmed: z.boolean(), reason: reasonSchema }), annotations: DESTRUCTIVE,
+      inputSchema: z.object({ userId: idSchema, until: z.string().datetime({ offset: true }).nullable(), confirmed: z.boolean().optional(), reason: reasonSchema }).extend(controlSchema), annotations: DESTRUCTIVE,
     }, async (input) => result(await audited(config, 'discord_timeout_member', input.userId, { confirmed: input.confirmed, until: input.until }, () => discord.discord_timeout_member(input))));
 
     server.registerTool('discord_kick_member', {
       title: 'Kick Discord Member', description: 'Kick a member from the Hynoe Discord. Explicit confirmation is required.',
-      inputSchema: z.object({ userId: idSchema, confirmed: z.boolean(), reason: reasonSchema }), annotations: DESTRUCTIVE,
+      inputSchema: z.object({ userId: idSchema, confirmed: z.boolean().optional(), reason: reasonSchema }).extend(controlSchema), annotations: DESTRUCTIVE,
     }, async (input) => result(await audited(config, 'discord_kick_member', input.userId, { confirmed: input.confirmed }, () => discord.discord_kick_member(input))));
 
     server.registerTool('discord_ban_member', {
       title: 'Ban Discord Member', description: 'Ban a member from the Hynoe Discord. Explicit confirmation is required.',
-      inputSchema: z.object({ userId: idSchema, confirmed: z.boolean(), reason: reasonSchema }), annotations: DESTRUCTIVE,
+      inputSchema: z.object({ userId: idSchema, confirmed: z.boolean().optional(), reason: reasonSchema }).extend(controlSchema), annotations: DESTRUCTIVE,
     }, async (input) => result(await audited(config, 'discord_ban_member', input.userId, { confirmed: input.confirmed }, () => discord.discord_ban_member(input))));
 
     server.registerTool('discord_unban_member', {
       title: 'Unban Discord Member', description: 'Unban a member. Explicit confirmation is required by the fail-closed management policy.',
-      inputSchema: z.object({ userId: idSchema, confirmed: z.boolean(), reason: reasonSchema }), annotations: DESTRUCTIVE,
+      inputSchema: z.object({ userId: idSchema, confirmed: z.boolean().optional(), reason: reasonSchema }).extend(controlSchema), annotations: DESTRUCTIVE,
     }, async (input) => result(await audited(config, 'discord_unban_member', input.userId, { confirmed: input.confirmed }, () => discord.discord_unban_member(input))));
 
     server.registerTool('discord_bulk_delete_member_messages', {
       title: 'Bulk Delete Discord Member Messages', description: 'Delete 2-100 selected member-authored messages. Explicit confirmation is required.',
-      inputSchema: z.object({ channelId: idSchema, messageIds: z.array(idSchema).min(2).max(100), confirmed: z.boolean(), reason: reasonSchema }), annotations: DESTRUCTIVE,
+      inputSchema: z.object({ channelId: idSchema, messageIds: z.array(idSchema).min(2).max(100), confirmed: z.boolean().optional(), reason: reasonSchema }).extend(controlSchema), annotations: DESTRUCTIVE,
     }, async (input) => result(await audited(config, 'discord_bulk_delete_member_messages', input.channelId, { count: input.messageIds.length, confirmed: input.confirmed }, () => discord.discord_bulk_delete_member_messages(input))));
 
     server.registerTool('discord_mass_member_role_change', {
       title: 'Mass Discord Member Role Change', description: 'Add or remove one role for up to 100 members. Explicit confirmation is required.',
-      inputSchema: z.object({ userIds: z.array(idSchema).min(1).max(100), roleId: idSchema, operation: z.enum(['add', 'remove']), confirmed: z.boolean(), reason: reasonSchema }), annotations: DESTRUCTIVE,
+      inputSchema: z.object({ userIds: z.array(idSchema).min(1).max(100), roleId: idSchema, operation: z.enum(['add', 'remove']), confirmed: z.boolean().optional(), reason: reasonSchema }).extend(controlSchema), annotations: DESTRUCTIVE,
     }, async (input) => result(await audited(config, 'discord_mass_member_role_change', input.roleId, { count: input.userIds.length, operation: input.operation, confirmed: input.confirmed }, () => discord.discord_mass_member_role_change(input))));
 
     server.registerTool('discord_remove_webhook', {
       title: 'Remove Discord Webhook', description: 'Delete a Discord webhook/integration. Explicit confirmation is required.',
-      inputSchema: z.object({ webhookId: idSchema, confirmed: z.boolean(), reason: reasonSchema }), annotations: DESTRUCTIVE,
+      inputSchema: z.object({ webhookId: idSchema, confirmed: z.boolean().optional(), reason: reasonSchema }).extend(controlSchema), annotations: DESTRUCTIVE,
     }, async (input) => result(await audited(config, 'discord_remove_webhook', input.webhookId, { confirmed: input.confirmed }, () => discord.discord_remove_webhook(input))));
   }, {
-    serverInfo: { name: 'hynoe-control-bridge', version: '0.2.0' },
+    serverInfo: { name: 'hynoe-control-bridge', version: '0.3.0' },
     instructions: 'Owner-only Hynoe Control bridge for Bloom and guild-wide Discord administration. Routine reversible changes may execute normally; high-impact moderation, deletion, member-content removal, and access broadening require explicit user confirmation. Never request or reveal provider credentials.',
     verboseLogs: false,
   });
