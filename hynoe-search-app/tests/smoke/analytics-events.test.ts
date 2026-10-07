@@ -3,13 +3,15 @@ import { ANALYTICS_EVENTS, sanitizeAnalyticsProperties } from '@/lib/analytics/e
 import { trackEvent } from '@/lib/analytics/track-event';
 
 describe('Hynoe analytics event contract', () => {
-  it('exposes only the five approved public retention/discovery events', () => {
+  it('exposes the approved retention, discovery, inquiry, and owner-workspace events', () => {
     expect(ANALYTICS_EVENTS).toEqual([
       'search_submitted',
       'search_result_clicked',
       'page_viewed',
       'page_saved',
       'page_followed',
+      'inquiry_submitted',
+      'command_center_viewed',
     ]);
   });
 
