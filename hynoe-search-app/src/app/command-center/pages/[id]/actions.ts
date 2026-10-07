@@ -21,6 +21,9 @@ export async function updateHynoePage(formData: FormData) {
   const canonicalUrl = canonicalRaw.startsWith('https://') ? canonicalRaw.slice(0, 500) : null;
 
   if (!name) redirect(`/command-center/pages/${pageId}?error=invalid_page`);
+  if (publicationState === 'published' && (!summary || !description)) {
+    redirect(`/command-center/pages/${pageId}?error=publish_incomplete`);
+  }
 
   const supabase = await createClient();
   const { error } = await supabase
@@ -41,5 +44,6 @@ export async function updateHynoePage(formData: FormData) {
   revalidatePath('/command-center');
   revalidatePath(`/command-center/pages/${pageId}`);
   revalidatePath(`/p/${page.slug}`);
+  revalidatePath('/search');
   redirect(`/command-center/pages/${pageId}?saved=1`);
 }
