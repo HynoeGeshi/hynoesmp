@@ -48,6 +48,16 @@ test('runtime config is no-store and excludes unrelated values', async () => {
   });
 });
 
+test('dashboard code is no-store so queue fixes appear immediately', async () => {
+  await withServer(async (base) => {
+    for (const path of ['/', '/app.mjs', '/dashboard-core.mjs']) {
+      const response = await fetch(`${base}${path}`);
+      assert.equal(response.status, 200);
+      assert.equal(response.headers.get('cache-control'), 'no-store');
+    }
+  });
+});
+
 test('static server rejects path traversal', async () => {
   await withServer(async (base) => {
     const response = await fetch(`${base}/..%2F..%2Fpackage.json`);
