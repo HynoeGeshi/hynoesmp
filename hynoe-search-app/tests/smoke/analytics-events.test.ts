@@ -12,6 +12,8 @@ describe('Hynoe analytics event contract', () => {
       'page_followed',
       'inquiry_submitted',
       'command_center_viewed',
+      'page_created',
+      'page_published',
     ]);
   });
 
