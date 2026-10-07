@@ -1,9 +1,16 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { HynoeWordmark } from '@/components/brand/hynoe-wordmark';
 import { requestMagicLink } from './actions';
 import styles from './sign-in.module.css';
 
 export const dynamic = 'force-dynamic';
+
+export const metadata: Metadata = {
+  title: 'Sign in | Hynoe',
+  description: 'Secure passwordless access to the Hynoe Command Center.',
+  robots: { index: false, follow: false },
+};
 
 type Props = { searchParams: Promise<{ sent?: string; error?: string }> };
 
