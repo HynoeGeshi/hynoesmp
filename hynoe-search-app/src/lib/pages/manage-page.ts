@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
+import { HYNOE_SEARCH_TABLES } from '@/lib/supabase/table-names';
 
 export type ManagedPage = {
   id: string;
@@ -17,7 +18,7 @@ export type ManagedPage = {
 export async function getManagedPage(pageId: string, userId: string): Promise<ManagedPage | null> {
   const supabase = await createClient();
   const { data: page, error } = await supabase
-    .from('pages')
+    .from(HYNOE_SEARCH_TABLES.pages)
     .select('id, created_by, slug, name, page_type, publication_state, summary, description, canonical_url, location_label, service_area')
     .eq('id', pageId)
     .maybeSingle();
@@ -26,7 +27,7 @@ export async function getManagedPage(pageId: string, userId: string): Promise<Ma
   if (page.created_by === userId) return page as ManagedPage;
 
   const { data: membership } = await supabase
-    .from('page_members')
+    .from(HYNOE_SEARCH_TABLES.pageMembers)
     .select('role')
     .eq('page_id', pageId)
     .eq('user_id', userId)
