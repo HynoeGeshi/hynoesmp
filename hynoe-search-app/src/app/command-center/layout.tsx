@@ -1,7 +1,9 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
+import { HynoeWordmark } from '@/components/brand/hynoe-wordmark';
 import { requireUser } from '@/lib/auth/require-user';
+import styles from './command-center.module.css';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,20 +17,36 @@ export default async function CommandCenterLayout({ children }: { children: Reac
   const user = await requireUser();
 
   return (
-    <main style={{ minHeight: '100vh', padding: '24px' }}>
-      <header style={{ display: 'flex', justifyContent: 'space-between', gap: 16, alignItems: 'center', marginBottom: 18, flexWrap: 'wrap' }}>
-        <div>
-          <Link href="/" style={{ fontWeight: 800, textDecoration: 'none' }}>HYNOE</Link>
-          <div style={{ opacity: 0.7, fontSize: 14 }}>Command Center</div>
+    <main className={styles.shell}>
+      <div className={styles.frame}>
+        <header className={styles.topbar}>
+          <div className={styles.identity}>
+            <Link href="/" aria-label="Hynoe home" className={styles.brand}><HynoeWordmark /></Link>
+            <div className={styles.workspaceLabel}>
+              <strong>Command Center</strong>
+              <span>Owner workspace</span>
+            </div>
+          </div>
+          <div className={styles.account}>
+            <span className={styles.private}>Private</span>
+            <span className={styles.email}>{user.email}</span>
+          </div>
+        </header>
+
+        <div className={styles.workspace}>
+          <aside className={styles.rail}>
+            <p className={styles.railTitle}>Workspace</p>
+            <nav aria-label="Command Center" className={styles.nav}>
+              <Link href="/command-center">Your Pages</Link>
+              <Link href="/command-center/inquiries">Inquiries</Link>
+              <Link href="/search">Explore Search</Link>
+              <Link href="/command-center/pages/new" className={styles.create}>Create Page</Link>
+            </nav>
+            <p className={styles.railNote}>Your owner tools are private. Published Hynoe Pages remain public and searchable.</p>
+          </aside>
+          <div className={styles.content}>{children}</div>
         </div>
-        <div style={{ fontSize: 14, opacity: 0.8 }}>{user.email}</div>
-      </header>
-      <nav aria-label="Command Center" style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 32 }}>
-        <Link href="/command-center" style={{ padding: '8px 12px', borderRadius: 999, border: '1px solid rgba(255,255,255,.12)', textDecoration: 'none' }}>Your Pages</Link>
-        <Link href="/command-center/inquiries" style={{ padding: '8px 12px', borderRadius: 999, border: '1px solid rgba(255,255,255,.12)', textDecoration: 'none' }}>Inquiries</Link>
-        <Link href="/search" style={{ padding: '8px 12px', borderRadius: 999, border: '1px solid rgba(255,255,255,.12)', textDecoration: 'none' }}>Explore Search</Link>
-      </nav>
-      {children}
+      </div>
     </main>
   );
 }
