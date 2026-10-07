@@ -5,6 +5,46 @@ export const SITE_CHAT_SERVER_LIMITS = Object.freeze({
 
 const CONTROL_OR_INVISIBLE = /[\u0000-\u001F\u007F-\u009F\u200B-\u200F\u202A-\u202E\u2060-\u206F]/g;
 
+const MODERATION_LEET_MAP = Object.freeze({
+  '0': 'o', '1': 'i', '3': 'e', '4': 'a', '5': 's', '7': 't', '8': 'b', '9': 'g',
+  '@': 'a', '$': 's', '!': 'i', '|': 'i', '+': 't',
+});
+
+const BLOCKED_TERMS = Object.freeze([
+  'nigger', 'nigga', 'faggot', 'kike', 'chink', 'gook', 'spic', 'wetback',
+  'beaner', 'tranny', 'coon', 'porchmonkey', 'raghead', 'retard',
+]);
+
+function moderationComparable(input) {
+  return String(input ?? '')
+    .normalize('NFKD')
+    .toLowerCase()
+    .replace(/[\u0300-\u036f]/g, '')
+    .split('')
+    .map((char) => MODERATION_LEET_MAP[char] ?? char)
+    .join('')
+    .replace(/[^a-z]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function termPattern(term) {
+  return new RegExp(`(?:^|\\s)${[...term].map((char) => `${char}+`).join('\\s*')}(?:$|\\s)`, 'i');
+}
+
+const BLOCKED_TERM_PATTERNS = BLOCKED_TERMS.map(termPattern);
+const BLOCKED_HARASSMENT_PATTERNS = Object.freeze([
+  /(?:^|\s)k+\s*y+\s*s+(?:$|\s)/i,
+  /(?:^|\s)(?:go\s+)?kill\s+yourself(?:$|\s)/i,
+]);
+
+export function containsBlockedChatContent(input) {
+  const comparable = moderationComparable(input);
+  if (!comparable) return false;
+  return BLOCKED_TERM_PATTERNS.some((pattern) => pattern.test(comparable))
+    || BLOCKED_HARASSMENT_PATTERNS.some((pattern) => pattern.test(comparable));
+}
+
 export function normalizeMessageBody(input) {
   return String(input ?? '').trim();
 }
@@ -13,6 +53,7 @@ export function validateMessageBody(input) {
   const value = normalizeMessageBody(input);
   if (!value.replace(CONTROL_OR_INVISIBLE, '').trim()) return { ok: false, error: 'Message cannot be blank.' };
   if (value.length > SITE_CHAT_SERVER_LIMITS.maxMessageLength) return { ok: false, error: 'Message is too long.' };
+  if (containsBlockedChatContent(value)) return { ok: false, code: 'filtered_content', error: 'That message is not allowed in Global Chat.' };
   return { ok: true, value };
 }
 
@@ -65,7 +106,7 @@ export function prepareSiteMessage({ userId, profile, settings, body, reply, req
     return { ok: false, code: 'chat_paused', status: 503, error: settings.pause_message || 'Global Chat is temporarily paused.' };
   }
   const message = validateMessageBody(body);
-  if (!message.ok) return { ok: false, code: 'invalid_message', status: 400, error: message.error };
+  if (!message.ok) return { ok: false, code: message.code ?? 'invalid_message', status: 400, error: message.error };
   const request = validateRequestId(requestId);
   if (!request.ok) return { ok: false, code: 'invalid_request_id', status: 400, error: request.error };
 
