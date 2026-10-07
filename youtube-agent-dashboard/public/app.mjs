@@ -62,6 +62,7 @@ function buildPreview(candidate) {
     errorCount += 1;
     if (errorCount > 1) showPreviewError();
   });
+  video.addEventListener('hynoe-preview-sign-failed', showPreviewError);
   void attachPreview(video, supabase, candidate).catch(showPreviewError);
   return preview;
 }
