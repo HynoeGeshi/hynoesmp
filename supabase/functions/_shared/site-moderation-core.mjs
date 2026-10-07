@@ -5,6 +5,7 @@ export const SITE_MODERATION_ACTIONS = Object.freeze([
   'mute_user',
   'ban_user',
   'unban_user',
+  'rename_user',
   'resolve_report',
   'set_announcement',
   'deactivate_announcement',
