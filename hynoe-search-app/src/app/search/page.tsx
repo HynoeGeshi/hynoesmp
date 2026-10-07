@@ -4,9 +4,9 @@ import { SearchForm } from '@/components/search/search-form';
 import { FilterBar } from '@/components/search/filter-bar';
 import { MobileFilterPanel } from '@/components/search/mobile-filter-panel';
 import { ResultCard } from '@/components/search/result-card';
-import { flagshipPages } from '@/data/flagship-pages';
 import { searchPages } from '@/domain/search/search-pages';
 import type { HynoePageType } from '@/domain/pages/types';
+import { listDiscoverablePages } from '@/lib/pages/public-pages';
 import styles from './search-page.module.css';
 
 const pageTypes = new Set<HynoePageType>(['local_business','service_provider','creator','community','digital_product','project_brand']);
@@ -15,7 +15,8 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
   const params = await searchParams;
   const query = params.q ?? '';
   const pageType = params.type && pageTypes.has(params.type as HynoePageType) ? params.type as HynoePageType : undefined;
-  const results = searchPages(flagshipPages, query, { pageType, category: params.category });
+  const discoverablePages = await listDiscoverablePages();
+  const results = searchPages(discoverablePages, query, { pageType, category: params.category });
 
   return <main className="site-shell search-shell">
     <header className="topbar search-topbar">
