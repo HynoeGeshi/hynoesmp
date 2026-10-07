@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { PageLifecycleTracker } from '@/lib/analytics/page-lifecycle-tracker';
 import { requireUser } from '@/lib/auth/require-user';
 import { getManagedPage } from '@/lib/pages/manage-page';
 import { scorePageHealth } from '@/lib/pages/page-health';
@@ -9,7 +10,7 @@ export const dynamic = 'force-dynamic';
 
 type Props = {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ saved?: string; error?: string }>;
+  searchParams: Promise<{ saved?: string; error?: string; created?: string; published?: string }>;
 };
 
 export default async function ManageHynoePage({ params, searchParams }: Props) {
@@ -34,6 +35,12 @@ export default async function ManageHynoePage({ params, searchParams }: Props) {
 
   return (
     <section style={{ maxWidth: 900 }}>
+      <PageLifecycleTracker
+        created={state.created === '1'}
+        published={state.published === '1'}
+        pageSlug={page.slug}
+        pageType={page.page_type}
+      />
       <Link href="/command-center">← Command Center</Link>
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, alignItems: 'end', flexWrap: 'wrap', marginTop: 20 }}>
         <div>
