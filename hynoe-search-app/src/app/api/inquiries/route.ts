@@ -28,7 +28,8 @@ export async function POST(request: Request) {
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-  if (!supabaseUrl || !publishableKey) {
+  const inquiryGateKey = process.env.HYNOE_INQUIRY_GATE_KEY;
+  if (!supabaseUrl || !publishableKey || !inquiryGateKey) {
     return NextResponse.json({ ok: false, error: 'service_unavailable' }, { status: 503 });
   }
 
@@ -39,6 +40,7 @@ export async function POST(request: Request) {
         'content-type': 'application/json',
         apikey: publishableKey,
         authorization: `Bearer ${publishableKey}`,
+        'x-hynoe-inquiry-key': inquiryGateKey,
       },
       body: JSON.stringify(payload),
       cache: 'no-store',
