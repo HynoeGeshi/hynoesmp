@@ -4,19 +4,36 @@ on:
   push:
     branches:
       - hynoe-search-phase2a-impl
+      - hynoe-search-public-discovery-20261007
+    paths:
+      - 'hynoe-search-app/**'
+      - '.github/workflows/hynoe-search-phase2a-ci.yml'
+  pull_request:
+    branches:
+      - hynoe-search-phase2a-impl
     paths:
       - 'hynoe-search-app/**'
       - '.github/workflows/hynoe-search-phase2a-ci.yml'
   workflow_dispatch:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: hynoe-search-phase2a-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   verify:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     defaults:
       run:
         working-directory: hynoe-search-app
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
