@@ -10,6 +10,15 @@ import { validateDisplayName } from './site-social-core.mjs';
 const DISPLAY_NAME_KEY = 'hynoeSiteDisplayName';
 const POLL_MS = 1600;
 
+function ensureStyles() {
+  if (document.querySelector('link[data-site-profile-rename-style]')) return;
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = '/assets/site-profile-rename.css?v=20261007a';
+  link.dataset.siteProfileRenameStyle = 'true';
+  document.head.append(link);
+}
+
 function make(tag, className = '', text = '') {
   const node = document.createElement(tag);
   if (className) node.className = className;
@@ -49,6 +58,7 @@ async function decorateFormerNames(client) {
 
 export async function installSiteProfileRenameTools() {
   if (typeof document === 'undefined') return;
+  ensureStyles();
 
   let config;
   try { config = await loadSiteSocialConfig(); } catch { return; }
