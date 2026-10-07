@@ -13,13 +13,15 @@ export type ManagedPage = {
   canonical_url: string | null;
   location_label: string | null;
   service_area: string | null;
+  categories: string[];
+  tags: string[];
 };
 
 export async function getManagedPage(pageId: string, userId: string): Promise<ManagedPage | null> {
   const supabase = await createClient();
   const { data: page, error } = await supabase
     .from(HYNOE_SEARCH_TABLES.pages)
-    .select('id, created_by, slug, name, page_type, publication_state, summary, description, canonical_url, location_label, service_area')
+    .select('id, created_by, slug, name, page_type, publication_state, summary, description, canonical_url, location_label, service_area, categories, tags')
     .eq('id', pageId)
     .maybeSingle();
 
