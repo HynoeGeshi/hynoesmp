@@ -1,8 +1,15 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { requireUser } from '@/lib/auth/require-user';
 
 export const dynamic = 'force-dynamic';
+
+export const metadata: Metadata = {
+  title: 'Command Center | Hynoe',
+  description: 'Private Hynoe owner workspace.',
+  robots: { index: false, follow: false },
+};
 
 export default async function CommandCenterLayout({ children }: { children: ReactNode }) {
   const user = await requireUser();
