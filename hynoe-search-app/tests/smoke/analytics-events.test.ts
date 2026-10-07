@@ -1,6 +1,12 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { ANALYTICS_EVENTS, sanitizeAnalyticsProperties } from '@/lib/analytics/events';
 import { trackEvent } from '@/lib/analytics/track-event';
+
+function source(path: string) {
+  return readFileSync(resolve(process.cwd(), path), 'utf8');
+}
 
 describe('Hynoe analytics event contract', () => {
   it('exposes the approved retention, discovery, inquiry, and owner-workspace events', () => {
@@ -57,5 +63,14 @@ describe('Hynoe analytics event contract', () => {
     expect(() => trackEvent('page_viewed', { page_slug: 'hynoe-smp' })).not.toThrow();
 
     if (originalKey) process.env.NEXT_PUBLIC_POSTHOG_KEY = originalKey;
+  });
+
+  it('lazy-loads PostHog instead of shipping it in the initial client bundle', () => {
+    const provider = source('src/lib/analytics/posthog-provider.tsx');
+    const tracker = source('src/lib/analytics/track-event.ts');
+
+    expect(provider).not.toMatch(/import posthog from ['"]posthog-js['"]/);
+    expect(tracker).not.toMatch(/import posthog from ['"]posthog-js['"]/);
+    expect(`${provider}\n${tracker}`).toContain("import('posthog-js')");
   });
 });
