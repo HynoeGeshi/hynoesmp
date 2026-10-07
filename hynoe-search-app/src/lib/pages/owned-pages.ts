@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
+import { HYNOE_SEARCH_TABLES } from '@/lib/supabase/table-names';
 
 export type OwnedPage = {
   id: string;
@@ -13,7 +14,7 @@ export type OwnedPage = {
 export async function getOwnedPages(userId: string): Promise<OwnedPage[]> {
   const supabase = await createClient();
   const { data: memberships, error: membershipError } = await supabase
-    .from('page_members')
+    .from(HYNOE_SEARCH_TABLES.pageMembers)
     .select('page_id')
     .eq('user_id', userId);
 
@@ -21,7 +22,7 @@ export async function getOwnedPages(userId: string): Promise<OwnedPage[]> {
 
   const memberPageIds = (memberships ?? []).map((membership) => membership.page_id);
   let query = supabase
-    .from('pages')
+    .from(HYNOE_SEARCH_TABLES.pages)
     .select('id, slug, name, page_type, publication_state, summary, updated_at')
     .order('updated_at', { ascending: false });
 
