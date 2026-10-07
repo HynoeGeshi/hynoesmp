@@ -43,3 +43,15 @@ jobs:
       - run: npm test
       - run: npm run test:domain
       - run: npm run build
+      - name: Install browser for public route checks
+        run: npx playwright install --with-deps chromium
+      - name: Desktop and mobile public flows
+        run: npx playwright test e2e/home.spec.ts e2e/search.spec.ts e2e/page.spec.ts e2e/retention.spec.ts e2e/public-discovery.spec.ts --project=desktop --project=mobile
+      - name: Save public discovery screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: public-discovery-screenshots
+          path: hynoe-search-app/test-results/**/public-discovery.png
+          if-no-files-found: ignore
+          retention-days: 3

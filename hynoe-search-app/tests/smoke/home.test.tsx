@@ -1,6 +1,11 @@
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import Home from '../../src/app/page';
+
+// jsdom cannot execute an async Server Component. Its real data/UI is covered separately.
+vi.mock('@/components/home/public-discovery', () => ({
+  PublicDiscovery: () => <div data-testid="public-discovery-slot" />,
+}));
 
 describe('Hynoe Search homepage', () => {
   it('leads with the HYNOE discovery promise and search without requiring sign in', () => {
@@ -34,6 +39,8 @@ describe('Hynoe Search homepage', () => {
     expect(screen.getByRole('link', { name: 'Creators' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Communities' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Games & Apps' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Local businesses' })).toHaveAttribute('href', '/search?type=local_business');
+    expect(screen.getByRole('link', { name: 'Projects' })).toHaveAttribute('href', '/search?type=project_brand');
     expect(screen.getByRole('heading', { name: /hynoe originals/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /hynoe outpost/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /hynoe smp/i })).toBeInTheDocument();
