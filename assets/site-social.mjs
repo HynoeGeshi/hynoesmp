@@ -311,4 +311,10 @@ if (typeof document !== 'undefined') {
     event.preventDefault();
     composer.requestSubmit();
   });
+
+  setTimeout(() => {
+    import('./site-profile-rename.mjs')
+      .then(({ installSiteProfileRenameTools }) => installSiteProfileRenameTools())
+      .catch(() => {});
+  }, 0);
 }
