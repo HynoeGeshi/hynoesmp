@@ -45,6 +45,7 @@ export async function updateHynoePage(formData: FormData) {
     redirect(`/command-center/pages/${pageId}?error=publish_incomplete`);
   }
 
+  const becamePublished = page.publication_state !== 'published' && publicationState === 'published';
   const supabase = await createClient();
   const { error } = await supabase
     .from(HYNOE_SEARCH_TABLES.pages)
@@ -69,5 +70,5 @@ export async function updateHynoePage(formData: FormData) {
   revalidatePath(`/command-center/pages/${pageId}`);
   revalidatePath(`/p/${page.slug}`);
   revalidatePath('/search');
-  redirect(`/command-center/pages/${pageId}?saved=1`);
+  redirect(`/command-center/pages/${pageId}?saved=1${becamePublished ? '&published=1' : ''}`);
 }
