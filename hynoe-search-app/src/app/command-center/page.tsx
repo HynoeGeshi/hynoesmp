@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { requireUser } from '@/lib/auth/require-user';
 import { getOwnedPages } from '@/lib/pages/owned-pages';
+import { scorePageHealth } from '@/lib/pages/page-health';
 
 export default async function CommandCenterPage() {
   const user = await requireUser();
@@ -24,24 +25,45 @@ export default async function CommandCenterPage() {
         </div>
       ) : (
         <div style={{ display: 'grid', gap: 14 }}>
-          {pages.map((page) => (
-            <article key={page.id} style={{ padding: 20, borderRadius: 18, border: '1px solid rgba(255,255,255,.1)', background: 'rgba(255,255,255,.03)', display: 'grid', gap: 10 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}>
-                <div>
-                  <strong>{page.name}</strong>
-                  <div style={{ opacity: 0.62, fontSize: 13 }}>{page.page_type.replaceAll('_', ' ')}</div>
+          {pages.map((page) => {
+            const health = scorePageHealth({
+              pageType: page.page_type,
+              publicationState: page.publication_state,
+              name: page.name,
+              summary: page.summary ?? '',
+              description: page.description ?? '',
+              canonicalUrl: page.canonical_url,
+              categories: page.categories ?? [],
+              tags: page.tags ?? [],
+              locationLabel: page.location_label,
+              serviceArea: page.service_area,
+            });
+
+            return (
+              <article key={page.id} style={{ padding: 20, borderRadius: 18, border: '1px solid rgba(255,255,255,.1)', background: 'rgba(255,255,255,.03)', display: 'grid', gap: 10 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}>
+                  <div>
+                    <strong>{page.name}</strong>
+                    <div style={{ opacity: 0.62, fontSize: 13 }}>{page.page_type.replaceAll('_', ' ')}</div>
+                  </div>
+                  <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: 12, opacity: health.score >= 90 ? 1 : 0.72 }}>Page Health {health.score}/100</span>
+                    <span style={{ fontSize: 12, textTransform: 'uppercase', letterSpacing: '.08em', opacity: page.publication_state === 'published' ? 1 : 0.64 }}>
+                      {page.publication_state}
+                    </span>
+                  </div>
                 </div>
-                <span style={{ fontSize: 12, textTransform: 'uppercase', letterSpacing: '.08em', opacity: page.publication_state === 'published' ? 1 : 0.64 }}>
-                  {page.publication_state}
-                </span>
-              </div>
-              {page.summary ? <p style={{ margin: 0, opacity: 0.72 }}>{page.summary}</p> : null}
-              <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-                <Link href={`/command-center/pages/${page.id}`}>Manage</Link>
-                {page.publication_state === 'published' ? <Link href={`/p/${page.slug}`}>View public Page</Link> : null}
-              </div>
-            </article>
-          ))}
+                {page.summary ? <p style={{ margin: 0, opacity: 0.72 }}>{page.summary}</p> : null}
+                <div style={{ height: 7, borderRadius: 999, overflow: 'hidden', background: 'rgba(255,255,255,.08)' }} aria-label={`Page Health ${health.score} out of 100`}>
+                  <div style={{ width: `${health.score}%`, height: '100%', background: 'currentColor' }} />
+                </div>
+                <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+                  <Link href={`/command-center/pages/${page.id}`}>{health.score >= 90 ? 'Manage' : 'Improve Page'}</Link>
+                  {page.publication_state === 'published' ? <Link href={`/p/${page.slug}`}>View public Page</Link> : null}
+                </div>
+              </article>
+            );
+          })}
         </div>
       )}
     </section>
