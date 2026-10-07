@@ -41,5 +41,5 @@ export async function createHynoePage(formData: FormData) {
     redirect('/command-center/pages/new?error=create_failed');
   }
 
-  redirect(`/command-center/pages/${page.id}`);
+  redirect(`/command-center/pages/${page.id}?created=1`);
 }
