@@ -36,18 +36,18 @@ export default async function SearchPage({ searchParams }: Props) {
   const discoverablePages = await listDiscoverablePages();
   const results = searchPages(discoverablePages, query, { pageType, category: params.category });
 
-  return <main className="site-shell search-shell">
-    <header className="topbar search-topbar">
+  return <main className={`site-shell search-shell ${styles.shell}`}>
+    <header className={`topbar search-topbar ${styles.topbar}`}>
       <Link href="/" className="home-brand-link" aria-label="Hynoe home"><HynoeWordmark /></Link>
       <SearchForm defaultValue={query} />
     </header>
     <div className={styles.desktopFilters}><FilterBar query={query} activeType={pageType} /></div>
     <MobileFilterPanel query={query} activeType={pageType} />
-    <section className="results-head">
+    <section className={styles.resultsHead}>
       <div><div className="eyebrow">Hynoe Search</div><h1>{query.trim() ? `Results for “${query}”` : 'Discover on Hynoe'}</h1></div>
       <span className={styles.count}>{results.length} {results.length === 1 ? 'result' : 'results'}</span>
     </section>
-    {results.length ? <section className="results-grid">{results.map((result, index) => <ResultCard key={result.page.id} result={result} position={index + 1} />)}</section>
-      : <section className="empty-state"><div className="eyebrow">Keep exploring</div><h2>No matches yet.</h2><p>Try a broader search or explore what is already on Hynoe.</p><Link className="secondary-cta" href="/search">Explore Hynoe</Link></section>}
+    {results.length ? <section className={styles.grid}>{results.map((result, index) => <ResultCard key={result.page.id} result={result} position={index + 1} />)}</section>
+      : <section className={styles.empty}><div className="eyebrow">Keep exploring</div><h2>No matches yet.</h2><p>Try a broader search or explore what is already on Hynoe.</p><Link className="secondary-cta" href="/search">Explore Hynoe</Link></section>}
   </main>;
 }
