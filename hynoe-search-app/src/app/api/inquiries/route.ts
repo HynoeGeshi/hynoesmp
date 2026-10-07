@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { createAdminClient } from '@/lib/supabase/admin';
 
 function clean(value: unknown, max: number) {
   return typeof value === 'string' ? value.trim().slice(0, max) : '';
@@ -15,38 +14,38 @@ export async function POST(request: Request) {
 
   if (clean(body.website, 120)) return NextResponse.json({ ok: true }, { status: 202 });
 
-  const pageId = clean(body.pageId, 80);
-  const senderName = clean(body.senderName, 100);
-  const senderEmail = clean(body.senderEmail, 320).toLowerCase();
-  const message = clean(body.message, 4000);
-  const requestType = clean(body.requestType, 80) || null;
+  const payload = {
+    pageId: clean(body.pageId, 80),
+    senderName: clean(body.senderName, 100),
+    senderEmail: clean(body.senderEmail, 320).toLowerCase(),
+    message: clean(body.message, 4000),
+    requestType: clean(body.requestType, 80) || null,
+  };
 
-  if (!pageId || !senderName || !senderEmail.includes('@') || !message) {
+  if (!payload.pageId || !payload.senderName || !payload.senderEmail.includes('@') || !payload.message) {
     return NextResponse.json({ ok: false, error: 'invalid_fields' }, { status: 400 });
   }
 
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+  if (!supabaseUrl || !publishableKey) {
+    return NextResponse.json({ ok: false, error: 'service_unavailable' }, { status: 503 });
+  }
+
   try {
-    const supabase = createAdminClient();
-    const { data: page, error: pageError } = await supabase
-      .from('pages')
-      .select('id, publication_state')
-      .eq('id', pageId)
-      .eq('publication_state', 'published')
-      .maybeSingle();
-
-    if (pageError || !page) return NextResponse.json({ ok: false, error: 'page_not_found' }, { status: 404 });
-
-    const { error } = await supabase.from('inquiries').insert({
-      page_id: page.id,
-      sender_name: senderName,
-      sender_email: senderEmail,
-      message,
-      request_type: requestType,
-      status: 'new',
+    const response = await fetch(`${supabaseUrl}/functions/v1/submit-hynoe-inquiry`, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        apikey: publishableKey,
+        authorization: `Bearer ${publishableKey}`,
+      },
+      body: JSON.stringify(payload),
+      cache: 'no-store',
     });
 
-    if (error) throw error;
-    return NextResponse.json({ ok: true }, { status: 201 });
+    const result = await response.json().catch(() => ({ ok: false, error: 'service_unavailable' }));
+    return NextResponse.json(result, { status: response.status });
   } catch {
     return NextResponse.json({ ok: false, error: 'service_unavailable' }, { status: 503 });
   }
