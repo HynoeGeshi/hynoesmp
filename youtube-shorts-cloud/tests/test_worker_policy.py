@@ -5,6 +5,7 @@ from youtube_shorts_cloud.worker_policy import (
     DAILY_TARGET,
     needed_for_target,
     choose_refill_windows,
+    youtube_client_strategies,
 )
 
 
@@ -27,6 +28,14 @@ class DailyTargetTests(unittest.TestCase):
         self.assertEqual(len(selected), 3)
         self.assertEqual(selected[0]["video_source_id"], "a")
         self.assertFalse(any(x["video_source_id"] == "a" and x["start_ms"] == 10000 for x in selected))
+
+    def test_cloud_extraction_has_guest_session_fallbacks(self):
+        strategies = youtube_client_strategies()
+        self.assertGreaterEqual(len(strategies), 3)
+        joined = " ".join(" ".join(x) for x in strategies)
+        self.assertIn("player_client=web_embedded", joined)
+        self.assertIn("player_skip=webpage,configs", joined)
+        self.assertIn("player_client=android_vr", joined)
 
 
 if __name__ == "__main__":
