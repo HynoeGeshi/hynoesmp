@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/auth/require-user';
 import { getManagedPage } from '@/lib/pages/manage-page';
 import { createClient } from '@/lib/supabase/server';
+import { HYNOE_SEARCH_TABLES } from '@/lib/supabase/table-names';
 
 export async function updateHynoePage(formData: FormData) {
   const user = await requireUser();
@@ -23,7 +24,7 @@ export async function updateHynoePage(formData: FormData) {
 
   const supabase = await createClient();
   const { error } = await supabase
-    .from('pages')
+    .from(HYNOE_SEARCH_TABLES.pages)
     .update({
       name,
       summary,
