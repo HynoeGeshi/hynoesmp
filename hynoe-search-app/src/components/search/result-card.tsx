@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import type { SearchResult } from '@/domain/search/types';
 import { trackEvent } from '@/lib/analytics/track-event';
+import styles from './result-card.module.css';
 
 const pageTypeLabels = {
   local_business: 'Local business',
@@ -15,9 +16,11 @@ const pageTypeLabels = {
 
 export function ResultCard({ result, position }: { result: SearchResult; position?: number }) {
   const { page } = result;
-  const location = page.location
-    ? [page.location.city, page.location.region, page.location.country].filter(Boolean).join(', ')
-    : '';
+  const location = page.location?.onlineOnly
+    ? 'Online'
+    : page.location
+      ? [page.location.city, page.location.region, page.location.country].filter(Boolean).join(', ')
+      : '';
 
   const trackClick = () => trackEvent('search_result_clicked', {
     page_slug: page.slug,
@@ -27,21 +30,24 @@ export function ResultCard({ result, position }: { result: SearchResult; positio
   });
 
   return (
-    <article className="result-card">
-      <div className="result-card__topline">
-        <div className="eyebrow">{page.categories[0] ?? pageTypeLabels[page.pageType]}</div>
-        <span className="result-card__type">{pageTypeLabels[page.pageType]}</span>
+    <article className={`result-card ${styles.card}`}>
+      <div className={`result-card__topline ${styles.topline}`}>
+        <div className={`eyebrow ${styles.category}`}>{page.categories[0] ?? pageTypeLabels[page.pageType]}</div>
+        <span className={`result-card__type ${styles.type}`}>{pageTypeLabels[page.pageType]}</span>
       </div>
-      <h2><Link href={`/p/${page.slug}`} onClick={trackClick}>{page.name}</Link></h2>
-      <p>{page.summary}</p>
-      {location ? <p className="result-location">{location}</p> : null}
+      <h2 className={styles.title}><Link href={`/p/${page.slug}`} onClick={trackClick}>{page.name}</Link></h2>
+      <p className={styles.summary}>{page.summary}</p>
+      {location ? <p className={`result-location ${styles.context}`}>{location}</p> : null}
       {page.tags.length > 0 ? (
-        <div className="tag-row">
+        <div className={`tag-row ${styles.tags}`}>
           {page.tags.slice(0, 4).map((tag) => <span key={tag}>{tag}</span>)}
         </div>
       ) : null}
-      <div className="result-card__footer">
-        <Link className="card-cta" href={`/p/${page.slug}`} onClick={trackClick}>View Hynoe Page</Link>
+      <div className={`result-card__footer ${styles.footer}`}>
+        <Link className={`card-cta ${styles.cta}`} href={`/p/${page.slug}`} onClick={trackClick}>
+          View Hynoe Page <span className={styles.arrow} aria-hidden="true">→</span>
+        </Link>
+        <span className={styles.hint}>Structured Hynoe Page</span>
       </div>
     </article>
   );
