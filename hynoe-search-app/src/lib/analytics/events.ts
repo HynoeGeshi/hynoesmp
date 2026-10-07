@@ -6,6 +6,8 @@ export const ANALYTICS_EVENTS = [
   'page_followed',
   'inquiry_submitted',
   'command_center_viewed',
+  'page_created',
+  'page_published',
 ] as const;
 
 export type HynoeAnalyticsEvent = (typeof ANALYTICS_EVENTS)[number];
