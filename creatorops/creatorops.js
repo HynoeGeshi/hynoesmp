@@ -1,6 +1,26 @@
 (() => {
   document.documentElement.classList.add('js');
 
+  // Growth Sprint is part of the existing offer, not a native account connection.
+  const offersShell = document.querySelector('#offers .shell');
+  if (offersShell && !document.querySelector('#growth-sprint-preview')) {
+    const growth = document.createElement('div');
+    growth.id = 'growth-sprint-preview';
+    growth.className = 'security-note';
+    const growthCopy = document.createElement('div');
+    const growthTitle = document.createElement('strong');
+    growthTitle.textContent = 'New: Growth & Revenue Sprint';
+    const growthDescription = document.createElement('p');
+    growthDescription.textContent = 'Research the opportunity, package one offer, prepare approved content and measure real results. Explore the working revenue planner, source-link builder and password-free onboarding guide. Scope this within Build My System or Run It With Me; no earnings guarantees or automatic account access.';
+    const growthLink = document.createElement('a');
+    growthLink.className = 'button ink';
+    growthLink.href = '/creatorops/growth.html';
+    growthLink.textContent = 'Explore the Growth Sprint and tools →';
+    growthCopy.append(growthTitle, growthDescription, growthLink);
+    growth.append(growthCopy);
+    offersShell.append(growth);
+  }
+
   const diagnosticMap = {
     views: {
       code: '01 / PACKAGING',
