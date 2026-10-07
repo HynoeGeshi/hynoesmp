@@ -141,19 +141,19 @@ select
   m.id,
   m.author_id,
   p.display_name,
-  case
-    when p.previous_display_name_expires_at is not null
-      and p.previous_display_name_expires_at > now()
-    then p.previous_display_name
-    else null
-  end as former_display_name,
   case when p.role in ('moderator','admin') then p.role else null end as staff_role,
   case when m.deleted_at is null then m.body else null end as body,
   m.reply_to,
   m.created_at,
   m.edited_at,
   m.deleted_at,
-  (m.deleted_at is not null) as is_deleted
+  (m.deleted_at is not null) as is_deleted,
+  case
+    when p.previous_display_name_expires_at is not null
+      and p.previous_display_name_expires_at > now()
+    then p.previous_display_name
+    else null
+  end as former_display_name
 from public.site_chat_messages m
 join public.site_profiles p on p.user_id = m.author_id;
 
