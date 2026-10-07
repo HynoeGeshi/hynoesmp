@@ -31,4 +31,7 @@ Discord: https://discord.gg/wYTePCkXd5
 3. Add `hynoesmp.com` in Multiplayer.
 4. Use the Discord for current announcements, rollout status, and support.
 
-Last reviewed: 2026-10-05
+Last reviewed: 2026-10-07
+
+## October 7 server review
+Minecraft Java 26.2 / Fabric. 178 installed server mod files inspected; ten custom datapacks enabled. Campaign v15.1 and Fall v2.5 are enabled. The Fall event loop time-command repair was uploaded, reloaded, and executed successfully. /ask answered and /next invoked the current-stage function from the console. No mod version upgrades were performed. Missing Mythic Upgrades blocks, Alex’s Mobs effects, and C2ME / Towns and Towers generation issues remain under investigation.
