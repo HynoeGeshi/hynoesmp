@@ -1,3 +1,4 @@
+import hmac
 import json
 import os
 import subprocess
@@ -12,7 +13,12 @@ REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if REPO_ROOT not in sys.path:
     sys.path.insert(0, REPO_ROOT)
 
-from youtube_shorts_cloud.worker_policy import youtube_client_strategies
+from youtube_shorts_cloud.worker_policy import (
+    CLOUD_MEDIA_FETCH_BLOCKED,
+    SOURCE_BLOCKER,
+    MEDIA_HOLD_REVISION,
+    youtube_client_strategies,
+)
 
 GATEWAY_URL = os.environ.get("SHORTS_GATEWAY_URL", "")
 WORKER_TOKEN = os.environ.get("SHORTS_WORKER_TOKEN", "")
@@ -45,6 +51,8 @@ def gateway(payload):
 
 
 def ensure_runtime_packages():
+    if CLOUD_MEDIA_FETCH_BLOCKED:
+        raise RuntimeError(SOURCE_BLOCKER)
     packages = []
     try:
         import yt_dlp  # noqa: F401
@@ -65,6 +73,8 @@ def ensure_runtime_packages():
 
 
 def download_section(clip, output_path):
+    if CLOUD_MEDIA_FETCH_BLOCKED:
+        raise RuntimeError(SOURCE_BLOCKER)
     import imageio_ffmpeg
 
     start = max(0.0, float(clip["start_ms"]) / 1000.0)
@@ -170,6 +180,10 @@ def upload_tus(file_path, upload_path, token):
 
 
 def process_one():
+    # The gate is BEFORE claim: no lease, retry, source fetch, or queue mutation.
+    # Existing local workers and authorized source files are unaffected.
+    if CLOUD_MEDIA_FETCH_BLOCKED:
+        return False
     claim = gateway({"action": "claim", "worker_id": WORKER_ID})
     clip = claim.get("clip")
     if not clip:
@@ -249,15 +263,36 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         if self.path in ("/", "/health"):
-            self._json({"ok": True, "worker": WORKER_ID, "busy": _work_lock.locked(), "last_run": _last_run})
+            # Never expose raw upstream errors, signed URLs, or access tokens.
+            safe_run = {key: _last_run.get(key) for key in ("started_at", "finished_at", "processed")}
+            safe_run["last_error"] = "WORKER_ERROR" if _last_run.get("last_error") else None
+            self._json({
+                "ok": True,
+                "ready": not CLOUD_MEDIA_FETCH_BLOCKED,
+                "worker": WORKER_ID,
+                "busy": _work_lock.locked(),
+                "last_run": safe_run,
+                "media_fetch": "blocked" if CLOUD_MEDIA_FETCH_BLOCKED else "available",
+                "code": SOURCE_BLOCKER if CLOUD_MEDIA_FETCH_BLOCKED else None,
+                "revision": MEDIA_HOLD_REVISION,
+            })
         else:
             self._json({"error": "not found"}, 404)
 
     def do_POST(self):
         if self.path != "/work":
             return self._json({"error": "not found"}, 404)
-        if not WAKE_TOKEN or self.headers.get("x-wake-token") != WAKE_TOKEN:
+        supplied_token = self.headers.get("x-wake-token", "")
+        if not WAKE_TOKEN or not hmac.compare_digest(supplied_token.encode("utf-8"), WAKE_TOKEN.encode("utf-8")):
             return self._json({"error": "unauthorized"}, 401)
+        if CLOUD_MEDIA_FETCH_BLOCKED:
+            return self._json({
+                "ok": False,
+                "accepted": False,
+                "retryable": False,
+                "code": SOURCE_BLOCKER,
+                "reason": "Authorized source-file ingestion is required; queued candidates remain untouched.",
+            }, 503)
         kick()
         self._json({"ok": True, "accepted": True, "busy": _work_lock.locked()}, 202)
 
@@ -269,7 +304,8 @@ def main():
     if not GATEWAY_URL or not WORKER_TOKEN or not WAKE_TOKEN:
         raise SystemExit("SHORTS_GATEWAY_URL, SHORTS_WORKER_TOKEN and SHORTS_WAKE_TOKEN are required")
     port = int(os.environ.get("PORT", "10000"))
-    kick()
+    if not CLOUD_MEDIA_FETCH_BLOCKED:
+        kick()
     server = ThreadingHTTPServer(("0.0.0.0", port), Handler)
     print(f"hynoe shorts cloud worker listening on {port}", flush=True)
     server.serve_forever()
