@@ -1,9 +1,9 @@
-const BUCKET_ORDER = { review: 0, processing: 1, approved: 2, terminal: 3 };
+const BUCKET_ORDER = { review: 0, ready: 1, processing: 2, terminal: 3 };
 
 export function candidateBucket(candidate) {
   if (candidate?.approval_state === 'rejected' || candidate?.render_status === 'failed') return 'terminal';
-  if (candidate?.approval_state === 'approved') return 'approved';
   if (candidate?.render_status === 'ready' && (candidate?.approval_state ?? 'pending') === 'pending') return 'review';
+  if (candidate?.render_status === 'ready') return 'ready';
   return 'processing';
 }
 
