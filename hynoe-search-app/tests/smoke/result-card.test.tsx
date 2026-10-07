@@ -30,10 +30,24 @@ describe('ResultCard', () => {
     expect(screen.getByRole('heading', { name: 'Sample Creator' })).toBeInTheDocument();
     expect(screen.getByText('Gaming Creators')).toBeInTheDocument();
     expect(screen.getByText('Independent creator making useful things.')).toBeInTheDocument();
+    expect(screen.getByText('Chicago, IL, US')).toBeInTheDocument();
     expect(screen.getByText('gaming')).toBeInTheDocument();
     expect(screen.getByText('streaming')).toBeInTheDocument();
     expect(screen.getAllByRole('link', { name: 'View Hynoe Page' })).toHaveLength(1);
     expect(container).not.toHaveTextContent(/rating|verified|starting at|reviews/i);
+  });
+
+  it('shows Online for online-only Pages instead of leaving discovery context blank', () => {
+    const result: SearchResult = {
+      ...baseResult,
+      page: {
+        ...baseResult.page,
+        location: { onlineOnly: true, country: 'US' },
+      },
+    };
+
+    render(<ResultCard result={result} />);
+    expect(screen.getByText('Online')).toBeInTheDocument();
   });
 
   it('does not render an empty tag surface when a page has no tags', () => {
