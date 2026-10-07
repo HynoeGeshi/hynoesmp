@@ -8,6 +8,12 @@ export type OwnedPage = {
   page_type: string;
   publication_state: 'draft' | 'published';
   summary: string;
+  description: string;
+  canonical_url: string | null;
+  location_label: string | null;
+  service_area: string | null;
+  categories: string[];
+  tags: string[];
   updated_at: string;
 };
 
@@ -23,7 +29,7 @@ export async function getOwnedPages(userId: string): Promise<OwnedPage[]> {
   const memberPageIds = (memberships ?? []).map((membership) => membership.page_id);
   let query = supabase
     .from(HYNOE_SEARCH_TABLES.pages)
-    .select('id, slug, name, page_type, publication_state, summary, updated_at')
+    .select('id, slug, name, page_type, publication_state, summary, description, canonical_url, location_label, service_area, categories, tags, updated_at')
     .order('updated_at', { ascending: false });
 
   if (memberPageIds.length > 0) {
