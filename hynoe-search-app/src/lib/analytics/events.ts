@@ -4,6 +4,8 @@ export const ANALYTICS_EVENTS = [
   'page_viewed',
   'page_saved',
   'page_followed',
+  'inquiry_submitted',
+  'command_center_viewed',
 ] as const;
 
 export type HynoeAnalyticsEvent = (typeof ANALYTICS_EVENTS)[number];
@@ -18,6 +20,7 @@ const SAFE_PROPERTY_KEYS = new Set([
   'source',
   'category',
   'action_state',
+  'page_count',
 ]);
 
 export function sanitizeAnalyticsProperties(
