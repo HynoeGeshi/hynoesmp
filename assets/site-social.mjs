@@ -84,9 +84,6 @@ export function createSiteSocialClient(config, options = {}) {
     },
   });
 
-  // Supabase session restoration can be held by a stale browser auth lock. Keep the
-  // community panel recoverable: after a short bound, discard only this project's
-  // local auth token and present a clean guest session instead of hanging forever.
   if (client?.auth?.getSession) {
     const originalGetSession = client.auth.getSession.bind(client.auth);
     client.auth.getSession = async () => {
@@ -128,16 +125,11 @@ export async function ensureProfile(client, user, displayName) {
   const lookup = await table.select('user_id,display_name,normalized_name,avatar_seed').eq('user_id', user.id).maybeSingle();
   if (lookup.error) throw new Error('Could not load the site profile.');
 
-  const normalized = normalizeDisplayName(checked.value).toLowerCase();
   if (lookup.data) {
-    const avatarSeed = lookup.data.avatar_seed || user.id;
-    const update = await table
-      .update({ display_name: checked.value, normalized_name: normalized, avatar_seed: avatarSeed })
-      .eq('user_id', user.id);
-    if (update?.error) throw new Error('Could not update the site profile.');
-    return { ...lookup.data, display_name: checked.value, normalized_name: normalized, avatar_seed: avatarSeed };
+    return { ...lookup.data, avatar_seed: lookup.data.avatar_seed || user.id };
   }
 
+  const normalized = normalizeDisplayName(checked.value).toLowerCase();
   const payload = {
     user_id: user.id,
     display_name: checked.value,
@@ -145,8 +137,33 @@ export async function ensureProfile(client, user, displayName) {
     avatar_seed: user.id,
   };
   const inserted = await table.insert([payload]);
-  if (inserted?.error) throw new Error('Could not create the site profile.');
+  if (inserted?.error) {
+    if (inserted.error.code === '23505') throw new Error('That display name is already taken.');
+    throw new Error('Could not create the site profile.');
+  }
   return payload;
+}
+
+function functionErrorMessage(error, data, fallback) {
+  return data?.error || error?.context?.body?.error || error?.message || fallback;
+}
+
+export async function loadSiteProfileRenameStatus(client) {
+  if (!client?.functions?.invoke) throw new Error('Name settings are unavailable.');
+  const { data, error } = await client.functions.invoke('rename-site-profile', { body: { action: 'status' } });
+  if (error || !data?.display_name) throw new Error(functionErrorMessage(error, data, 'Name settings could not be loaded.'));
+  return data;
+}
+
+export async function renameSiteProfile(client, displayName) {
+  if (!client?.functions?.invoke) throw new Error('Name changes are unavailable.');
+  const checked = validateDisplayName(displayName);
+  if (!checked.ok) throw new Error(checked.error);
+  const { data, error } = await client.functions.invoke('rename-site-profile', {
+    body: { action: 'rename', display_name: checked.value },
+  });
+  if (error || !data?.display_name) throw new Error(functionErrorMessage(error, data, 'Display name could not be changed.'));
+  return data;
 }
 
 export async function loadRecentMessages(client, limit = 50) {
