@@ -14,7 +14,8 @@ for (const page of ['privacy.html','terms.html','data-deletion.html','community-
     assert.match(html, /upgrade-insecure-requests/);
     assert.match(html, /name="referrer"/);
     assert.match(html, /Copyright © 2026 Hynoe/);
-    assert.match(html, /not affiliated with (?:or endorsed by )?Mojang or Microsoft/i);
+    // Accept the explicit independence disclaimer as well as the legacy phrasing.
+    assert.match(html, /not affiliated with (?:or endorsed by )?Mojang or Microsoft|NOT AN OFFICIAL MINECRAFT SERVICE\. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT\./i);
   });
 }
 
@@ -27,16 +28,20 @@ test('homepage and Watch & Play surface privacy, terms and deletion routes', () 
   }
 });
 
-test('privacy notice describes local saves and opt-in leaderboard publishing accurately', () => {
+test('privacy notice distinguishes local saves, online community records, and opt-in leaderboard publishing', () => {
   const html = read('privacy.html');
-  assert.match(html, /cloud (?:accounts|saves)[^<]*(?:are not|aren't|not yet) live/i);
+  assert.match(html, /supports browser-local play without an email account/i);
   assert.match(html, /localStorage|stored on your device|browser storage/i);
-  assert.match(html, /Hall of Legends[^<]*viewed by everyone/i);
-  assert.match(html, /publishing your own score[^<]*optional[^<]*off by default/i);
-  assert.match(html, /random local player ID|random player ID/i);
-  assert.match(html, /bounded gameplay metrics/i);
-  assert.match(html, /website chat[^<]*(?:not connected|inactive|not active)/i);
-  assert.match(html, /under 18|18\+/i);
+  assert.match(html, /Global Chat and Ask Hynoe use online community sessions and server-side records/i);
+  assert.match(html, /server-side profile/);
+  assert.match(html, /Hall of Legends can load public rankings/i);
+  assert.match(html, /score-publication control is optional and off by default/i);
+  assert.match(html, /random local player identifier/i);
+  assert.match(html, /gameplay metrics for ranking/i);
+  assert.match(html, /Turning it off stops future score submissions but does not automatically remove an existing record/i);
+  assert.match(html, /18\+/i);
+  assert.match(html, /not a parental-consent mechanism/i);
+  assert.doesNotMatch(html, /website chat[^<]*(?:not connected|inactive|not active)/i);
   assert.doesNotMatch(html, /we guarantee|100% secure|fully compliant/i);
 });
 
@@ -62,12 +67,14 @@ test('leaderboard UI explains live rankings and explicit publishing choice', () 
   assert.match(html, /stays local until you explicitly opt in/i);
 });
 
-test('data deletion page gives local deletion and private leaderboard-data request paths', () => {
+test('data deletion page gives local deletion and private server-record request paths', () => {
   const html = read('data-deletion.html');
   assert.match(html, /browser (?:storage|site data)|localStorage/i);
-  assert.match(html, /Global leaderboard records/i);
-  assert.match(html, /Publishing your own score is optional and off by default/i);
-  assert.match(html, /stops future score uploads/i);
+  assert.match(html, /Leaderboard publication/i);
+  assert.match(html, /Turn off <strong>Publish my score<\/strong> to stop future score submissions/i);
+  assert.match(html, /does not automatically remove an existing public ranking/i);
+  assert.match(html, /does not request deletion of Hynoe's server records/i);
+  assert.match(html, /does not send an erasure request/i);
   assert.match(html, /do not post[^<]*(?:player ID|identifier|private)/i);
   assert.match(html, /Discord/i);
 });

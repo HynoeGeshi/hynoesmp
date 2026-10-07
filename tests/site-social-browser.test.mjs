@@ -4,6 +4,7 @@ import { readdir, readFile } from 'node:fs/promises';
 
 const root = new URL('../', import.meta.url);
 const ADMIN_PAGES = new Set(['site-admin.html', 'chat-admin.html']);
+const PASSIVE_LEGAL_PAGES = new Set(['privacy.html', 'terms.html', 'data-deletion.html']);
 
 async function htmlPages() {
   return (await readdir(root)).filter((name) => name.endsWith('.html'));
@@ -13,15 +14,28 @@ async function text(name) {
   return readFile(new URL(name, root), 'utf8');
 }
 
-test('every intended public page loads the shared Hynoe social panel assets', async () => {
+test('public community pages load social assets while admin and legal pages remain excluded', async () => {
   for (const page of await htmlPages()) {
     const html = await text(page);
-    if (ADMIN_PAGES.has(page)) {
+    if (ADMIN_PAGES.has(page) || PASSIVE_LEGAL_PAGES.has(page)) {
       assert.doesNotMatch(html, /site-social-panel\.mjs/i, `${page} must not mount visitor launcher`);
       continue;
     }
     assert.match(html, /assets\/site-social\.css\?v=20261006b/i, `${page} missing social CSS`);
     assert.match(html, /assets\/site-social-panel\.mjs\?v=20261006b/i, `${page} missing social panel module`);
+  }
+});
+
+test('legal notice pages stay readable without scripts, frames, or background community connections', async () => {
+  for (const page of PASSIVE_LEGAL_PAGES) {
+    const html = await text(page);
+    assert.doesNotMatch(html, /<(?:script|iframe)\b/i, `${page} must stay passive`);
+    assert.doesNotMatch(html, /site-social-panel\.mjs/i);
+    assert.match(html, /script-src 'none'/);
+    assert.match(html, /connect-src 'none'/);
+    assert.match(html, /frame-src 'none'/);
+    assert.match(html, /href="index\.html"/);
+    assert.match(html, /href="community-rules\.html"/);
   }
 });
 
