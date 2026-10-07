@@ -12,12 +12,16 @@ describe('Command Center ownership surface', () => {
     expect(data).toContain('HYNOE_SEARCH_TABLES.pageMembers');
     expect(data).toContain('HYNOE_SEARCH_TABLES.pages');
     expect(data).toContain('created_by');
+    expect(data).toContain('categories');
+    expect(data).toContain('tags');
   });
 
-  it('renders a private Your Hynoe Pages surface', () => {
+  it('renders private Pages with discovery readiness', () => {
     const page = source('src/app/command-center/page.tsx');
     expect(page).toContain('Your Hynoe Pages');
     expect(page).toContain('getOwnedPages');
     expect(page).toContain('publication_state');
+    expect(page).toContain('scorePageHealth');
+    expect(page).toContain('Page Health');
   });
 });
