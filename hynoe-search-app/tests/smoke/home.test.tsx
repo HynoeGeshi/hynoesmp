@@ -15,11 +15,16 @@ describe('Hynoe Search homepage', () => {
     expect(screen.queryByText(/sign in to search/i)).not.toBeInTheDocument();
   });
 
-  it('gives owners and returning users an obvious route into the platform', () => {
+  it('gives owners and returning users obvious routes into the platform', () => {
     render(<Home />);
 
-    expect(screen.getByRole('link', { name: /create a page/i })).toHaveAttribute('href', '/command-center/pages/new');
-    expect(screen.getByRole('link', { name: /sign in/i })).toHaveAttribute('href', '/sign-in');
+    const createLinks = screen.getAllByRole('link', { name: /create a page/i });
+    expect(createLinks.length).toBeGreaterThan(0);
+    expect(createLinks.every((link) => link.getAttribute('href') === '/command-center/pages/new')).toBe(true);
+
+    const signInLinks = screen.getAllByRole('link', { name: /sign in/i });
+    expect(signInLinks.length).toBeGreaterThan(0);
+    expect(signInLinks.every((link) => link.getAttribute('href') === '/sign-in')).toBe(true);
   });
 
   it('shows category shortcuts and flagship Hynoe Originals', () => {
