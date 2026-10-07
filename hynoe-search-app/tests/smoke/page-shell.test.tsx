@@ -10,6 +10,7 @@ describe('PageShell', () => {
   it('presents the real identity, summary, description, and official destination', () => {
     const { container } = render(<PageShell page={smp} />);
 
+    expect(screen.getByText('Hynoe Page')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Hynoe SMP' })).toBeInTheDocument();
     expect(screen.getByText(smp.summary)).toBeInTheDocument();
     expect(screen.getByText(smp.description)).toBeInTheDocument();
