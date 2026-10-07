@@ -1,11 +1,22 @@
 'use client';
 
 import { FormEvent, useState } from 'react';
+import { trackEvent } from '@/lib/analytics/track-event';
 import styles from './inquiry-form.module.css';
 
 type Status = 'idle' | 'submitting' | 'success' | 'error';
 
-export function InquiryForm({ pageId, pageName }: { pageId: string; pageName: string }) {
+export function InquiryForm({
+  pageId,
+  pageName,
+  pageSlug,
+  pageType,
+}: {
+  pageId: string;
+  pageName: string;
+  pageSlug: string;
+  pageType: string;
+}) {
   const [status, setStatus] = useState<Status>('idle');
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -31,6 +42,11 @@ export function InquiryForm({ pageId, pageName }: { pageId: string; pageName: st
       });
 
       if (!response.ok) throw new Error('inquiry_failed');
+      trackEvent('inquiry_submitted', {
+        page_slug: pageSlug,
+        page_type: pageType,
+        source: 'hynoe_page',
+      });
       form.reset();
       setStatus('success');
     } catch {
