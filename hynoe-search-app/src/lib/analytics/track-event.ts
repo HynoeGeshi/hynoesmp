@@ -1,7 +1,7 @@
 'use client';
 
-import posthog from 'posthog-js';
 import { sanitizeAnalyticsProperties, type HynoeAnalyticsEvent } from './events';
+import { captureOrQueueAnalytics } from './posthog-state';
 
 export function trackEvent(
   event: HynoeAnalyticsEvent,
@@ -9,9 +9,5 @@ export function trackEvent(
 ): void {
   if (typeof window === 'undefined' || !process.env.NEXT_PUBLIC_POSTHOG_KEY) return;
 
-  try {
-    posthog.capture(event, sanitizeAnalyticsProperties(properties));
-  } catch {
-    // Analytics must never block navigation or product actions.
-  }
+  captureOrQueueAnalytics(event, sanitizeAnalyticsProperties(properties));
 }
