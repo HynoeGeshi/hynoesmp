@@ -96,11 +96,12 @@ test('ensureProfile creates only safe guest profile fields for current user', as
   }]]);
 });
 
-test('ensureProfile updates only safe display fields when profile already exists', async () => {
+test('ensureProfile preserves an existing display name until the protected rename endpoint is used', async () => {
   const existing = { user_id: 'user-4', display_name: 'Old Name', normalized_name: 'old name', avatar_seed: 'seed' };
   const { client, actions } = profileClient(existing);
-  await ensureProfile(client, { id: 'user-4' }, 'New Name');
-  assert.deepEqual(actions[0], ['update', { display_name: 'New Name', normalized_name: 'new name', avatar_seed: 'seed' }]);
+  const result = await ensureProfile(client, { id: 'user-4' }, 'New Name');
+  assert.equal(result.display_name, 'Old Name');
+  assert.deepEqual(actions, []);
 });
 
 test('loadSiteSocialConfig accepts disabled config, allows optional Turnstile, and rejects unsafe enabled endpoints', async () => {
