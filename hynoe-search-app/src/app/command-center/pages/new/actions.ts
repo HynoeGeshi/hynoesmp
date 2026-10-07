@@ -3,6 +3,7 @@
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/auth/require-user';
 import { createClient } from '@/lib/supabase/server';
+import { HYNOE_SEARCH_TABLES } from '@/lib/supabase/table-names';
 
 const pageTypes = new Set(['local_business','service_provider','creator','community','digital_product','project_brand']);
 
@@ -22,7 +23,7 @@ export async function createHynoePage(formData: FormData) {
 
   const supabase = await createClient();
   const { data: page, error } = await supabase
-    .from('pages')
+    .from(HYNOE_SEARCH_TABLES.pages)
     .insert({ created_by: user.id, name, summary, slug, page_type: pageType, publication_state: 'draft' })
     .select('id')
     .single();
@@ -30,11 +31,11 @@ export async function createHynoePage(formData: FormData) {
   if (error || !page) redirect('/command-center/pages/new?error=create_failed');
 
   const { error: memberError } = await supabase
-    .from('page_members')
+    .from(HYNOE_SEARCH_TABLES.pageMembers)
     .insert({ page_id: page.id, user_id: user.id, role: 'owner' });
 
   if (memberError) {
-    await supabase.from('pages').delete().eq('id', page.id);
+    await supabase.from(HYNOE_SEARCH_TABLES.pages).delete().eq('id', page.id);
     redirect('/command-center/pages/new?error=create_failed');
   }
 
