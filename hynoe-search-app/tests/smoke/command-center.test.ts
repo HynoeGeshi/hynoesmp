@@ -7,10 +7,10 @@ function source(path: string) {
 }
 
 describe('Command Center ownership surface', () => {
-  it('loads owned or managed pages through a dedicated server data layer', () => {
+  it('loads owned or managed pages through the isolated Hynoe Search server data layer', () => {
     const data = source('src/lib/pages/owned-pages.ts');
-    expect(data).toContain("from('page_members')");
-    expect(data).toContain("from('pages')");
+    expect(data).toContain('HYNOE_SEARCH_TABLES.pageMembers');
+    expect(data).toContain('HYNOE_SEARCH_TABLES.pages');
     expect(data).toContain('created_by');
   });
 
