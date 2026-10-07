@@ -1,9 +1,9 @@
 /*! Copyright © 2026 Hynoe. All rights reserved. See /COPYRIGHT.md. */
 export const MILESTONES=[
- {seconds:600,label:'10 MIN',text:'+100 ore',reward:{ore:100}},
- {seconds:1500,label:'25 MIN',text:'+1 Insight',reward:{insight:1}},
- {seconds:2700,label:'45 MIN',text:'+1 Recruitment Mark',reward:{marks:1}},
- {seconds:3600,label:'60 MIN',text:'+250 ore + 1 Insight',reward:{ore:250,insight:1}}
+ {seconds:600,label:'10 MIN',text:'+150 ore',reward:{ore:150}},
+ {seconds:1500,label:'25 MIN',text:'+2 Insight',reward:{insight:2}},
+ {seconds:2700,label:'45 MIN',text:'+2 Recruitment Marks',reward:{marks:2}},
+ {seconds:3600,label:'60 MIN',text:'+500 ore + 2 Insight + 2 Recruitment Marks',reward:{ore:500,insight:2,marks:2}}
 ];
 export function todayKey(now=Date.now()){const d=new Date(now),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');return d.getFullYear()+'-'+m+'-'+day;}
 const clean=n=>Number.isFinite(n)&&n>=0?Math.floor(n):0;
