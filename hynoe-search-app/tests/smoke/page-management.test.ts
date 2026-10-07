@@ -21,10 +21,12 @@ describe('Phase 2A page management and inquiry boundary', () => {
     expect(manage).toContain('created_by');
   });
 
-  it('accepts public inquiries through the validated Edge Function boundary without a service key in Render', () => {
+  it('accepts public inquiries through a server-authenticated Edge Function boundary without a Supabase service key in Render', () => {
     const route = source('src/app/api/inquiries/route.ts');
     expect(route).toContain('/functions/v1/submit-hynoe-inquiry');
     expect(route).toContain('NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY');
+    expect(route).toContain('HYNOE_INQUIRY_GATE_KEY');
+    expect(route).toContain('x-hynoe-inquiry-key');
     expect(route).not.toContain('SUPABASE_SECRET_KEY');
     expect(route).not.toContain('createAdminClient');
   });
