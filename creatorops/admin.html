@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="theme-color" content="#07080b">
+  <title>CreatorOps Admin</title>
+  <link rel="stylesheet" href="/creatorops/creatorops.css">
+  <link rel="stylesheet" href="/creatorops/admin.css">
+</head>
+<body class="admin-body">
+  <main class="operator-shell shell">
+    <header class="admin-hero">
+      <div>
+        <div class="hero-kicker"><span class="pulse-dot" aria-hidden="true"></span> Private operator surface</div>
+        <p class="eyebrow admin-eyebrow">Hynoe / CreatorOps</p>
+        <h1 class="admin-title">Operations overview</h1>
+        <p class="admin-lead">Review creator applications and normalized sandbox payment activity without exposing database credentials or Stripe secrets to the browser.</p>
+      </div>
+      <div class="admin-actions">
+        <button id="refresh" class="button primary">Refresh dashboard <span aria-hidden="true">↻</span></button>
+        <a class="button ghost" href="/creatorops">Public site <span aria-hidden="true">↗</span></a>
+      </div>
+    </header>
+
+    <section class="admin-overview" aria-label="CreatorOps system status">
+      <article class="admin-kpi"><span class="admin-kpi-icon">A</span><div><small>Applications</small><strong>Review queue</strong><p>Secure creator intake</p></div><span class="admin-kpi-status live">LIVE</span></article>
+      <article class="admin-kpi"><span class="admin-kpi-icon">$</span><div><small>Payments</small><strong>Sandbox events</strong><p>Normalized Stripe activity</p></div><span class="admin-kpi-status sandbox">TEST</span></article>
+      <article class="admin-kpi"><span class="admin-kpi-icon">S</span><div><small>Security</small><strong>Signed gateway</strong><p>Private server-to-server trust</p></div><span class="admin-kpi-status live">LOCKED</span></article>
+    </section>
+
+    <p id="admin-status" class="admin-status form-status" role="status" aria-live="polite"></p>
+
+    <div class="admin-layout">
+      <section class="admin-panel admin-panel-primary">
+        <div class="admin-panel-head">
+          <div><p class="eyebrow">Applications</p><h2>Creator review queue</h2></div>
+          <span class="panel-chip">Newest first</span>
+        </div>
+        <div id="applications" class="admin-grid"></div>
+      </section>
+
+      <section class="admin-panel">
+        <div class="admin-panel-head">
+          <div><p class="eyebrow">Payment activity</p><h2>Sandbox checkout events</h2></div>
+          <span class="panel-chip sandbox-chip">Test mode</span>
+        </div>
+        <div id="payments" class="admin-grid"></div>
+      </section>
+    </div>
+  </main>
+  <script src="/creatorops/admin.js" defer></script>
+</body>
+</html>
