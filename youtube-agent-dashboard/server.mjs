@@ -56,7 +56,7 @@ export function createServer({ env = process.env, publicDir = DEFAULT_PUBLIC, ve
       }
 
       const body = await readFile(file);
-      res.writeHead(200, { 'Content-Type': type, 'Cache-Control': path === '/' ? 'no-store' : 'public, max-age=300' });
+      res.writeHead(200, { 'Content-Type': type, 'Cache-Control': 'no-store' });
       res.end(body);
     } catch {
       res.writeHead(404, { 'Cache-Control': 'no-store' });
