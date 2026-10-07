@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { PostHogProvider } from '@/lib/analytics/posthog-provider';
 import './globals.css';
+import '../styles/polish.css';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://hynoe.net'),
