@@ -78,3 +78,25 @@ test('submitApproval uses approve_clip for allowed actions', async () => {
   await assert.rejects(()=>submitApproval(supabase,'clip','publish'),/invalid approval action/i);
   assert.equal(calls.length,1);
 });
+
+
+test('attachPreview surfaces a failed automatic re-sign to the UI', async () => {
+  let signed=0;
+  const supabase={storage:{from(){return{async createSignedUrl(){
+    signed+=1;
+    if(signed===1) return {data:{signedUrl:'https://signed.example/1'},error:null};
+    return {data:null,error:new Error('signing unavailable')};
+  }};}}};
+  const handlers={};
+  let surfaced=0;
+  const video={
+    src:'',
+    addEventListener(type,handler){handlers[type]=handler;},
+    dispatchEvent(event){if(event.type==='hynoe-preview-sign-failed') surfaced+=1; return true;},
+    load(){}
+  };
+  await attachPreview(video,supabase,{render_status:'ready',preview_uri:'clip.mp4'});
+  await handlers.error();
+  assert.equal(signed,2);
+  assert.equal(surfaced,1);
+});
