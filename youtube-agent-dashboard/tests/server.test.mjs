@@ -5,7 +5,7 @@ import { createServer, publicConfig } from '../server.mjs';
 
 const env = {
   SUPABASE_URL: 'https://example.supabase.co',
-  SUPABASE_ANON_KEY: 'public-key',
+  SUPABASE_ANON_KEY: 'sb_publishable_test_only_not_a_real_key',
   UNRELATED_VALUE: 'not-browser-config',
 };
 
@@ -32,7 +32,7 @@ test('health endpoint returns 200', async () => {
   await withServer(async (base) => {
     const response = await fetch(`${base}/health`);
     assert.equal(response.status, 200);
-    assert.deepEqual(await response.json(), { ok: true });
+    assert.deepEqual(await response.json(), { ok: true, securityRevision: '20261007-private-dashboard-v1' });
   });
 });
 
