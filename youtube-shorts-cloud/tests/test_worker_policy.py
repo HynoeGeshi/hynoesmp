@@ -1,3 +1,6 @@
+import os
+import subprocess
+import sys
 import unittest
 
 from youtube_shorts_cloud.worker_policy import (
@@ -36,6 +39,22 @@ class DailyTargetTests(unittest.TestCase):
         self.assertIn("player_client=web_embedded", joined)
         self.assertIn("player_skip=webpage,configs", joined)
         self.assertIn("player_client=android_vr", joined)
+
+    def test_render_entrypoint_can_import_root_package(self):
+        env = os.environ.copy()
+        for key in ("SHORTS_GATEWAY_URL", "SHORTS_WORKER_TOKEN", "SHORTS_WAKE_TOKEN"):
+            env.pop(key, None)
+        proc = subprocess.run(
+            [sys.executable, "youtube-shorts-cloud/worker.py"],
+            cwd=os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")),
+            env=env,
+            text=True,
+            capture_output=True,
+            timeout=10,
+        )
+        self.assertNotEqual(proc.returncode, 0)
+        self.assertIn("SHORTS_GATEWAY_URL", proc.stderr + proc.stdout)
+        self.assertNotIn("ModuleNotFoundError", proc.stderr + proc.stdout)
 
 
 if __name__ == "__main__":
