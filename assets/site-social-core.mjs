@@ -3,6 +3,8 @@ export const SITE_CHAT_LIMITS = Object.freeze({
   maxDisplayNameLength: 24,
 });
 
+export const SITE_DISPLAY_NAME_RENAME_COOLDOWN_DAYS = 30;
+
 const CONTROL_OR_INVISIBLE = /[\u0000-\u001F\u007F-\u009F\u200B-\u200F\u202A-\u202E\u2060-\u206F]/g;
 const RESERVED_NAMES = new Set(['hynoe', 'admin', 'administrator', 'mod', 'moderator', 'staff', 'owner', 'system']);
 
@@ -19,6 +21,24 @@ export function validateDisplayName(input) {
   if (value.length > SITE_CHAT_LIMITS.maxDisplayNameLength) return { ok: false, error: 'Display name is too long.' };
   if (RESERVED_NAMES.has(value.toLowerCase())) return { ok: false, error: 'That display name is reserved.' };
   return { ok: true, value };
+}
+
+export function getDisplayNameRenameEligibility(profile = {}, now = Date.now()) {
+  const renameCount = Math.max(0, Number(profile.renameCount ?? profile.rename_count) || 0);
+  const lastRenamedAt = profile.lastRenamedAt ?? profile.last_renamed_at ?? null;
+  if (renameCount === 0) {
+    return { allowed: true, freeCorrection: true, nextAllowedAt: null };
+  }
+  const last = Date.parse(String(lastRenamedAt ?? ''));
+  if (!Number.isFinite(last)) {
+    return { allowed: true, freeCorrection: false, nextAllowedAt: null };
+  }
+  const next = last + SITE_DISPLAY_NAME_RENAME_COOLDOWN_DAYS * 86_400_000;
+  return {
+    allowed: now >= next,
+    freeCorrection: false,
+    nextAllowedAt: new Date(next).toISOString(),
+  };
 }
 
 function hasVisibleContent(value) {
