@@ -15,6 +15,13 @@ describe('Hynoe Search homepage', () => {
     expect(screen.queryByText(/sign in to search/i)).not.toBeInTheDocument();
   });
 
+  it('gives owners and returning users an obvious route into the platform', () => {
+    render(<Home />);
+
+    expect(screen.getByRole('link', { name: /create a page/i })).toHaveAttribute('href', '/command-center/pages/new');
+    expect(screen.getByRole('link', { name: /sign in/i })).toHaveAttribute('href', '/sign-in');
+  });
+
   it('shows category shortcuts and flagship Hynoe Originals', () => {
     render(<Home />);
 
@@ -26,6 +33,16 @@ describe('Hynoe Search homepage', () => {
     expect(screen.getByRole('link', { name: /hynoe outpost/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /hynoe smp/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /hynoe flicks/i })).toBeInTheDocument();
+  });
+
+  it('explains the Hynoe discovery loop in plain language', () => {
+    render(<Home />);
+
+    expect(screen.getByRole('heading', { name: /how hynoe works/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Discover' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Evaluate' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Connect' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Grow' })).toBeInTheDocument();
   });
 
   it('features CreatorOps as a Hynoe vertical rather than the whole homepage identity', () => {
