@@ -1,6 +1,7 @@
 import type { HynoePage } from '@/domain/pages/types';
 import { SaveFollowControls } from '@/components/retention/save-follow-controls';
 import { PageViewTracker } from '@/lib/analytics/page-view-tracker';
+import { InquiryForm } from './inquiry-form';
 import { ModuleRenderer } from './module-renderer';
 import { PageActions } from './page-actions';
 import { PageHeader } from './page-header';
@@ -15,7 +16,7 @@ const pageTypeLabels = {
   project_brand: 'Project',
 } as const;
 
-export function PageShell({ page }: { page: HynoePage }) {
+export function PageShell({ page, inquiryPageId }: { page: HynoePage; inquiryPageId?: string }) {
   const location = page.location?.onlineOnly
     ? 'Online'
     : page.location
@@ -43,5 +44,6 @@ export function PageShell({ page }: { page: HynoePage }) {
         {page.modules.map((module, index) => <ModuleRenderer key={`${module.type}-${index}`} module={module} />)}
       </section>
     ) : null}
+    {inquiryPageId ? <InquiryForm pageId={inquiryPageId} pageName={page.name} /> : null}
   </main>;
 }
