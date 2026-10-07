@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { HynoeWordmark } from '@/components/brand/hynoe-wordmark';
 import { SearchForm } from '@/components/search/search-form';
@@ -11,7 +12,24 @@ import styles from './search-page.module.css';
 
 const pageTypes = new Set<HynoePageType>(['local_business','service_provider','creator','community','digital_product','project_brand']);
 
-export default async function SearchPage({ searchParams }: { searchParams: Promise<{ q?: string; type?: string; category?: string }> }) {
+type SearchParams = { q?: string; type?: string; category?: string };
+type Props = { searchParams: Promise<SearchParams> };
+
+export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
+  const params = await searchParams;
+  const query = params.q?.trim();
+
+  return {
+    title: query ? `${query} | Hynoe Search` : 'Explore | Hynoe Search',
+    description: query
+      ? `Discover Hynoe Pages relevant to ${query}.`
+      : 'Explore independent businesses, creators, services, communities, games, and projects on Hynoe.',
+    alternates: { canonical: 'https://hynoe.net/search' },
+    robots: { index: false, follow: true },
+  };
+}
+
+export default async function SearchPage({ searchParams }: Props) {
   const params = await searchParams;
   const query = params.q ?? '';
   const pageType = params.type && pageTypes.has(params.type as HynoePageType) ? params.type as HynoePageType : undefined;
