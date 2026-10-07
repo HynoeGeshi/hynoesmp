@@ -2,6 +2,7 @@
 
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/auth/require-user';
+import { RESERVED_HYNOE_SLUGS } from '@/lib/pages/reserved-slugs';
 import { createClient } from '@/lib/supabase/server';
 import { HYNOE_SEARCH_TABLES } from '@/lib/supabase/table-names';
 
@@ -20,6 +21,7 @@ export async function createHynoePage(formData: FormData) {
   const slug = slugify(String(formData.get('slug') ?? '') || name);
 
   if (!name || slug.length < 2) redirect('/command-center/pages/new?error=invalid_page');
+  if (RESERVED_HYNOE_SLUGS.has(slug)) redirect('/command-center/pages/new?error=reserved_slug');
 
   const supabase = await createClient();
   const { data: page, error } = await supabase
