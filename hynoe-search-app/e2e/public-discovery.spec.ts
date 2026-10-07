@@ -37,7 +37,8 @@ test('public discovery fits small screens and respects reduced motion', async ({
 });
 
 test('search handles unknown queries and Render host requests without a missing-route error', async ({ page }) => {
-  const search = await page.goto('/search?q=hynoe-no-matching-page-9e7c');
+  // Avoid real tokens such as "hynoe": Search intentionally accepts partial token matches.
+  const search = await page.goto('/search?q=zzzznomatchzzzz');
   expect(search?.status()).toBe(200);
   await expect(page.getByRole('heading', { name: 'No matches yet.' })).toBeVisible();
   const renderHost = await page.request.get('/search?q=minecraft', { headers: { host: 'hynoe-search-direct.onrender.com' } });
