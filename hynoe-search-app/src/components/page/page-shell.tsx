@@ -44,6 +44,13 @@ export function PageShell({ page, inquiryPageId }: { page: HynoePage; inquiryPag
         {page.modules.map((module, index) => <ModuleRenderer key={`${module.type}-${index}`} module={module} />)}
       </section>
     ) : null}
-    {inquiryPageId ? <InquiryForm pageId={inquiryPageId} pageName={page.name} /> : null}
+    {inquiryPageId ? (
+      <InquiryForm
+        pageId={inquiryPageId}
+        pageName={page.name}
+        pageSlug={page.slug}
+        pageType={page.pageType}
+      />
+    ) : null}
   </main>;
 }
