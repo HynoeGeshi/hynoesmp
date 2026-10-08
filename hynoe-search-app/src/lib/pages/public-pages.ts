@@ -37,12 +37,15 @@ export function mapPublishedDatabasePage(row: DatabasePageRow): HynoePage | null
   };
 }
 
-export async function getPublishedDatabasePages(): Promise<HynoePage[]> {
+export async function getPublishedDatabasePages(limit?: number): Promise<HynoePage[]> {
   try {
     const supabase = await createClient();
-    const { data, error } = await supabase.from(HYNOE_SEARCH_TABLES.pages)
+    let query = supabase.from(HYNOE_SEARCH_TABLES.pages)
       .select('id, slug, name, page_type, summary, description, canonical_url, categories, tags, publication_state')
       .eq('publication_state', 'published').order('updated_at', { ascending: false });
+    // Preserve the bounded homepage query introduced by public discovery.
+    if (limit !== undefined && Number.isFinite(limit)) query = query.limit(Math.max(1, Math.min(48, Math.floor(limit))));
+    const { data, error } = await query;
     if (error) return [];
     return ((data ?? []) as DatabasePageRow[]).map(mapPublishedDatabasePage).filter((page): page is HynoePage => Boolean(page));
   } catch { return []; }

@@ -20,6 +20,7 @@ export function PageShell({ page, inquiryPageId }: { page: HynoePage; inquiryPag
     <PageHeader />
     <nav aria-label="Hynoe network" style={{ display: 'flex', flexWrap: 'wrap', gap: 22, padding: '18px 0', fontSize: 14 }}><Link href="/preview">← Hynoe home</Link><Link href="/search">Explore pages</Link><Link href="/listing-policy">Listing information</Link></nav>
     <section className={styles.hero}>
+      <div className={styles.metaRow}><span className={styles.metaPill}>{listing ? 'Public business listing' : 'Hynoe Page'}</span></div>
       <div className="eyebrow">{page.categories.join(' · ') || pageTypeLabels[page.pageType]}</div>
       <h1>{page.name}</h1>
       <p className={styles.summary}>{page.summary}</p>

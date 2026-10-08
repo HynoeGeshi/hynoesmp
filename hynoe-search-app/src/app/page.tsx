@@ -1,6 +1,9 @@
+import { Suspense } from 'react';
 import Link from 'next/link';
 import { HynoeWordmark } from '@/components/brand/hynoe-wordmark';
 import { ReturningDiscovery } from '@/components/home/returning-discovery';
+import { PublicDiscovery } from '@/components/home/public-discovery';
+import { PublicDiscoverySection } from '@/components/home/public-discovery-section';
 import { SearchForm } from '@/components/search/search-form';
 import { flagshipPages } from '@/data/flagship-pages';
 
@@ -9,6 +12,8 @@ const categoryLinks = [
   ['Creators', '/search?type=creator'],
   ['Communities', '/search?type=community'],
   ['Games & Apps', '/search?type=digital_product'],
+  ['Local businesses', '/search?type=local_business'],
+  ['Projects', '/search?type=project_brand'],
 ] as const;
 
 const discoverySteps = [
@@ -43,6 +48,7 @@ export default function Home() {
         </Link>
         <nav className="home-nav" aria-label="Primary navigation">
           <Link href="/search">Explore</Link>
+          <a href="#public-pages">Public pages</a>
           <a href="#how-hynoe-works">How it works</a>
           <a href="#originals">Originals</a>
           <Link className="nav-sign-in" href="/sign-in">Sign in</Link>
@@ -69,6 +75,9 @@ export default function Home() {
         </div>
       </section>
 
+      <Suspense fallback={<PublicDiscoverySection pages={flagshipPages} loading />}>
+        <PublicDiscovery />
+      </Suspense>
       <ReturningDiscovery />
 
       <section className="how-section" id="how-hynoe-works">

@@ -20,7 +20,7 @@ test('unknown query has a clear zero-results state', async ({ page }) => {
   await expect(page.getByRole('link', { name: 'Explore Hynoe' })).toBeVisible();
 });
 
-test('mobile search uses a collapsible Filters control without horizontal overflow', async ({ page }) => {
+test('mobile search uses a collapsible Filters control without horizontal overflow', async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 320, height: 800 });
   await page.goto('/search?q=photographer');
 
@@ -29,6 +29,17 @@ test('mobile search uses a collapsible Filters control without horizontal overfl
   await filtersButton.click();
   await expect(page.getByRole('navigation', { name: 'Search filters' })).toBeVisible();
 
-  const overflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
-  expect(overflow).toBe(false);
+  const layout = await page.evaluate(() => {
+    const width = document.documentElement.clientWidth;
+    return {
+      overflow: document.documentElement.scrollWidth > width,
+      width, scrollWidth: document.documentElement.scrollWidth,
+      offenders: [...document.querySelectorAll('main *')].map(el => {
+        const rect = el.getBoundingClientRect();
+        return { tag: el.tagName, cls: el.className, text: el.textContent?.slice(0, 100), left: rect.left, right: rect.right, width: rect.width };
+      }).filter(rect => rect.right > width + 1 || rect.left < -1),
+    };
+  });
+  await page.screenshot({ path: testInfo.outputPath('public-discovery.png'), fullPage: true });
+  expect(layout.overflow, JSON.stringify(layout)).toBe(false);
 });
