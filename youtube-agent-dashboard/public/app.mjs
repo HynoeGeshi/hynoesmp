@@ -121,7 +121,7 @@ function renderCandidateCard(candidate) {
   if (candidate.hook) card.append(textEl('p', 'hook', candidate.hook));
   if (candidate.transcript_excerpt) card.append(textEl('p', 'excerpt', candidate.transcript_excerpt));
   card.append(textEl('p', `render-state ${candidate.render_status || 'unknown'}`, renderState(candidate)));
-  card.append(textEl('p', 'approval-state', `Review: ${candidate.approval_state || 'pending'}`));
+  card.append(textEl('p', 'approval-state', `Prior review: ${candidate.approval_state || 'pending'}. Exact publication consent is checked separately.`));
   card.append(buildActions(candidate));
   return card;
 }

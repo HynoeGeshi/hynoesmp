@@ -8,7 +8,7 @@ const DEFAULT_PUBLIC = join(HERE, 'public');
 const DEFAULT_VENDOR = join(HERE, '..', 'assets', 'vendor', 'supabase.mjs');
 const DEFAULT_CORE = join(HERE, 'lib', 'dashboard-core.mjs');
 
-export const SECURITY_REVISION = '20261007-exact-owner-consent-v2';
+export const SECURITY_REVISION = '20261007-exact-owner-changes-v3';
 
 function isPublicKey(key) {
   if (/^sb_publishable_[A-Za-z0-9_-]+$/.test(key)) return true;
@@ -54,6 +54,11 @@ const routes = new Map([
   ['/metadata', ['metadata.html', 'text/html; charset=utf-8']],
   ['/metadata.html', ['metadata.html', 'text/html; charset=utf-8']],
   ['/metadata.mjs', ['metadata.mjs', 'text/javascript; charset=utf-8']],
+  ['/changes', ['changes.html', 'text/html; charset=utf-8']],
+  ['/changes.html', ['changes.html', 'text/html; charset=utf-8']],
+  ['/changes.mjs', ['changes.mjs', 'text/javascript; charset=utf-8']],
+  ['/change-drafts.mjs', ['change-drafts.mjs', 'text/javascript; charset=utf-8']],
+  ['/owner-change.mjs', ['../lib/owner-change.mjs', 'text/javascript; charset=utf-8']],
 ]);
 
 export function createServer({ env = process.env, publicDir = DEFAULT_PUBLIC, vendorFile = DEFAULT_VENDOR, coreFile = DEFAULT_CORE } = {}) {
