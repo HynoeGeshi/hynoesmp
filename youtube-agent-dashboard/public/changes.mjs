@@ -1,5 +1,5 @@
 import {createClient} from '/vendor/supabase.mjs';
-import {CHANGE_CHANNEL, CHANGE_CONFIRMATION, prepareExactChange, recordExactChange, applyExactChange, verifyReviewHold} from '/owner-change.mjs';
+import {CHANGE_CHANNEL, CHANGE_CONFIRMATION, COPY_LAYOUT_CONFIRMATION, approvedCopyLayoutPlan, runApprovedCopyLayout, prepareExactChange, recordExactChange, applyExactChange, inspectExactChange, verifyReviewHold} from '/owner-change.mjs';
 import {PUBLIC_CHANGE_DRAFTS, HOME_DRAFTS} from '/change-drafts.mjs';
 
 const {supabaseUrl, supabaseAnonKey} = window.__HYNOE_YOUTUBE_AGENT_CONFIG__ || {};
@@ -8,6 +8,9 @@ const $ = id => document.getElementById(id);
 const rows = new Map();
 let session = null, ownerId = null, ownerVerified = false, busy = false, generation = 0;
 let weeklyLoaded = false, activeTab = 'weekly';
+let packageRunning = false, packageStop = false;
+$('packageConsentLabel').textContent = COPY_LAYOUT_CONFIRMATION;
+$('packageTargets').textContent = JSON.stringify([...PUBLIC_CHANGE_DRAFTS.channel, ...HOME_DRAFTS, ...PUBLIC_CHANGE_DRAFTS.videos, ...PUBLIC_CHANGE_DRAFTS.playlists].map(({action, resource_id, target}) => ({action, resource_id, target})), null, 2);
 
 function node(tag, value = '') {
   const element = document.createElement(tag);
@@ -20,6 +23,11 @@ function controls() {
   $('loginButton').disabled = busy;
   $('refreshWeekly').disabled = busy || !ownerVerified;
   $('verifyHold').disabled = busy || !ownerVerified;
+  $('inspectSaved').disabled = busy || !ownerVerified;
+  $('packageConsent').disabled = busy || !ownerVerified;
+  $('applyPackage').disabled = busy || !ownerVerified || !$('packageConsent').checked;
+  $('pausePackage').classList.toggle('hidden', !packageRunning);
+  $('pausePackage').disabled = !packageRunning || packageStop;
   for (const button of document.querySelectorAll('[data-tab]')) button.disabled = busy || !ownerVerified;
   for (const row of rows.values()) {
     const allowed = ownerVerified && !busy && row.state !== 'applied';
@@ -34,6 +42,10 @@ function reset() {
   ownerVerified = false;
   busy = false;
   weeklyLoaded = false;
+  packageStop = true;
+  packageRunning = false;
+  $('packageConsent').checked = false;
+  $('packageProgress').textContent = '0 / 78 checked. The package runs only after you check consent and click Apply.';
   for (const row of rows.values()) {
     row.consent.checked = false;
     row.request = null;
@@ -55,6 +67,66 @@ $('verifyHold').addEventListener('click',async()=>{
  catch(error){if(ticket===generation)$('holdStatus').textContent=error.message;}
  finally{if(ticket===generation){busy=false;controls();}}
 });
+$('inspectSaved').addEventListener('click',async()=>{
+ if(busy||!ownerVerified)return;const ticket=generation;busy=true;controls();
+ try{
+  await assertSession(ticket);
+  const {data:requests,error}=await client.from('youtube_owner_change_requests').select('id,package,resource_id').eq('channel_id',CHANGE_CHANNEL).eq('state','write_uncertain');
+  if(error)throw error;let checked=0;
+  for(const request of requests||[]){
+   await assertSession(ticket);
+   const {data:approval,error:approvalError}=await client.from('youtube_owner_change_approvals').select('id,approved_by,consumed_at,revoked_at').eq('request_id',request.id).eq('approved_by',ownerId).maybeSingle();
+   if(approvalError)throw approvalError;
+   if(!approval?.consumed_at||approval.revoked_at)throw Error('Consumed exact owner approval is required for saved-result inspection.');
+   await inspectExactChange(client,request,approval.id);checked++;
+  }
+  if(ticket===generation)notice(`${checked} saved change(s) verified using read-only YouTube checks. No public writes were repeated.`);
+ }catch(error){if(ticket===generation)notice('Saved-result inspection: '+error.message);}
+ finally{if(ticket===generation){busy=false;controls();}}
+});
+async function runCopyLayout() {
+  if (busy || !ownerVerified || !$('packageConsent').checked) return;
+  const ticket = generation;
+  const plan = approvedCopyLayoutPlan(PUBLIC_CHANGE_DRAFTS, HOME_DRAFTS);
+  busy = true;
+  packageRunning = true;
+  packageStop = false;
+  controls();
+  notice('Running the approved exact copy and Home layout package, one item at a time.');
+  try {
+    const result = await runApprovedCopyLayout(client, plan, {
+      ownerId,
+      confirmation: COPY_LAYOUT_CONFIRMATION,
+      assertSession: () => assertSession(ticket),
+      shouldPause: () => packageStop,
+      onProgress: event => {
+        if (ticket !== generation) return;
+        const row = rows.get(event.proposal?.key);
+        if (row && event.request) {
+          row.request = event.request;
+          if (event.phase === 'prepared') showPackage(row);
+          if (event.approvalId) row.approvalId = event.approvalId;
+          if (['applied', 'resumed', 'unchanged'].includes(event.phase)) row.state = 'applied';
+          row.status.textContent = event.phase === 'unchanged' ? 'Already matches approved target · no YouTube write' : event.phase + ' · exact package ' + event.request.id;
+        }
+        $('packageProgress').textContent = event.completed + ' / ' + event.total + ' checked · ' + event.applied + ' applied · ' + event.unchanged + ' unchanged · ' + event.resumed + ' receipts verified' + (event.proposal ? ' · ' + event.phase + ': ' + event.proposal.title : '');
+      }
+    });
+    if (ticket !== generation) return;
+    notice(result.paused ? 'Paused before the next item. Click Apply to resume using recorded receipts and read-only verification.' : 'All ' + result.completed + ' approved targets checked: ' + result.applied + ' applied, ' + result.unchanged + ' already matched, ' + result.resumed + ' existing receipts verified.');
+    if (!result.paused) $('packageConsent').checked = false;
+  } catch (error) {
+    if (ticket === generation) {
+      $('packageConsent').checked = false;
+      notice('Package stopped: ' + (error?.message || String(error)));
+    }
+  } finally {
+    if (ticket === generation) { busy = false; packageRunning = false; controls(); }
+  }
+}
+$('packageConsent').addEventListener('change', controls);
+$('applyPackage').addEventListener('click', () => void runCopyLayout());
+$('pausePackage').addEventListener('click', () => { packageStop = true; controls(); notice('Pausing before the next item after the current exact request finishes.'); });
 async function assertSession(ticket) {
   const {data, error} = await client.auth.getSession();
   if (error || !data?.session || data.session.user.id !== ownerId || ticket !== generation || !ownerVerified) {

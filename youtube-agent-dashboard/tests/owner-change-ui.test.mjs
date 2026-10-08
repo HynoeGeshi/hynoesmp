@@ -4,6 +4,7 @@ import {readFile} from 'node:fs/promises';
 import * as changeApi from '../lib/owner-change.mjs';
 
 const source = await readFile(new URL('../public/changes.mjs', import.meta.url), 'utf8');
+const html = await readFile(new URL('../public/changes.html', import.meta.url), 'utf8');
 const requestId = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
 const approvalId = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
 const exactPackage = {action: 'public_video_metadata', resource_id: 'publicVideo', before: {snippet: {title: 'Current title'}}, after: {title: 'Reviewed title'}};
@@ -45,14 +46,21 @@ async function harness() {
   const window = {__HYNOE_YOUTUBE_AGENT_CONFIG__: {supabaseUrl: 'https://example.test', supabaseAnonKey: 'test'}, confirm() {throw Error('Native confirm must not be used');}};
   const proposals = {channel: [], playlists: [], videos: [{key: 'fixture', action: 'public_video_metadata', resource_id: 'publicVideo', title: 'Reviewed title', target: {title: 'Reviewed title'}}]};
   const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
-  const run = new AsyncFunction('createClient', 'CHANGE_CHANNEL', 'CHANGE_CONFIRMATION', 'prepareExactChange', 'recordExactChange', 'applyExactChange', 'verifyReviewHold', 'PUBLIC_CHANGE_DRAFTS', 'HOME_DRAFTS', 'document', 'window',
+  const run = new AsyncFunction('createClient', 'CHANGE_CHANNEL', 'CHANGE_CONFIRMATION', 'COPY_LAYOUT_CONFIRMATION', 'approvedCopyLayoutPlan', 'runApprovedCopyLayout', 'prepareExactChange', 'recordExactChange', 'applyExactChange', 'verifyReviewHold', 'PUBLIC_CHANGE_DRAFTS', 'HOME_DRAFTS', 'document', 'window',
     source.replace(/^import .*;\r?\n/gm, '') + '\nreturn {rows, operate, controls, showPackage, reset};');
-  const api = await run(() => client, changeApi.CHANGE_CHANNEL, changeApi.CHANGE_CONFIRMATION, changeApi.prepareExactChange, changeApi.recordExactChange, changeApi.applyExactChange, changeApi.verifyReviewHold, proposals, [], document, window);
+  const api = await run(() => client, changeApi.CHANGE_CHANNEL, changeApi.CHANGE_CONFIRMATION, changeApi.COPY_LAYOUT_CONFIRMATION, () => proposals.videos, changeApi.runApprovedCopyLayout, changeApi.prepareExactChange, changeApi.recordExactChange, changeApi.applyExactChange, changeApi.verifyReviewHold, proposals, [], document, window);
   return {api, row: api.rows.get('fixture'), calls};
 }
 
 test('owner change review works without native JavaScript confirmation dialogs', () => {
   assert.doesNotMatch(source, /window\.confirm\s*\(/);
+});
+test('the copy/layout package starts unchecked and requires its explicit click', () => {
+  assert.match(html, /id="packageConsent"[^>]*type="checkbox"/);
+  assert.doesNotMatch(html, /id="packageConsent"[^>]*checked/);
+  assert.match(source, /!\$\('packageConsent'\)\.checked/);
+  assert.match(source, /\$\('applyPackage'\)\.addEventListener\('click'/);
+  assert.match(source, /shouldPause:\s*\(\)\s*=>\s*packageStop/);
 });
 
 test('prepared exact consent stays unchecked and unrecorded until the owner chooses it', async () => {
