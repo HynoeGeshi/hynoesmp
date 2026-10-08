@@ -73,3 +73,16 @@ test('current private or unlisted catalogue state overrides an older published j
     assert.equal(queue.active.length,1); assert.equal(queue.posted.length,0); assert.equal(queue.counts.attention,1);
   }
 });
+
+test('catalogue read failure throws instead of substituting generic approved flags or partial history', async () => {
+  const failure = new Error('Owner catalogue read unavailable');
+  const candidates = completed.map(({publication_catalog,...candidate})=>({...candidate,approved:true,auto_publish:true}));
+  const reads=[];
+  const supabase={from(table){
+    reads.push(table);
+    const query={select(){return query;},in(){return query;},then(resolve,reject){return Promise.resolve(table==='clip_candidates'?{data:candidates,error:null}:{data:null,error:failure}).then(resolve,reject);}};
+    return query;
+  }};
+  await assert.rejects(()=>loadCandidates(supabase),error=>error===failure);
+  assert.deepEqual(reads,['clip_candidates','revival_catalog']);
+});
