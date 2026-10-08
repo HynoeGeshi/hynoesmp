@@ -14,7 +14,7 @@ export function reviewQueue(candidates = []) {
     active.push(candidate);
     if (candidate.approval_state === 'approved') counts.approved += 1;
     if (candidate.approval_state === 'pending') {
-      if (previewPath(candidate)) counts.ready += 1;
+      if (candidate.render_status === 'ready' && previewPath(candidate)) counts.ready += 1;
       else if (candidate.render_status === 'pending' || candidate.render_status === 'rendering') counts.awaiting += 1;
       else counts.attention += 1;
     }
@@ -50,14 +50,15 @@ export async function loadCandidates(supabase) {
 }
 
 export function previewPath(candidate) {
-  if (candidate?.render_status !== 'ready') return null;
+  if (!['ready','failed'].includes(candidate?.render_status)) return null;
   return candidate?.preview_uri || candidate?.render_uri || null;
 }
 
 export async function signPreview(supabase, candidate) {
-  if (candidate?.render_status !== 'ready') return null;
+  if (!['ready','failed'].includes(candidate?.render_status)) return null;
   const path = previewPath(candidate);
   if (!path) {
+    if (candidate.render_status === 'failed') return null;
     const error = new Error('Rendered clip has no preview path');
     error.code = 'preview_path_missing';
     throw error;

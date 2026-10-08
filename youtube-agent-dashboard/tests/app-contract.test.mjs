@@ -32,11 +32,9 @@ test('ready clips wire signed playback into video controls', () => {
 test('approval UI locks controls and refreshes after action', () => {
   assert.match(source, /submitApproval/);
   assert.match(source, /button\.disabled\s*=\s*true/);
-  assert.match(source, /button\.disabled\s*=\s*false/);
   assert.match(source, /await\s+refreshCandidates\s*\(/);
   assert.match(source, /finally/);
   assert.match(source, /Approve/);
   assert.match(source, /Reject/);
   assert.match(source, /recordExactUploadApproval/);
-  assert.match(source, /window\.confirm/);
 });

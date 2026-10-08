@@ -1,5 +1,5 @@
 import { createClient } from '/vendor/supabase.mjs';
-import { loadCandidates, attachPreview, submitApproval, prepareUploadReview, recordExactUploadApproval, reviewQueue } from '/dashboard-core.mjs';
+import { loadCandidates, attachPreview, submitApproval, prepareUploadReview, recordExactUploadApproval, reviewQueue, previewPath } from '/dashboard-core.mjs';
 
 const config = window.__HYNOE_YOUTUBE_AGENT_CONFIG__ || {};
 const supabase = createClient(config.supabaseUrl, config.supabaseAnonKey);
@@ -12,6 +12,9 @@ const rejectedList = document.querySelector('#rejectedList');
 const status = document.querySelector('#status');
 const loginForm = document.querySelector('#loginForm');
 const signOut = document.querySelector('#signOut');
+const refreshClips = document.querySelector('#refreshClips');
+let signedIn = false;
+let refreshGeneration = 0;
 
 function textEl(tag, className, value) {
   const element = document.createElement(tag);
@@ -22,6 +25,7 @@ function textEl(tag, className, value) {
 
 function renderState(candidate) {
   if (candidate.render_status === 'failed') {
+    if (candidate.render_error_message?.startsWith('Quality hold:')) return candidate.render_error_message;
     return candidate.render_error_message ? `Render failed: ${candidate.render_error_message}` : 'Render failed';
   }
   if (candidate.render_status === 'ready') return 'Rendered and ready to review';
@@ -33,7 +37,7 @@ function renderState(candidate) {
 function buildPreview(candidate) {
   const preview = document.createElement('div');
   preview.className = 'preview';
-  if (candidate.render_status !== 'ready') {
+  if (candidate.render_status !== 'ready' && !previewPath(candidate)) {
     preview.append(textEl('div', 'preview-placeholder', renderState(candidate)));
     return preview;
   }
@@ -77,29 +81,87 @@ function buildActions(candidate) {
 
   const approve = document.createElement('button');
   approve.type = 'button';
-  approve.textContent = 'Review exact private upload';
+  approve.textContent = 'Approve';
   const reject = document.createElement('button');
   reject.type = 'button';
   reject.className = 'reject';
   reject.textContent = 'Reject';
   const feedback = textEl('span', 'action-feedback', '');
   const buttons = [approve, reject];
+  const canApprove = candidate.render_status === 'ready' && Boolean(candidate.render_uri) && Number(candidate.score) >= 90;
+  let review = null;
+  const unlock = () => {approve.disabled = !canApprove;reject.disabled = false;};
+  unlock();
+
+  const showExactReview = (package_) => {
+    review = document.createElement('section');
+    review.className = 'exact-upload-review';
+    review.append(textEl('h3', '', 'Exact private YouTube upload'));
+    review.append(textEl('p', '', 'Review this video and its exact title, description and private visibility. Confirming records approval for one upload.'));
+    const details = document.createElement('details');
+    details.open = true;
+    details.append(textEl('summary', '', 'Exact upload package'));
+    details.append(textEl('pre', '', JSON.stringify(package_, null, 2)));
+    review.append(details);
+    const consent = document.createElement('input');
+    consent.type = 'checkbox';
+    consent.checked = false;
+    const label = document.createElement('label');
+    label.className = 'exact-upload-consent';
+    label.append(consent, textEl('span', '', 'I approve this exact YouTube upload'));
+    const confirm = document.createElement('button');
+    confirm.type = 'button';
+    confirm.textContent = 'Confirm approval';
+    confirm.disabled = true;
+    const cancel = document.createElement('button');
+    cancel.type = 'button';
+    cancel.className = 'reject';
+    cancel.textContent = 'Cancel';
+    let recording = false;
+    const close = () => {consent.checked = false;confirm.disabled = true;review?.remove();review = null;unlock();};
+    consent.addEventListener('change', () => {confirm.disabled = !consent.checked || recording;});
+    cancel.addEventListener('click', () => {if (!recording) {close();feedback.textContent = '';}});
+    confirm.addEventListener('click', async () => {
+      if (!signedIn || !canApprove || !consent.checked || recording) return;
+      recording = true;
+      confirm.disabled = true;
+      cancel.disabled = true;
+      feedback.textContent = 'Recording exact approval…';
+      try {
+        await recordExactUploadApproval(supabase, package_, 'I approve this exact YouTube upload');
+        close();
+        feedback.textContent = 'Exact private upload consent recorded; no upload performed';
+        await refreshCandidates();
+      } catch (error) {
+        feedback.textContent = error?.message || 'Review action failed';
+      } finally {
+        recording = false;
+        confirm.disabled = !consent.checked;
+        cancel.disabled = false;
+      }
+    });
+    review.append(label, confirm, cancel);
+    actions.append(review);
+  };
 
   const run = async (action) => {
+    if (!signedIn || (action === 'approve' && !canApprove)) return;
     for (const button of buttons) button.disabled = true;
-    feedback.textContent = action === 'approve' ? 'Approving…' : 'Rejecting…';
+    feedback.textContent = action === 'approve' ? 'Loading exact review…' : 'Rejecting…';
     try {
       if(action === 'approve') {
         const package_ = await prepareUploadReview(supabase,candidate.id);
-        if(!window.confirm(`Approve this exact private YouTube upload?\n\n${JSON.stringify(package_,null,2)}\n\nThis records consent for one upload of these exact bytes and metadata.`)) return;
-        await recordExactUploadApproval(supabase,package_,'I approve this exact YouTube upload');
+        if (!signedIn) return;
+        showExactReview(package_);
+        feedback.textContent = 'Review the exact package below.';
+        return;
       } else await submitApproval(supabase, candidate.id, action, null);
       feedback.textContent = action === 'approve' ? 'Exact private upload consent recorded; no upload performed' : 'Rejected';
       await refreshCandidates();
     } catch (error) {
       feedback.textContent = error?.message || 'Review action failed';
     } finally {
-      for (const button of buttons) button.disabled = false;
+      if (!review) unlock();
     }
   };
 
@@ -120,21 +182,23 @@ function renderCandidateCard(candidate) {
   top.append(textEl('span', 'pill', candidate.category || 'uncategorized'));
   card.append(top);
   card.append(textEl('h2', '', candidate.title || 'Untitled Short'));
+  card.append(buildActions(candidate));
   card.append(buildPreview(candidate));
   if (candidate.hook) card.append(textEl('p', 'hook', candidate.hook));
   if (candidate.transcript_excerpt) card.append(textEl('p', 'excerpt', candidate.transcript_excerpt));
   card.append(textEl('p', `render-state ${candidate.render_status || 'unknown'}`, renderState(candidate)));
   card.append(textEl('p', 'approval-state', `Prior review: ${candidate.approval_state || 'pending'}. Exact publication consent is checked separately.`));
-  card.append(buildActions(candidate));
   return card;
 }
 
 async function refreshCandidates() {
-  candidateList.replaceChildren();
-  rejectedList.replaceChildren();
-  rejectedSummary.textContent = 'Rejected history';
+  if (!signedIn) return;
+  const generation = ++refreshGeneration;
   try {
     const candidates = await loadCandidates(supabase);
+    if (!signedIn || generation !== refreshGeneration) return;
+    candidateList.replaceChildren();
+    rejectedList.replaceChildren();
     const { active, rejected, counts } = reviewQueue(candidates);
     for (const candidate of active) candidateList.append(renderCandidateCard(candidate));
     for (const candidate of rejected) rejectedList.append(renderCandidateCard(candidate));
@@ -142,12 +206,14 @@ async function refreshCandidates() {
     status.textContent = `${counts.ready} ready to review · ${counts.awaiting} awaiting render · ${counts.approved} approved · ${counts.rejected} rejected`;
     if (counts.attention) status.textContent += ` · ${counts.attention} need attention`;
   } catch (error) {
-    status.textContent = error?.message || 'Could not load Shorts.';
+    if (signedIn && generation === refreshGeneration) status.textContent = error?.message || 'Could not load Shorts.';
   }
 }
 
 async function applySession(session) {
+  signedIn = Boolean(session);
   if (!session) {
+    refreshGeneration += 1;
     candidateList.replaceChildren();
     rejectedList.replaceChildren();
     rejectedSummary.textContent = 'Rejected history';
@@ -173,6 +239,11 @@ loginForm.addEventListener('submit', async (event) => {
 });
 
 signOut.addEventListener('click', () => supabase.auth.signOut());
+refreshClips?.addEventListener('click', async () => {
+  refreshClips.disabled = true;
+  try { await refreshCandidates(); }
+  finally { refreshClips.disabled = false; }
+});
 
 const { data: { session } } = await supabase.auth.getSession();
 await applySession(session);
