@@ -38,6 +38,9 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Browser, navigation and responsive checks
         run: npx playwright test --config=playwright.preview.config.ts
+      - name: Existing desktop and mobile browser regressions
+        if: ${{ !cancelled() }}
+        run: npx playwright test --config=playwright.regression.config.ts
       - name: Retain test evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -46,5 +49,6 @@ jobs:
           path: |
             hynoe-search-app/preview-test-report
             hynoe-search-app/preview-test-results
+            hynoe-search-app/test-results
           retention-days: 7
           if-no-files-found: ignore
