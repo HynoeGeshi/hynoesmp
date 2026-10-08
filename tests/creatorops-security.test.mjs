@@ -2,10 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { once } from 'node:events';
 import { createServer } from 'node:http';
-import { generateKeyPairSync } from 'node:crypto';
+import { generateKeyPairSync, verify } from 'node:crypto';
 import { createCreatorOpsServer } from '../creatorops/server.mjs';
 
-const { privateKey } = generateKeyPairSync('ed25519');
+const { privateKey, publicKey } = generateKeyPairSync('ed25519');
 const privateDer = privateKey.export({ format: 'der', type: 'pkcs8' }).toString('base64');
 
 async function start(server) {
@@ -64,9 +64,17 @@ test('CreatorOps protects admin and signs backend intake requests', async () => 
     });
     assert.equal(valid.status, 201);
     assert.equal(seen.method, 'POST');
-    assert.equal(seen.operation, 'intake');
+    assert.equal(seen.operation, 'intake-with-report');
     assert.ok(seen.signature && seen.signature.length > 40);
-    assert.ok(Number(seen.ts) > 0);
+    assert.ok(Math.abs(Date.now() - Number(seen.ts)) < 60_000);
+    const signedMessage = `${seen.ts}\n${seen.method}\n${seen.operation}\n${seen.body}`;
+    const signature = Buffer.from(seen.signature, 'base64');
+    assert.equal(verify(null, Buffer.from(signedMessage), publicKey, signature), true);
+    assert.equal(verify(null, Buffer.from(`${signedMessage}tampered`), publicKey, signature), false, 'signature must bind the exact request body');
+    const payload = JSON.parse(seen.body);
+    assert.equal(payload.application.creatorName, 'Test Creator');
+    assert.equal(payload.report.version, 1);
+    assert.match(payload.tokenHash, /^[0-9a-f]{64}$/);
     assert.ok(!seen.body.includes('password'));
 
     const limited = await fetch(`${base}/api/intake`, {

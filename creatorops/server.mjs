@@ -1,11 +1,18 @@
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
-import { extname, join, normalize } from 'node:path';
+import { extname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash, timingSafeEqual, createPrivateKey, sign as cryptoSign, randomBytes } from 'node:crypto';
 import { generateStarterAudit } from './audit-engine.mjs';
 
 const ROOT = fileURLToPath(new URL('./', import.meta.url));
+// This directory also contains backend code. Publish only these browser files;
+// admin.html and report.html must use their dedicated routes below.
+const PUBLIC_ASSETS = new Set([
+  'index.html', 'privacy.html', 'terms.html', 'growth.html',
+  'creatorops.css', 'creatorops.js', 'admin.css', 'admin.js',
+  'report.css', 'report.js', 'growth.css', 'growth.js'
+]);
 const MIME = { '.html':'text/html; charset=utf-8', '.css':'text/css; charset=utf-8', '.js':'text/javascript; charset=utf-8', '.mjs':'text/javascript; charset=utf-8', '.json':'application/json; charset=utf-8', '.svg':'image/svg+xml', '.png':'image/png', '.webp':'image/webp', '.ico':'image/x-icon' };
 const SECURITY_HEADERS = {
   'X-Content-Type-Options':'nosniff',
@@ -28,13 +35,6 @@ async function sendFile(res,filename,cache=true,extra={}) {
     const body = await readFile(join(ROOT,filename));
     send(res,200,body,MIME[extname(filename)]||'application/octet-stream',{...(cache?{}:{'Cache-Control':'no-store'}),...extra});
   } catch { send(res,404,'Not found'); }
-}
-function safeAssetPath(urlPath) {
-  const relative = urlPath.replace(/^\/creatorops\//,'');
-  if (!relative || relative.includes('\0') || relative.split(/[\\/]/).includes('..')) return null;
-  const normalized = normalize(relative);
-  if (!normalized || normalized.startsWith('..')) return null;
-  return normalized;
 }
 function sha256(v){ return createHash('sha256').update(v).digest('hex'); }
 function safeEqual(a,b){ const aa=Buffer.from(String(a)),bb=Buffer.from(String(b)); return aa.length===bb.length&&timingSafeEqual(aa,bb); }
@@ -141,7 +141,7 @@ export function createCreatorOpsServer(options={}) {
     if(path==='/'||path==='/creatorops'||path==='/creatorops/'||path==='/index.html'){await sendFile(res,'index.html');return}
     if(path==='/creatorops.css'){await sendFile(res,'creatorops.css');return}
     if(path==='/creatorops.js'){await sendFile(res,'creatorops.js');return}
-    if(path.startsWith('/creatorops/')){const asset=safeAssetPath(path);if(!asset){send(res,400,'Bad request');return}await sendFile(res,asset);return}
+    if(path.startsWith('/creatorops/')){const asset=path.slice('/creatorops/'.length);if(!PUBLIC_ASSETS.has(asset)){send(res,404,'Not found');return}await sendFile(res,asset);return}
     send(res,404,'Not found');
   });
 }
