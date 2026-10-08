@@ -1,5 +1,5 @@
 import { createClient } from '/vendor/supabase.mjs';
-import { loadCandidates, attachPreview, submitApproval, prepareUploadReview, recordExactUploadApproval, reviewQueue, previewPath, publicationStatus } from '/dashboard-core.mjs';
+import { loadCandidates, attachPreview, submitApproval, prepareUploadReview, recordExactUploadApproval, reviewQueue, previewPath, publicationStatus, todayReadyCount } from '/dashboard-core.mjs';
 
 const config = window.__HYNOE_YOUTUBE_AGENT_CONFIG__ || {};
 const supabase = createClient(config.supabaseUrl, config.supabaseAnonKey);
@@ -19,6 +19,7 @@ const status = document.querySelector('#status');
 const loginForm = document.querySelector('#loginForm');
 const signOut = document.querySelector('#signOut');
 const refreshClips = document.querySelector('#refreshClips');
+const dailyReady = document.querySelector('#dailyReady');
 let signedIn = false;
 let refreshGeneration = 0;
 
@@ -218,9 +219,11 @@ function renderPostedCard(candidate) {
 async function refreshCandidates() {
   if (!signedIn) return;
   const generation = ++refreshGeneration;
+  dailyReady.textContent = 'Today: Loading new Shorts…';
   try {
     const candidates = await loadCandidates(supabase);
     if (!signedIn || generation !== refreshGeneration) return;
+    dailyReady.textContent = `Today: ${todayReadyCount(candidates)} of 15 new Shorts ready`;
     candidateList.replaceChildren();
     rejectedList.replaceChildren();
     postedList.replaceChildren(); uploadedList.replaceChildren();
@@ -238,7 +241,10 @@ async function refreshCandidates() {
     if (counts.posted) status.textContent += ` · ${counts.posted} posted`;
     if (counts.uploaded) status.textContent += ` · ${counts.uploaded} uploaded privately`;
   } catch (error) {
-    if (signedIn && generation === refreshGeneration) status.textContent = error?.message || 'Could not load Shorts.';
+    if (signedIn && generation === refreshGeneration) {
+      dailyReady.textContent = 'Today: New Shorts count unavailable';
+      status.textContent = error?.message || 'Could not load Shorts.';
+    }
   }
 }
 
@@ -246,6 +252,7 @@ async function applySession(session) {
   signedIn = Boolean(session);
   if (!session) {
     refreshGeneration += 1;
+    dailyReady.textContent = 'Today: Sign in to see new Shorts';
     candidateList.replaceChildren();
     rejectedList.replaceChildren();
     postedList.replaceChildren(); uploadedList.replaceChildren();

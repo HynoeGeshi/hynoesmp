@@ -48,7 +48,7 @@ class Element {
 const flatten = element => [element,...element.children.flatMap(flatten)];
 
 async function boot(data,newline,overrides={}){
-  const ids=Object.fromEntries(['authPanel','reviewPanel','candidateList','rejectedHistory','rejectedSummary','rejectedList','postedHistory','postedSummary','postedList','uploadedHistory','uploadedSummary','uploadedList','status','loginForm','signOut','refreshClips'].map(id=>[id,new Element()]));
+  const ids=Object.fromEntries(['authPanel','reviewPanel','candidateList','rejectedHistory','rejectedSummary','rejectedList','postedHistory','postedSummary','postedList','uploadedHistory','uploadedSummary','uploadedList','status','loginForm','signOut','refreshClips','dailyReady'].map(id=>[id,new Element()]));
   let current=data; let authCallback; const signs=[];const rpcCalls=[];
   const supabase={
     from(){return{select:async()=>({data:current,error:null})};},
@@ -138,6 +138,29 @@ test('Refresh clips cannot load private cards after sign out',async()=>{
   await new Promise(resolve=>setImmediate(resolve));
   assert.equal(app.ids.candidateList.children.length,0);
   assert.equal(app.ids.status.textContent,'Sign in to review Shorts.');
+  assert.deepEqual(app.rpcCalls,[]);
+});
+
+test('daily delivery badge shows fresh media and retains delivery after rejection',async()=>{
+  const today='2026-10-08T16:00:00Z';
+  const app=await boot([
+    {id:'new-one',created_at:today,approval_state:'pending',render_status:'ready',preview_uri:'one.mp4'},
+    {id:'old',created_at:'2026-10-07T16:00:00Z',approval_state:'pending',render_status:'ready',preview_uri:'old.mp4'},
+    {id:'queued',created_at:today,approval_state:'pending',render_status:'pending'},
+  ],undefined,{todayReadyCount:data=>core.todayReadyCount(data,new Date('2026-10-08T18:00:00Z'))});
+  assert.equal(app.ids.dailyReady.textContent,'Today: 1 of 15 new Shorts ready');
+  const card=app.ids.candidateList.children.find(node=>node.dataset.clipId==='new-one');
+  flatten(card).find(node=>node.tagName==='button'&&node.textContent==='Reject').listeners.click();
+  await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(app.ids.dailyReady.textContent,'Today: 1 of 15 new Shorts ready');
+  app.signOut();
+  assert.equal(app.ids.dailyReady.textContent,'Today: Sign in to see new Shorts');
+});
+
+test('failed refresh makes the daily count unavailable instead of claiming stale progress',async()=>{
+  const app=await boot([],undefined,{loadCandidates:async()=>{throw new Error('Owner read failed');}});
+  assert.equal(app.ids.dailyReady.textContent,'Today: New Shorts count unavailable');
+  assert.equal(app.ids.status.textContent,'Owner read failed');
   assert.deepEqual(app.rpcCalls,[]);
 });
 

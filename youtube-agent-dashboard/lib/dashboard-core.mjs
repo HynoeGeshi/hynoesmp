@@ -1,6 +1,24 @@
 import { uploadPackage } from './upload-package.mjs';
 const BUCKET_ORDER = { review: 0, ready: 1, processing: 2, terminal: 3 };
 const YOUTUBE_ID = /^[A-Za-z0-9_-]{11}$/;
+const OWNER_DAY = new Intl.DateTimeFormat('en-CA', {
+  timeZone:'America/New_York', year:'numeric', month:'2-digit', day:'2-digit',
+});
+
+// Delivery is counted across the whole loaded catalog, before review/history
+// separation. A later approval, rejection, or posting does not erase delivery.
+export function todayReadyCount(candidates = [], now = new Date()) {
+  const today = OWNER_DAY.format(now);
+  const delivered = new Set();
+  for (const candidate of candidates) {
+    if (typeof candidate?.id !== 'string' || !candidate.id.trim() || candidate.render_status !== 'ready') continue;
+    const hasMedia = [candidate.preview_uri, candidate.render_uri].some(path => typeof path === 'string' && path.trim());
+    if (!hasMedia) continue;
+    const createdAt = typeof candidate.created_at === 'string' ? Date.parse(candidate.created_at) : NaN;
+    if (Number.isFinite(createdAt) && OWNER_DAY.format(createdAt) === today) delivered.add(candidate.id);
+  }
+  return delivered.size;
+}
 
 function uploadedJobs(candidate) {
   return (Array.isArray(candidate?.publishing_jobs) ? candidate.publishing_jobs : []).filter(job =>
