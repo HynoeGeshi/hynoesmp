@@ -46,3 +46,16 @@ test('core and premium Hynoe brand assets are actually served', async ({ page })
   expect(core.ok()).toBe(true);
   expect(premium.ok()).toBe(true);
 });
+
+test('public and sign-in responses carry the browser security policy', async ({ request }) => {
+  for (const path of ['/', '/search?q=minecraft', '/p/hynoe-smp', '/sign-in']) {
+    const response = await request.get(path);
+    expect(response.ok()).toBe(true);
+    const headers = response.headers();
+    expect(headers['x-frame-options']).toBe('DENY');
+    expect(headers['x-content-type-options']).toBe('nosniff');
+    expect(headers['referrer-policy']).toBe('strict-origin-when-cross-origin');
+    expect(headers['cross-origin-opener-policy']).toBe('same-origin');
+    expect(headers['permissions-policy']).toBe('camera=(), microphone=(), geolocation=(), payment=(), usb=()');
+  }
+});
