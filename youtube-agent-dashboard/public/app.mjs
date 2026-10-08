@@ -1,5 +1,5 @@
 import { createClient } from '/vendor/supabase.mjs';
-import { loadCandidates, attachPreview, submitApproval } from '/dashboard-core.mjs';
+import { loadCandidates, attachPreview, submitApproval, prepareUploadReview, recordExactUploadApproval } from '/dashboard-core.mjs';
 
 const config = window.__HYNOE_YOUTUBE_AGENT_CONFIG__ || {};
 const supabase = createClient(config.supabaseUrl, config.supabaseAnonKey);
@@ -70,11 +70,11 @@ function buildPreview(candidate) {
 function buildActions(candidate) {
   const actions = document.createElement('div');
   actions.className = 'actions';
-  if (candidate.approval_state !== 'pending') return actions;
+  if (candidate.approval_state === 'rejected') return actions;
 
   const approve = document.createElement('button');
   approve.type = 'button';
-  approve.textContent = 'Approve';
+  approve.textContent = 'Review exact private upload';
   const reject = document.createElement('button');
   reject.type = 'button';
   reject.className = 'reject';
@@ -86,8 +86,12 @@ function buildActions(candidate) {
     for (const button of buttons) button.disabled = true;
     feedback.textContent = action === 'approve' ? 'Approving…' : 'Rejecting…';
     try {
-      await submitApproval(supabase, candidate.id, action, null);
-      feedback.textContent = action === 'approve' ? 'Approved' : 'Rejected';
+      if(action === 'approve') {
+        const package_ = await prepareUploadReview(supabase,candidate.id);
+        if(!window.confirm(`Approve this exact private YouTube upload?\n\n${JSON.stringify(package_,null,2)}\n\nThis records consent for one upload of these exact bytes and metadata.`)) return;
+        await recordExactUploadApproval(supabase,package_,'I approve this exact YouTube upload');
+      } else await submitApproval(supabase, candidate.id, action, null);
+      feedback.textContent = action === 'approve' ? 'Exact private upload consent recorded; no upload performed' : 'Rejected';
       await refreshCandidates();
     } catch (error) {
       feedback.textContent = error?.message || 'Review action failed';

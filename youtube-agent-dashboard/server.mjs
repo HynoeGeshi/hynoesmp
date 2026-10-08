@@ -8,7 +8,7 @@ const DEFAULT_PUBLIC = join(HERE, 'public');
 const DEFAULT_VENDOR = join(HERE, '..', 'assets', 'vendor', 'supabase.mjs');
 const DEFAULT_CORE = join(HERE, 'lib', 'dashboard-core.mjs');
 
-export const SECURITY_REVISION = '20261007-private-dashboard-v1';
+export const SECURITY_REVISION = '20261007-exact-owner-consent-v2';
 
 function isPublicKey(key) {
   if (/^sb_publishable_[A-Za-z0-9_-]+$/.test(key)) return true;
@@ -48,6 +48,7 @@ function applySecurityHeaders(res) {
 
 const routes = new Map([
   ['/', ['index.html', 'text/html; charset=utf-8']],
+  ['/upload-package.mjs', ['../lib/upload-package.mjs', 'text/javascript; charset=utf-8']],
   ['/app.mjs', ['app.mjs', 'text/javascript; charset=utf-8']],
   ['/styles.css', ['styles.css', 'text/css; charset=utf-8']],
   ['/metadata', ['metadata.html', 'text/html; charset=utf-8']],

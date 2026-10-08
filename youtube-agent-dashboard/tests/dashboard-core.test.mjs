@@ -69,12 +69,13 @@ test('attachPreview re-signs exactly once after media error', async () => {
   assert.equal(signed,2);
 });
 
-test('submitApproval uses approve_clip for allowed actions', async () => {
+test('generic approval cannot record upload consent; rejection still works', async () => {
   const calls=[];
   const supabase={async rpc(name,args){calls.push([name,args]);return{data:[{approval_state:args.p_action==='approve'?'approved':'rejected'}],error:null};}};
-  assert.equal((await submitApproval(supabase,'clip','approve','good')).approval_state,'approved');
+  await assert.rejects(()=>submitApproval(supabase,'clip','approve','good'),/Exact upload package/);
+  await submitApproval(supabase,'clip','reject','good');
   assert.equal(calls[0][0],'approve_clip');
-  assert.deepEqual(calls[0][1],{p_clip_id:'clip',p_action:'approve',p_notes:'good'});
+  assert.deepEqual(calls[0][1],{p_clip_id:'clip',p_action:'reject',p_notes:'good'});
   await assert.rejects(()=>submitApproval(supabase,'clip','publish'),/invalid approval action/i);
   assert.equal(calls.length,1);
 });
