@@ -6,6 +6,8 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://hynoe.net'),
   title: 'Hynoe Search',
   description: 'Discover independent businesses, creators, services, communities, games, and projects on Hynoe.',
+  robots: { index: true, follow: true },
+  openGraph: { title: 'Hynoe Search', description: 'Discover independent businesses, creators, services, communities, games, and projects on Hynoe.', type: 'website' },
   icons: { icon: '/brand/hynoe-core-mark.png' },
 };
 
