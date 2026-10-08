@@ -1,0 +1,227 @@
+{
+  "review_date": "2026-10-08",
+  "pages_reviewed": [
+    "404.html",
+    "bosses.html",
+    "chat-admin.html",
+    "community-rules.html",
+    "data-deletion.html",
+    "economy.html",
+    "index.html",
+    "join.html",
+    "mca.html",
+    "modded-minecraft-server.html",
+    "modpack.html",
+    "privacy.html",
+    "progression.html",
+    "site-admin.html",
+    "start.html",
+    "terms.html",
+    "updates.html",
+    "watch.html"
+  ],
+  "link_checks": {
+    "html_pages": 18,
+    "local_references_checked": 468,
+    "broken_local": [],
+    "external": [
+      {
+        "url": "https://discord.gg/wYTePCkXd5",
+        "status": 200,
+        "final_url": "https://discord.com/invite/wYTePCkXd5"
+      },
+      {
+        "url": "https://github.com/HynoeGeshi/hynoesmp/releases/latest",
+        "status": 200,
+        "final_url": "https://github.com/HynoeGeshi/hynoesmp/releases/tag/v1.0.1"
+      },
+      {
+        "url": "https://github.com/HynoeGeshi/hynoesmp/releases/latest/download/Hynoe_SMP_Modrinth.mrpack",
+        "status": 200,
+        "final_url": "https://release-assets.githubusercontent.com/github-production-release-asset/1357622012/96344e08-2140-4265-9c35-f9ffaac0541d"
+      },
+      {
+        "url": "https://hynoesmp.com/",
+        "status": 200,
+        "final_url": "https://hynoesmp.com/"
+      },
+      {
+        "url": "https://hynoesmp.com/join.html",
+        "status": 200,
+        "final_url": "https://hynoesmp.com/join.html"
+      },
+      {
+        "url": "https://hynoesmp.com/modded-minecraft-server.html",
+        "status": 200,
+        "final_url": "https://hynoesmp.com/modded-minecraft-server.html"
+      },
+      {
+        "url": "https://hynoesmp.com/updates.html",
+        "status": 200,
+        "final_url": "https://hynoesmp.com/updates.html"
+      },
+      {
+        "url": "https://modrinth.com/app",
+        "status": 200,
+        "final_url": "https://modrinth.com/app"
+      },
+      {
+        "url": "https://modrinth.com/shader/complementary-unbound/version/r5.8.1",
+        "status": 200,
+        "final_url": "https://modrinth.com/shader/complementary-unbound/version/r5.8.1"
+      },
+      {
+        "url": "https://policies.google.com/privacy",
+        "status": 200,
+        "final_url": "https://policies.google.com/privacy"
+      },
+      {
+        "url": "https://streamlabs.com/hynoe_geshi",
+        "status": 200,
+        "final_url": "https://streamlabs.com/hynoe_geshi/tip"
+      },
+      {
+        "url": "https://www.youtube.com/@Hynoe/live",
+        "status": 200,
+        "final_url": "https://www.youtube.com/@Hynoe/live"
+      },
+      {
+        "url": "https://www.youtube.com/t/terms",
+        "status": 200,
+        "final_url": "https://www.youtube.com/t/terms"
+      }
+    ]
+  },
+  "corrections": [
+    {
+      "page": "progression.html",
+      "before": "while wearing copper armor.",
+      "after": "while wearing at least one copper armor piece (helmet, chestplate, leggings, or boots)."
+    },
+    {
+      "page": "progression.html",
+      "before": "while wearing iron armor.",
+      "after": "while wearing at least one iron armor piece (helmet, chestplate, leggings, or boots)."
+    },
+    {
+      "page": "progression.html",
+      "before": "<strong>3h 20m</strong> of playtime.",
+      "after": "<strong>3h 20m</strong> of online play at 20 TPS. Slower server ticks take longer in real time."
+    },
+    {
+      "page": "progression.html",
+      "before": "<strong>1h 40m</strong>. This unlocks furnace blocks.",
+      "after": "<strong>1h 40m</strong> of online play at 20 TPS. This unlocks furnace blocks."
+    },
+    {
+      "page": "progression.html",
+      "before": "consistent CHECK + CLAIM STAGE buttons.",
+      "after": "claim buttons in the live quest menus."
+    },
+    {
+      "page": "watch.html",
+      "before": "id=\"leader-crew\">0 / 12",
+      "after": "id=\"leader-crew\">0 / 36"
+    },
+    {
+      "page": "watch.html",
+      "before": "id=\"run-room\">ROOM 1 / 4",
+      "after": "id=\"run-room\">ROOM 1 / 5"
+    },
+    {
+      "page": "watch.html",
+      "before": "Matching all three factions activates a +15% synergy bonus.",
+      "after": "Equip three crew members from the same faction to activate a +15% synergy bonus."
+    },
+    {
+      "page": "modpack.html",
+      "before": "The download follows the newest GitHub release that carries this asset.",
+      "after": "The link opens the pack asset attached to the latest published GitHub release. Checked October 8: v1.0.1, Minecraft 26.2, Fabric Loader 0.19.3, with 158 bundled client mod files."
+    },
+    {
+      "page": "index.html",
+      "before": "The client pack is built from the current Hynoe SMP server mod set with server/admin tools removed.",
+      "after": "The published v1.0.1 client pack was checked October 8: Minecraft 26.2, Fabric Loader 0.19.3, and 158 client mod files. Shared mod versions match the audited server inventory; server administration and integration tools are omitted. A full client login was not tested in this audit."
+    },
+    {
+      "page": "privacy.html",
+      "before": "<h2>3. Ask Hynoe is server-processed help</h2>",
+      "after": "<h2>2a. Minecraft Chat connects the website, Discord, and the game</h2>\n<p>Minecraft Chat is a separate public channel. It displays messages from the connected Discord minecraft-chat channel. Posts sent from its website composer are relayed to Discord and the Minecraft server, where other participants can see and copy them. Choose Global Chat for website-only public discussion; Ask Hynoe is the separate help conversation.</p>\n<p>Sending through Minecraft Chat uses your community session for authentication and sends the message and a request identifier to the Hynoe bridge service hosted on Render. Connected services can keep their own message history and technical logs. Clearing a website conversation or browser storage does not remove Discord messages, Minecraft logs, or copies held by other participants.</p>\n<h2>3. Ask Hynoe is server-processed help</h2>"
+    },
+    {
+      "page": "data-deletion.html",
+      "before": "<h2>4. Leaderboard publication</h2>",
+      "after": "<h2>3a. Minecraft Chat and connected copies</h2>\n<p>Tell the moderation team if your request concerns Minecraft Chat. That channel relays website posts to Discord and the Minecraft server, and connected services can hold separate message history or logs. Provide the channel and approximate message time through the private contact route above. Clearing website storage does not delete these connected copies; removing a message in one service does not establish that every copy was removed.</p>\n<h2>4. Leaderboard publication</h2>"
+    },
+    {
+      "page": "terms.html",
+      "before": "profiles, Global Chat, and Ask Hynoe.",
+      "after": "profiles, Global Chat, Minecraft Chat, and Ask Hynoe."
+    },
+    {
+      "page": "terms.html",
+      "before": "Public chat submissions are intended to be stored and displayed to other community participants.",
+      "after": "Public chat submissions are intended to be stored and displayed to other community participants. Minecraft Chat relays its website posts to the connected Discord channel and Minecraft server."
+    },
+    {
+      "page": "community-rules.html",
+      "before": "<h2>1. Treat people like people</h2>",
+      "after": "<p>Minecraft Chat is also public: its website posts are relayed to Discord and the Minecraft server. The same conduct rules apply across those connected spaces. Use the moderation contact route below for Minecraft Chat issues.</p>\n<h2>1. Treat people like people</h2>"
+    },
+    {
+      "page": "llms.txt",
+      "before": "Last reviewed: 2026-10-07",
+      "after": "Last reviewed: 2026-10-08"
+    }
+  ],
+  "verified_against": [
+    "Enabled Campaign v15.1 and Fall v2.5 plus integration repairs v3",
+    "Installed Genesis 1.6.5 age definitions",
+    "World Bosses 1.4.0 codex and recipes",
+    "178-file server mod inventory and published v1.0.1 client archive",
+    "EconomyCraft and TPA configuration snapshot",
+    "Website gameplay, community and storage source code",
+    "Live Minecraft SRV DNS and read-only Minecraft Chat endpoint"
+  ],
+  "limitations": [
+    "No end-to-end Minecraft client login or player progression simulation",
+    "No test posts, moderation mutations, payments or account deletion performed",
+    "Privacy descriptions checked against implementation; no legal-compliance certification",
+    "Linked third-party availability is a point-in-time check",
+    "Historical payment reconciliation is outside this website audit"
+  ],
+  "client_pack": {
+    "release": "v1.0.1",
+    "minecraft": "26.2",
+    "fabric_loader": "0.19.3",
+    "bundled_mod_files": 158,
+    "shared_version_mismatches": 0
+  },
+  "dns": "Minecraft SRV target resolves to the Bloom game endpoint",
+  "minecraft_chat_read_check": "enabled; public history endpoint responded",
+  "page_coverage": {
+    "index.html": "Server features, launch links, client archive, current notices, local-game separation",
+    "start.html": "Genesis unlocks, registered help/travel commands, home capacity, removed-claims wording",
+    "progression.html": "Genesis age JSON, stage reward functions, home bridge and teleport config",
+    "economy.html": "EconomyCraft settings, 151 mission rewards, stage/contract/season payouts, Token prices",
+    "bosses.html": "World Bosses codex/recipes and installed boss content; live ritual execution not tested",
+    "mca.html": "MCA language resources and configuration; roleplay-card implementation",
+    "join.html": "Minecraft SRV/A DNS, pack version, client requirement, installation links",
+    "modpack.html": "Downloaded v1.0.1 mrpack manifest, 158 client mods, shared versions, 178-server-file inventory",
+    "modded-minecraft-server.html": "Server profile and linked system guides; long-term design language is intent",
+    "updates.html": "Prior deployment evidence and current corrective audit; historical dates retained",
+    "watch.html": "Game constants/functions, reward logic, data-flow code, existing regression/browser checks",
+    "privacy.html": "Browser storage, auth, help, leaderboard and Minecraft Chat transport source",
+    "terms.html": "Current-feature and data-flow descriptions; legal clauses not certified",
+    "data-deletion.html": "Local clearing versus server/connected copies; no erasure executed",
+    "community-rules.html": "Public-channel scope and moderation UI; operator policy is intent",
+    "site-admin.html": "Protected-entry UI and existing authorization regressions; no privileged mutation tested",
+    "chat-admin.html": "Redirect to protected community admin, no retired relay controls",
+    "404.html": "Return link, local assets and fallback page structure"
+  },
+  "post_edit_local_references": 470,
+  "tests": {
+    "node": 268,
+    "python": 1
+  }
+}
