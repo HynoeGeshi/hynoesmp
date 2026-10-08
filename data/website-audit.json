@@ -22,7 +22,7 @@
   ],
   "link_checks": {
     "html_pages": 18,
-    "local_references_checked": 468,
+    "local_references_checked": 470,
     "broken_local": [],
     "external": [
       {
@@ -172,6 +172,21 @@
       "page": "llms.txt",
       "before": "Last reviewed: 2026-10-07",
       "after": "Last reviewed: 2026-10-08"
+    },
+    {
+      "page": "updates.html",
+      "before": "<strong>CHECK + CLAIM STAGE</strong> wording is consistent, including Stage 31.",
+      "after": "Use the claim buttons in the live quest menus, including Stage 31."
+    },
+    {
+      "page": "updates.html",
+      "before": "Minecraft-to-website chat is still awaiting connection.",
+      "after": "Minecraft Chat is connected through the public Discord channel; website posts are relayed to Discord and the Minecraft server."
+    },
+    {
+      "page": "updates.html",
+      "before": "checked 468 local references",
+      "after": "checked 470 local references"
     }
   ],
   "verified_against": [
