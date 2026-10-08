@@ -2,7 +2,8 @@ import { createHash } from 'node:crypto';
 import type { PublicBusiness } from '../../data/public-businesses';
 
 export function escapeHtml(value: string): string {
-  return value.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
+  const entities: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+  return value.replace(/[&<>"']/g, (c) => entities[c]!);
 }
 
 export function upgradePreview(original: string, businesses: readonly PublicBusiness[], now = new Date()): string {
@@ -18,7 +19,7 @@ export function upgradePreview(original: string, businesses: readonly PublicBusi
     </article>`;
   }).join('');
   const section = `<section class="section directory-section" id="businesses" aria-labelledby="businesses-title">
-    <div class="section-top"><div><div class="eyebrow">Beyond the Hynoe world</div><h2 id="businesses-title">A useful place to start.</h2><p class="section-desc">Explore real businesses and creative tools, then go straight to the source.</p></div><a class="text-link" href="/search">Search the network ↗</a></div>
+    <div class="section-top"><div><div class="eyebrow">Beyond the Hynoe world</div><h2 id="businesses-title">A useful place to start.</h2><p class="section-desc">Explore real businesses and creative tools, then go straight to the source.</p></div><a class="text-link" href="/search?scope=directory">Explore the directory ↗</a></div>
     <div class="directory-disclosure"><strong>Public information. Not partnerships.</strong> These ${businesses.length} starter listings are independently compiled from business websites. They are unclaimed, unpaid and not endorsements. <a href="/listing-policy">How listings work ↗</a></div>
     <div class="directory-controls"><div class="directory-input"><label for="business-query">Find a business</label><input id="business-query" type="search" maxlength="200" placeholder="Try Chicago, music or design" autocomplete="off"></div><div class="directory-input"><label for="business-category">Category</label><select id="business-category"><option value="">All categories</option><option>Creative software</option><option>Music</option><option>Photo &amp; video</option></select></div><button class="button ghost" id="business-reset" type="button">Reset filters</button></div>
     <p class="directory-count" id="business-count" aria-live="polite">${businesses.length} public listings · no paid ordering</p><noscript><p>All listings appear below. Use the main Search to filter without JavaScript.</p></noscript>
@@ -36,7 +37,7 @@ export function upgradePreview(original: string, businesses: readonly PublicBusi
 (()=>{'use strict';const q=document.getElementById('business-query'),category=document.getElementById('business-category'),cards=[...document.querySelectorAll('[data-business-card]')],count=document.getElementById('business-count'),empty=document.getElementById('business-empty'),invite=document.getElementById('directory-invite');if(!q||!category)return;const apply=()=>{const terms=q.value.toLowerCase().trim().split(/\\s+/).filter(Boolean);let n=0;cards.forEach(card=>{const visible=terms.every(term=>(card.dataset.search||'').includes(term))&&(!category.value||card.dataset.businessCategory===category.value);card.hidden=!visible;if(visible)n++});count.textContent=n+' of '+cards.length+' public listings · no paid ordering';empty.hidden=n!==0;invite.hidden=Boolean(q.value.trim()||category.value)};const reset=()=>{q.value='';category.value='';apply();q.focus()};q.addEventListener('input',apply);category.addEventListener('change',apply);document.getElementById('business-reset').addEventListener('click',reset);document.getElementById('business-reset-empty').addEventListener('click',reset);document.addEventListener('keydown',event=>{if(event.key!=='/'||event.ctrlKey||event.metaKey||event.altKey)return;const target=event.target;if(target instanceof Element&&(target.closest('input,textarea,select')||target.closest('[contenteditable="true"]')))return;const field=document.getElementById('search-q');if(field){event.preventDefault();field.focus()}})})();
 </script>`;
   return original
-    .replace('<a href="#creatorops">CreatorOps</a>', '<a href="#businesses">Businesses</a><a href="#creatorops">CreatorOps</a>')
+    .replaceAll('<a href="#creatorops">CreatorOps</a>', '<a href="#businesses">Businesses</a><a href="#creatorops">CreatorOps</a>')
     .replace('<section class="section" id="originals"', section + '<section class="section" id="originals"')
     .replace('</head>', css + '</head>')
     .replace('</body>', script + '</body>')
