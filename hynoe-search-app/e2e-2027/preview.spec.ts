@@ -29,7 +29,8 @@ for (const width of [360,390,768,1024,1440,1920]) {
   test(`responsive preview at ${width}px without horizontal overflow`, async ({ page }, info) => {
     await page.setViewportSize({width,height:1000});
     await page.goto('/preview');
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
+    const layout = await page.evaluate(() => ({overflow:document.documentElement.scrollWidth > window.innerWidth + 1, offenders:[...document.querySelectorAll('body *')].map(el => ({tag:el.tagName,cls:el.className,left:el.getBoundingClientRect().left,right:el.getBoundingClientRect().right})).filter(r=>r.right>innerWidth+1&&r.left>=0).slice(0,10)}));
+    expect(layout.overflow,JSON.stringify(layout)).toBe(false);
     if (width <= 1040) {
       const toggle = page.locator('.menu-toggle');
       await toggle.click(); await expect(toggle).toHaveAttribute('aria-expanded','true');
@@ -47,7 +48,7 @@ test('preview anchors and every linked local destination resolve', async ({ page
   for (const id of new Set(anchors)) expect(await page.locator(`[id="${id}"]`).count(),`anchor ${id}`).toBeGreaterThan(0);
   const urls = await page.locator('a[href^="/"]').evaluateAll(els => [...new Set(els.map(a => a.getAttribute('href')!))]);
   for (const url of urls) {
-    const result = await request.get(url,{timeout:20000});
+    const result = await request.get(url,{timeout:15000});
     expect(result.status(),url).toBeLessThan(400);
   }
 });
@@ -61,6 +62,7 @@ test('directory search returns genuine profiles and handles unusual parameters',
   await page.goto('/search?type=creator');
   await expect(page.getByRole('heading',{name:'Hynoe',exact:true})).toBeVisible();
   expect((await request.get('/search?q=Adobe&q=Canva&type=invalid')).status()).toBe(200);
+  expect((await request.get('/p/hynoe-missing-page-9e7c')).status()).toBe(404);
   await page.goto('/search?q=totally-nonexistent-business-2027');
   await expect(page.getByRole('heading',{name:'No matches yet.'})).toBeVisible();
 });
@@ -103,10 +105,10 @@ test('owner routes remain inaccessible to an unauthenticated browser', async ({ 
 test('no-JavaScript users see all businesses and can use native Search', async ({ browser }) => {
   const context = await browser.newContext({javaScriptEnabled:false});
   const page = await context.newPage();
-  await page.goto('http://127.0.0.1:3100/preview');
+  await page.goto('http://localhost:3100/preview');
   await expect(page.locator('[data-business-card]:visible')).toHaveCount(5);
   await page.locator('#search-q').fill('Adobe');
-  await page.getByRole('button',{name:'Search ↗',exact:true}).click();
+  await page.locator('.search-form button[type="submit"]').click();
   await expect(page.getByRole('heading',{name:'Adobe',exact:true})).toBeVisible();
   await context.close();
 });

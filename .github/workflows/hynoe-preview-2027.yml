@@ -30,6 +30,8 @@ jobs:
       - run: npm ci --no-audit --no-fund
       - name: Listing, CSP and authorization regression tests
         run: node --experimental-strip-types --test verification/preview-2027.check.mjs
+      - name: Existing application regression suite
+        run: npm test && npm run test:domain
       - name: Production build and type validation
         run: npm run build
       - name: Install Chromium for local browser verification
