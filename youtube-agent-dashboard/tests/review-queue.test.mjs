@@ -46,7 +46,7 @@ class Element {
 }
 const flatten = element => [element,...element.children.flatMap(flatten)];
 
-async function boot(data){
+async function boot(data,newline){
   const ids=Object.fromEntries(['authPanel','reviewPanel','candidateList','rejectedHistory','rejectedSummary','rejectedList','status','loginForm','signOut'].map(id=>[id,new Element()]));
   let current=data; let authCallback; const signs=[];
   const supabase={
@@ -55,12 +55,21 @@ async function boot(data){
     rpc:async(_name,args)=>{current=current.map(row=>row.id===args.p_clip_id?{...row,approval_state:'rejected'}:row);return{data:{},error:null};},
     auth:{getSession:async()=>({data:{session:{}}}),onAuthStateChange(fn){authCallback=fn;},signOut(){},signInWithPassword(){}}
   };
-  const source=(await readFile(new URL('../public/app.mjs',import.meta.url),'utf8')).replace(/^import .*;\n/gm,'');
+  const raw=await readFile(new URL('../public/app.mjs',import.meta.url),'utf8');
+  const source=(newline?raw.replace(/\r?\n/g,newline):raw).replace(/^import .*;\r?\n/gm,'');
   const AsyncFunction=Object.getPrototypeOf(async function(){}).constructor;
   const names=['createClient',...Object.keys(core),'document','window'];
   await new AsyncFunction(...names,source)(()=>supabase,...Object.values(core),{querySelector:selector=>ids[selector.slice(1)],createElement:tag=>new Element(tag)},{__HYNOE_YOUTUBE_AGENT_CONFIG__:{}});
   return{ids,signs,signOut:()=>authCallback('SIGNED_OUT',null)};
 }
+test('the actual app harness boots equivalent LF and Windows CRLF source',async()=>{
+  for(const newline of ['\n','\r\n']){
+    const {ids}=await boot(rows,newline);
+    assert.equal(ids.candidateList.children.length,17);
+    assert.equal(ids.rejectedList.children.length,4);
+    assert.equal(ids.status.textContent,'0 ready to review · 13 awaiting render · 4 approved · 4 rejected');
+  }
+});
 
 test('actual app separates rejected history and uses accurate counts on startup and sign out',async()=>{
   const {ids,signs,signOut}=await boot(rows);
