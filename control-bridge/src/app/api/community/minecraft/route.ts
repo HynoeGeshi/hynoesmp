@@ -18,8 +18,10 @@ async function supabase(path:string,token:string,init:RequestInit={}) {
 async function handler(req:Request) {
   const channel=process.env.MINECRAFT_DISCORD_CHANNEL_ID||'';
   const configured=process.env.MINECRAFT_CHAT_ENABLED==='true' && Boolean(channel && process.env.MINECRAFT_DISCORD_BOT_TOKEN && process.env.BLOOM_API_KEY && process.env.BLOOM_SERVER_ID && process.env.SUPABASE_URL && process.env.SUPABASE_PUBLISHABLE_KEY);
+  const missingConfiguration=['MINECRAFT_DISCORD_CHANNEL_ID','MINECRAFT_DISCORD_BOT_TOKEN','BLOOM_API_KEY','BLOOM_SERVER_ID','SUPABASE_URL','SUPABASE_PUBLISHABLE_KEY'].filter(key=>!process.env[key]);
   return createCommunityHandler({
     enabled:configured,
+    missingConfiguration,
     readFeed:async()=>{
       if(cached && Date.now()-cached.at<4000) return cached.messages;
       if(!pending) pending=(async()=>{

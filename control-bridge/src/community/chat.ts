@@ -3,6 +3,7 @@ import { containsBlockedChatContent } from './content.mjs';
 export type FeedMessage = {id:string; author:{id:string;username:string;global_name?:string;bot?:boolean};content:string;timestamp:string;webhook_id?:string};
 type Dependencies = {
   enabled:boolean;
+  missingConfiguration?:string[];
   readFeed:()=>Promise<unknown[]>;
   verifyUser:(token:string)=>Promise<string>;
   reserveSlot:(token:string,requestId:string)=>Promise<string>;
@@ -27,7 +28,7 @@ export function createCommunityHandler(deps:Dependencies) {
     const json=(data:unknown,status=200)=>Response.json(data,{status,headers});
     if(origin && !origins.has(origin)) return json({error:'Request origin is not allowed.'},403);
     if(req.method==='OPTIONS') return new Response(null,{status:204,headers});
-    if(!deps.enabled) return json({error:'Minecraft Chat is temporarily offline.'},503);
+    if(!deps.enabled) return json({error:'Minecraft Chat is temporarily offline.',missingConfiguration:deps.missingConfiguration||[]},503);
     if(req.method==='GET') {
       try {return json({enabled:true,messages:await deps.readFeed()});}
       catch {return json({error:'Minecraft Chat could not connect to Discord. Try again shortly.'},503);}
