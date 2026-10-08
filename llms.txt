@@ -38,3 +38,6 @@ Minecraft Java 26.2 / Fabric. 178 installed server mod files inspected; ten cust
 
 ## October 7 integration repairs
 Assistant v1.2.2 is loaded. Handbook and Campaign Token links use the live renderer; the Handbook links to the seasonal journal; 28 seasonal callbacks use the existing hf26_menu dispatcher. The original ten custom packs plus an integration override pack are enabled. Frostpale alternatives and a chest-enchantment context issue were repaired. Post-restart startup and console verification had zero ERROR entries; third-party warnings remain. Existing player progress and reward amounts were preserved.
+
+## Homes integration
+/home and /homes open the server-side Homes inventory GUI. /sethome <name> saves your position and /home <name> retains direct teleport. One starter slot plus four earned campaign slots gives total capacities 1/2/3/4/5 after starter/Bronze/Gold/Mythic/Ascendant. The GUI, creation checks and Perks screen are integrated. Existing homes and five-second teleport delay are preserved. No additional client mod is required by this patch.
