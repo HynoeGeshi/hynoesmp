@@ -55,6 +55,7 @@ test('preview anchors and every linked local destination resolve', async ({ page
 
 test('directory search returns genuine profiles and handles unusual parameters', async ({ page, request }) => {
   await page.goto('/search?q=Adobe');
+  await expect(page.locator('.result-card')).toHaveCount(1);
   await expect(page.getByRole('heading',{name:'Adobe',exact:true})).toBeVisible();
   await expect(page.getByText('Public listing · unclaimed')).toBeVisible();
   await page.goto('/search?scope=directory');
@@ -63,7 +64,7 @@ test('directory search returns genuine profiles and handles unusual parameters',
   await expect(page.getByRole('heading',{name:'Hynoe',exact:true})).toBeVisible();
   expect((await request.get('/search?q=Adobe&q=Canva&type=invalid')).status()).toBe(200);
   expect((await request.get('/p/hynoe-missing-page-9e7c')).status()).toBe(404);
-  await page.goto('/search?q=totally-nonexistent-business-2027');
+  await page.goto('/search?q=zzzzunlistedqvkjz2027');
   await expect(page.getByRole('heading',{name:'No matches yet.'})).toBeVisible();
 });
 

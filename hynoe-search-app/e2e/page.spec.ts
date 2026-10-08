@@ -6,16 +6,18 @@ test('Hynoe SMP keeps its independent official destination', async ({ page }) =>
   await expect(page.getByRole('link', { name: /Visit official destination/i })).toHaveAttribute('href', 'https://hynoesmp.com');
 });
 
-test('Hynoe Flicks keeps its independent official destination', async ({ page }) => {
+test('Flicks keeps a working public profile without linking its unavailable portfolio', async ({ page }) => {
   await page.goto('/p/hynoe-flicks');
   await expect(page.getByRole('heading', { name: 'Hynoe Flicks' })).toBeVisible();
-  await expect(page.getByRole('link', { name: /Visit official destination/i })).toHaveAttribute('href', 'https://hynoeflicks.com');
+  await expect(page.locator('a[href*="hynoeflicks.com"]')).toHaveCount(0);
+  await expect(page.getByText('The separate portfolio website is being restored. There is no live portfolio or booking link on this page yet.')).toBeVisible();
 });
 
-test('Hynoe Outpost keeps its direct Hynoe destination', async ({ page }) => {
+test('Outpost links to the working origin that preserves browser progress', async ({ page }) => {
   await page.goto('/p/hynoe-outpost');
   await expect(page.getByRole('heading', { name: 'Hynoe Outpost' })).toBeVisible();
-  await expect(page.getByRole('link', { name: /Visit official destination/i })).toHaveAttribute('href', 'https://outpost.hynoe.net');
+  await expect(page.getByRole('link', { name: /Visit official destination/i })).toHaveAttribute('href', 'https://hynoesmp.com/watch.html#game');
+  await expect(page.locator('a[href*="outpost.hynoe.net"]')).toHaveCount(0);
 });
 
 test('public Hynoe Page stays usable at 320px without horizontal overflow', async ({ page }) => {

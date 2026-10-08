@@ -4,7 +4,9 @@ import type { SearchFilters, SearchResult } from './types';
 
 function tokenMatch(haystack: string, token: string): boolean {
   if (token.length < 3) return haystack.split(' ').includes(token);
-  return haystack.split(/\s+/).some((word) => word.startsWith(token) || token.startsWith(word));
+  // Forward prefixes support type-ahead. Reversing this comparison makes
+  // common words such as "a" match "Adobe", and empty fields match anything.
+  return haystack.split(/\s+/).some((word) => word.startsWith(token));
 }
 
 export function searchPages(pages: readonly HynoePage[], query: string, filters: SearchFilters = {}): SearchResult[] {
