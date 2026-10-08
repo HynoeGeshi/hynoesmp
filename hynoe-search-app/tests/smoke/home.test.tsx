@@ -30,7 +30,7 @@ describe('Hynoe Search homepage', () => {
     expect(screen.getByRole('link', { name: 'Local businesses' })).toHaveAttribute('href', '/search?type=local_business');
     expect(screen.getByRole('link', { name: 'Projects' })).toHaveAttribute('href', '/search?type=project_brand');
     expect(screen.getByRole('heading', { name: /hynoe originals/i })).toBeInTheDocument();
-    for (const name of ['Hynoe Outpost','Hynoe SMP','Hynoe Flicks','Hynoe CreatorOps','Hynoe']) expect(screen.getByRole('link', { name, exact: true })).toBeInTheDocument();
+    for (const name of ['Hynoe Outpost','Hynoe SMP','Hynoe Flicks','Hynoe CreatorOps','Hynoe']) expect(screen.getByRole('link', { name })).toBeInTheDocument();
   });
   it('explains the Hynoe discovery loop in plain language', () => {
     render(<Home />);
