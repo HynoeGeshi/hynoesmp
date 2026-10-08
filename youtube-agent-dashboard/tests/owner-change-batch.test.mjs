@@ -11,7 +11,7 @@ function packageFor(p = proposal, noOp = false) {
   const snippet = {title: noOp ? p.target.title : 'Original title', description: noOp ? p.target.description : 'Original description', categoryId: '20'};
   return {action: p.action, resource_id: p.resource_id, channel_id: api.CHANGE_CHANNEL, youtube_channel_id: 'UCjWR1CZVFkrVk3S-TRrOGGQ', before: {owned_channel_id: 'UCjWR1CZVFkrVk3S-TRrOGGQ', snippet, status: {privacyStatus: 'public'}}, after: {api: 'videos', part: 'snippet', body: {id: p.resource_id, snippet: {...snippet, ...p.target}}}, policy: {kind: 'existing_public_metadata'}};
 }
-function fixture({drift = false, noOp = false, uncertain = false, inspectFails = false, receipts = []} = {}) {
+function fixture({drift = false, noOp = false, uncertain = false, inspectFails = false, receipts = [], preparedPackage} = {}) {
   const calls = [];
   const tables = {
     youtube_owner_change_requests: receipts.map(x => x.request),
@@ -28,7 +28,7 @@ function fixture({drift = false, noOp = false, uncertain = false, inspectFails =
     functions: {invoke: async (name, {body}) => {
       calls.push({name, body});
       if (body.operation === 'prepare') {
-        const package_ = packageFor({...proposal, action: body.action, resource_id: body.resource_id, target: body.target}, noOp);
+        const package_ = preparedPackage ? structuredClone(preparedPackage) : packageFor({...proposal, action: body.action, resource_id: body.resource_id, target: body.target}, noOp);
         if (drift) package_.after.body.snippet.title = 'Unapproved drift';
         return {data: {id: requestId, package: package_, state: 'awaiting_review'}};
       }
@@ -118,3 +118,48 @@ test('pause stops before the next item and does not execute on load', async () =
   assert.ok(!calls.some(x=>x.body));
 });
 
+function sectionPackage(proposal, wireType, beforeType = wireType, noOp = false) {
+  const isNew = proposal.resource_id.startsWith('new:');
+  const before = isNew ? {owned_channel_id: 'UCjWR1CZVFkrVk3S-TRrOGGQ', exists: false} : {
+    owned_channel_id: 'UCjWR1CZVFkrVk3S-TRrOGGQ',
+    snippet: {...proposal.target.snippet, type: beforeType, position: noOp ? proposal.target.snippet.position : 0},
+    contentDetails: structuredClone(proposal.target.contentDetails)
+  };
+  return {action: 'channel_section', resource_id: proposal.resource_id, channel_id: api.CHANGE_CHANNEL, youtube_channel_id: 'UCjWR1CZVFkrVk3S-TRrOGGQ', before,
+    after: {api: 'channelSections', part: 'snippet,contentDetails', body: {...(isNew ? {} : {id: proposal.resource_id}), snippet: {...proposal.target.snippet, type: wireType}, contentDetails: structuredClone(proposal.target.contentDetails)}}, policy: {kind: 'channel_presentation'}};
+}
+
+test('canonical and legacy Home type enums match only their exact logical approved type', () => {
+  for (const [legacy, wire] of [['singleplaylist','singlePlaylist'],['multipleplaylists','multiplePlaylists'],['completedevents','completedEvents']]) {
+    const proposal = legacy === 'completedevents' ? HOME_DRAFTS.find(x=>x.key==='home:past-streams') : HOME_DRAFTS.find(x=>x.target.snippet.type===legacy);
+    assert.equal(api.assertApprovedTarget({id:requestId,package:sectionPackage(proposal,wire,legacy)},proposal),true);
+    const canonicalProposal = {...proposal,target:{...proposal.target,snippet:{...proposal.target.snippet,type:wire}}};
+    assert.equal(api.assertApprovedTarget({id:requestId,package:sectionPackage(canonicalProposal,legacy,wire)},canonicalProposal),true);
+    for(const wrong of ['foryou','SinglePlaylist',legacy==='singleplaylist'?'multiplePlaylists':'singlePlaylist']) {
+      assert.throws(()=>api.assertApprovedTarget({id:requestId,package:sectionPackage(proposal,wrong)},proposal),/approved target/);
+    }
+    const drift=sectionPackage(proposal,wire,legacy);
+    drift.after.body.snippet.position++;
+    assert.throws(()=>api.assertApprovedTarget({id:requestId,package:drift},proposal),/approved target/);
+  }
+});
+
+test('a canonical consumed Home receipt resumes a frozen legacy target by inspection only', async () => {
+  const proposal = HOME_DRAFTS.find(x=>x.key==='home:survival');
+  const package_ = sectionPackage(proposal,'singlePlaylist');
+  const {client,calls} = fixture({receipts:[{
+    request:{id:requestId,channel_id:api.CHANGE_CHANNEL,action:proposal.action,resource_id:proposal.resource_id,package:package_,state:'applied',result_resource_id:'UCjWR1CZVFkrVk3S-TRrOGGQ.created'},
+    approval:{id:approvalId,request_id:requestId,channel_id:api.CHANGE_CHANNEL,approved_by:owner,package:package_,approved_at:'2026-10-08T00:00:00Z',consumed_at:'2026-10-08T00:00:00Z',revoked_at:null}
+  }]});
+  const result=await api.runApprovedCopyLayout(client,[proposal],options());
+  assert.equal(result.resumed,1);
+  assert.deepEqual(calls.filter(x=>x.body).map(x=>x.body.operation),['inspect']);
+});
+
+test('equivalent canonical and legacy existing Home snapshots skip public writes', async () => {
+  const proposal=HOME_DRAFTS.find(x=>x.key==='home:full-series');
+  const {client,calls}=fixture({preparedPackage:sectionPackage(proposal,'multiplePlaylists','multipleplaylists',true)});
+  const result=await api.runApprovedCopyLayout(client,[proposal],options());
+  assert.equal(result.unchanged,1);
+  assert.ok(!calls.some(x=>x.name==='approve_youtube_owner_change'||x.body?.operation==='apply'));
+});

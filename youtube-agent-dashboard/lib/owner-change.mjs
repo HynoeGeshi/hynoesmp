@@ -9,6 +9,16 @@ function canonical(value) {
  return value;
 }
 const equal = (left,right)=>JSON.stringify(canonical(left))===JSON.stringify(canonical(right));
+const HOME_TYPES = new Map([
+ ['singleplaylist','singlePlaylist'],['singlePlaylist','singlePlaylist'],
+ ['multipleplaylists','multiplePlaylists'],['multiplePlaylists','multiplePlaylists'],
+ ['completedevents','completedEvents'],['completedEvents','completedEvents']
+]);
+function homeSnippet(snippet) {
+ const type=HOME_TYPES.get(snippet?.type);
+ if(!type)throw Error('Prepared Home type does not match the approved target');
+ return {...snippet,type};
+}
 const without = (value,keys)=>Object.fromEntries(Object.entries(value||{}).filter(([key])=>!keys.includes(key)));
 function approvedScope(proposal) {
  if(!COPY_ACTIONS.includes(proposal?.action)||typeof proposal.resource_id!=='string'||!proposal.target)throw Error('Change is outside the approved scope');
@@ -17,7 +27,7 @@ function approvedScope(proposal) {
  const expected=proposal.action==='public_video_metadata'?['description','title']:proposal.action==='channel_section'?['contentDetails','snippet']:['description'];
  if(!equal(keys,expected)||((proposal.action==='public_video_metadata'||proposal.action.endsWith('description'))&&typeof target.description!=='string'))throw Error('Change is outside the approved scope');
  if(proposal.action==='public_video_metadata'&&typeof target.title!=='string')throw Error('Change is outside the approved scope');
- if(proposal.action==='channel_section'&&(!target.snippet||!target.contentDetails||!['singleplaylist','multipleplaylists','completedevents'].includes(target.snippet.type)))throw Error('Change is outside the approved scope');
+ if(proposal.action==='channel_section'&&(!target.snippet||!target.contentDetails||!HOME_TYPES.has(target.snippet.type)))throw Error('Change is outside the approved scope');
 }
 export function approvedCopyLayoutPlan(drafts,home) {
  if(drafts?.revision!=='hynoe-whole-channel-draft-2026-10-07-v3'||drafts.channel?.length!==1||drafts.videos?.length!==62||drafts.playlists?.length!==9||home?.length!==6)throw Error('Frozen approved copy/layout revision is required');
@@ -46,16 +56,20 @@ export function assertApprovedTarget(request,proposal) {
  } else {
   const isNew=proposal.resource_id.startsWith('new:');
   if(isNew?before?.exists!==false:!before?.snippet)throw Error('Prepared package does not match the approved target');
+  if(!isNew&&homeSnippet(before.snippet).type!==homeSnippet(proposal.target.snippet).type)throw Error('Prepared Home type does not match the approved target');
   expected={api:'channelSections',part:'snippet,contentDetails',body:{...(isNew?{}:{id:proposal.resource_id}),snippet:{...(isNew?{}:before.snippet),...proposal.target.snippet},contentDetails:proposal.target.contentDetails}};
  }
- if(!equal(after,expected)||!body)throw Error('Prepared package does not match the approved target');
+ const matches=proposal.action==='channel_section'
+  ?equal({...after,body:{...body,snippet:homeSnippet(body?.snippet)}},{...expected,body:{...expected.body,snippet:homeSnippet(expected.body.snippet)}})
+  :equal(after,expected);
+ if(!matches||!body)throw Error('Prepared package does not match the approved target');
  return true;
 }
 function unchanged(request) {
  const {action,before,after}=request.package;
  if(['public_video_metadata','public_playlist_description'].includes(action))return equal(before.snippet,after.body.snippet);
  if(action==='channel_description')return before.brandingSettings.channel.description===after.body.brandingSettings.channel.description;
- if(action==='channel_section')return before.exists!==false&&equal(before.snippet,after.body.snippet)&&equal(before.contentDetails,after.body.contentDetails);
+ if(action==='channel_section')return before.exists!==false&&equal(homeSnippet(before.snippet),homeSnippet(after.body.snippet))&&equal(before.contentDetails,after.body.contentDetails);
  return false;
 }
 export async function inspectExactChange(client,request,approvalId) {
