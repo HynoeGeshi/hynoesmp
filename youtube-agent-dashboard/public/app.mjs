@@ -1,11 +1,14 @@
 import { createClient } from '/vendor/supabase.mjs';
-import { loadCandidates, attachPreview, submitApproval } from '/dashboard-core.mjs';
+import { loadCandidates, attachPreview, submitApproval, reviewQueue } from '/dashboard-core.mjs';
 
 const config = window.__HYNOE_YOUTUBE_AGENT_CONFIG__ || {};
 const supabase = createClient(config.supabaseUrl, config.supabaseAnonKey);
 const authPanel = document.querySelector('#authPanel');
 const reviewPanel = document.querySelector('#reviewPanel');
 const candidateList = document.querySelector('#candidateList');
+const rejectedHistory = document.querySelector('#rejectedHistory');
+const rejectedSummary = document.querySelector('#rejectedSummary');
+const rejectedList = document.querySelector('#rejectedList');
 const status = document.querySelector('#status');
 const loginForm = document.querySelector('#loginForm');
 const signOut = document.querySelector('#signOut');
@@ -124,10 +127,16 @@ function renderCandidateCard(candidate) {
 
 async function refreshCandidates() {
   candidateList.replaceChildren();
+  rejectedList.replaceChildren();
+  rejectedSummary.textContent = 'Rejected history';
   try {
     const candidates = await loadCandidates(supabase);
-    for (const candidate of candidates) candidateList.append(renderCandidateCard(candidate));
-    status.textContent = candidates.length ? `${candidates.length} Shorts in queue` : 'No Shorts waiting right now.';
+    const { active, rejected, counts } = reviewQueue(candidates);
+    for (const candidate of active) candidateList.append(renderCandidateCard(candidate));
+    for (const candidate of rejected) rejectedList.append(renderCandidateCard(candidate));
+    rejectedSummary.textContent = `Rejected history (${counts.rejected})`;
+    status.textContent = `${counts.ready} ready to review · ${counts.awaiting} awaiting render · ${counts.approved} approved · ${counts.rejected} rejected`;
+    if (counts.attention) status.textContent += ` · ${counts.attention} need attention`;
   } catch (error) {
     status.textContent = error?.message || 'Could not load Shorts.';
   }
@@ -136,6 +145,9 @@ async function refreshCandidates() {
 async function applySession(session) {
   if (!session) {
     candidateList.replaceChildren();
+    rejectedList.replaceChildren();
+    rejectedSummary.textContent = 'Rejected history';
+    rejectedHistory.open = false;
     authPanel.classList.remove('hidden');
     reviewPanel.classList.add('hidden');
     status.textContent = 'Sign in to review Shorts.';
@@ -163,3 +175,4 @@ await applySession(session);
 supabase.auth.onAuthStateChange((_event, nextSession) => {
   void applySession(nextSession);
 });
+
