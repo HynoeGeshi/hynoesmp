@@ -6,7 +6,7 @@ const $=id=>document.getElementById(id);
 let session=null,ownerId=null,items=[],states=[],busy=false,stop=false,generation=0;
 const rows=new Map();
 function notice(text){$('notice').textContent=text;}
-function controls(){ $('apply').disabled=busy||!session||!items.length;$('check').disabled=busy||!session||!items.length;$('stop').classList.toggle('hidden',!busy); }
+function controls(){ $('apply').disabled=true;$('check').disabled=busy||!session||!items.length;$('stop').classList.toggle('hidden',!busy); }
 function reset(){generation++;stop=true;items=[];states=[];rows.clear();$('items').replaceChildren();$('progress').value=0;$('count').textContent='';}
 async function call(operation,extra={}){
  const {data:{session:current},error:authError}=await client.auth.getSession();
@@ -30,7 +30,7 @@ function progress(){const n=states.filter(s=>s.matches).length;$('progress').val
 async function inspect(){const data=await call('inspect');states=data.states;progress();return data;}
 async function load(){
  const ticket=generation;busy=true;controls();notice('Loading the approved private batch…');
- try{const data=await call('preview');if(ticket!==generation)return;items=[...data.items.map(x=>({...x,item_id:x.video_id})),{...data.playlist,item_id:data.playlist.playlist_id}];render();notice('Approved copy loaded. Nothing has been sent to YouTube. Select Apply approved changes to start.');}
+ try{const data=await call('preview');if(ticket!==generation)return;items=[...data.items.map(x=>({...x,item_id:x.video_id})),{...data.playlist,item_id:data.playlist.playlist_id}];render();notice('Draft copy loaded. Public changes are disabled until exact owner approval is supported.');}
  catch(e){notice(e.message);}finally{busy=false;controls();}
 }
 $('apply').addEventListener('click',async()=>{

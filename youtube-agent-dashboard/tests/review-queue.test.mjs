@@ -68,7 +68,7 @@ test('actual app separates rejected history and uses accurate counts on startup 
   assert.equal(ids.rejectedList.children.length,4);
   assert.equal(ids.status.textContent,'0 ready to review · 13 awaiting render · 4 approved · 4 rejected');
   assert.equal(ids.rejectedHistory.open,false);
-  assert.ok(!flatten(ids.rejectedList).some(node=>node.tagName==='button'&&['Approve','Reject'].includes(node.textContent)));
+  assert.ok(!flatten(ids.rejectedList).some(node=>node.tagName==='button'&&['Approve','Reject','Review exact private upload'].includes(node.textContent)));
   signOut();
   assert.equal(ids.candidateList.children.length,0);
   assert.equal(ids.rejectedList.children.length,0);

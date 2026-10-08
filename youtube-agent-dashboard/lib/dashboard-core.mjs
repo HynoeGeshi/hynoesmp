@@ -1,3 +1,4 @@
+import { uploadPackage } from './upload-package.mjs';
 const BUCKET_ORDER = { review: 0, ready: 1, processing: 2, terminal: 3 };
 
 export function reviewQueue(candidates = []) {
@@ -40,7 +41,7 @@ export function sortCandidates(candidates = []) {
 
 export async function loadCandidates(supabase) {
   const fields = [
-    'id','start_ms','end_ms','category','score','transcript_excerpt','hook','title','description','hashtags',
+    'id','video_source_id','start_ms','end_ms','category','score','transcript_excerpt','hook','title','description','hashtags',
     'render_uri','preview_uri','render_status','approval_state','reviewer_notes','created_at','updated_at','render_error_message'
   ].join(',');
   const { data, error } = await supabase.from('clip_candidates').select(fields);
@@ -96,6 +97,7 @@ export async function submitApproval(supabase, clipId, action, notes = null) {
   if (action !== 'approve' && action !== 'reject') {
     throw new Error('invalid approval action');
   }
+  if (action === 'approve') throw new Error('Exact upload package and owner confirmation required');
   const { data, error } = await supabase.rpc('approve_clip', {
     p_clip_id: clipId,
     p_action: action,
@@ -103,5 +105,25 @@ export async function submitApproval(supabase, clipId, action, notes = null) {
   });
   if (error) throw error;
   return Array.isArray(data) ? data[0] : data;
+}
+
+export async function prepareUploadReview(supabase, clipId, fetchMedia = fetch) {
+  const {data:clip,error} = await supabase.from('clip_candidates').select('*').eq('id',clipId).single();
+  if(error) throw error;
+  if(clip.render_status !== 'ready' || !clip.render_uri || Number(clip.score)<90) throw new Error('A 90+ score and finished private render are required');
+  const {data:signed,error:signError}=await supabase.storage.from('clip-previews').createSignedUrl(clip.render_uri,600);
+  if(signError) throw signError;
+  const media=await fetchMedia(signed.signedUrl);
+  if(!media.ok) throw new Error('Private rendered media could not be read');
+  const digest=await crypto.subtle.digest('SHA-256',await media.arrayBuffer());
+  return uploadPackage(clip,Array.from(new Uint8Array(digest),x=>x.toString(16).padStart(2,'0')).join(''));
+}
+export async function recordExactUploadApproval(supabase, package_, confirmation) {
+  if(confirmation !== 'I approve this exact YouTube upload') throw new Error('Exact owner confirmation required');
+  const {data,error}=await supabase.rpc('approve_clip_upload',{p_clip_id:package_.clip_candidate_id,p_package:package_,p_confirmation_text:confirmation});
+  if(error) throw error;
+  const recorded=Array.isArray(data)?data[0]:data;
+  if(!recorded?.upload_approval_id) throw new Error('Exact approval was not recorded');
+  return recorded;
 }
 

@@ -32,7 +32,7 @@ test('health endpoint returns 200', async () => {
   await withServer(async (base) => {
     const response = await fetch(`${base}/health`);
     assert.equal(response.status, 200);
-    assert.deepEqual(await response.json(), { ok: true, securityRevision: '20261007-private-dashboard-v1' });
+    assert.deepEqual(await response.json(), { ok: true, securityRevision: '20261007-exact-owner-consent-v2' });
   });
 });
 

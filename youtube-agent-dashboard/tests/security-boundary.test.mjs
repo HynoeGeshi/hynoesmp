@@ -89,7 +89,7 @@ test('health preserves liveness and exposes a deploy verification revision', asy
   await withServer(async base => {
     const response = await fetch(base+'/health');
     assert.equal(response.status, 200);
-    assert.deepEqual(await response.json(), {ok:true, securityRevision:'20261007-private-dashboard-v1'});
+    assert.deepEqual(await response.json(), {ok:true, securityRevision:'20261007-exact-owner-consent-v2'});
   });
 });
 

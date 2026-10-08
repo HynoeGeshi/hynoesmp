@@ -37,5 +37,6 @@ test('approval UI locks controls and refreshes after action', () => {
   assert.match(source, /finally/);
   assert.match(source, /Approve/);
   assert.match(source, /Reject/);
-  assert.match(source, /approval_state\s*!==\s*['"]pending['"]/);
+  assert.match(source, /recordExactUploadApproval/);
+  assert.match(source, /window\.confirm/);
 });
