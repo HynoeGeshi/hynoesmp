@@ -50,6 +50,9 @@ const routes = new Map([
   ['/', ['index.html', 'text/html; charset=utf-8']],
   ['/app.mjs', ['app.mjs', 'text/javascript; charset=utf-8']],
   ['/styles.css', ['styles.css', 'text/css; charset=utf-8']],
+  ['/metadata', ['metadata.html', 'text/html; charset=utf-8']],
+  ['/metadata.html', ['metadata.html', 'text/html; charset=utf-8']],
+  ['/metadata.mjs', ['metadata.mjs', 'text/javascript; charset=utf-8']],
 ]);
 
 export function createServer({ env = process.env, publicDir = DEFAULT_PUBLIC, vendorFile = DEFAULT_VENDOR, coreFile = DEFAULT_CORE } = {}) {
