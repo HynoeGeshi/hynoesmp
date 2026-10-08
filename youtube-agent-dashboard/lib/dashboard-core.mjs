@@ -1,6 +1,27 @@
 import { uploadPackage } from './upload-package.mjs';
 const BUCKET_ORDER = { review: 0, ready: 1, processing: 2, terminal: 3 };
 
+export function reviewQueue(candidates = []) {
+  const active = [];
+  const rejected = [];
+  const counts = { ready: 0, awaiting: 0, approved: 0, rejected: 0, attention: 0 };
+  for (const candidate of candidates) {
+    if (candidate.approval_state === 'rejected') {
+      rejected.push(candidate);
+      counts.rejected += 1;
+      continue;
+    }
+    active.push(candidate);
+    if (candidate.approval_state === 'approved') counts.approved += 1;
+    if (candidate.approval_state === 'pending') {
+      if (previewPath(candidate)) counts.ready += 1;
+      else if (candidate.render_status === 'pending' || candidate.render_status === 'rendering') counts.awaiting += 1;
+      else counts.attention += 1;
+    }
+  }
+  return { active, rejected, counts };
+}
+
 export function candidateBucket(candidate) {
   if (candidate?.approval_state === 'rejected' || candidate?.render_status === 'failed') return 'terminal';
   if (candidate?.render_status === 'ready' && (candidate?.approval_state ?? 'pending') === 'pending') return 'review';
