@@ -185,4 +185,3 @@ test('an uncertain created section without a known provider ID still stops befor
   await assert.rejects(()=>api.runApprovedCopyLayout(client,[proposal],options()),/owner inspection/);
   assert.deepEqual(calls.filter(x=>x.body),[]);
 });
-
