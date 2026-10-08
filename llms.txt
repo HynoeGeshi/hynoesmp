@@ -35,3 +35,6 @@ Last reviewed: 2026-10-07
 
 ## October 7 server review
 Minecraft Java 26.2 / Fabric. 178 installed server mod files inspected; ten custom datapacks enabled. Campaign v15.1 and Fall v2.5 are enabled. The Fall event loop time-command repair was uploaded, reloaded, and executed successfully. /ask answered and /next invoked the current-stage function from the console. No mod version upgrades were performed. Missing Mythic Upgrades blocks, Alex’s Mobs effects, and C2ME / Towns and Towers generation issues remain under investigation.
+
+## October 7 integration repairs
+Assistant v1.2.2 is loaded. Handbook and Campaign Token links use the live renderer; the Handbook links to the seasonal journal; 28 seasonal callbacks use the existing hf26_menu dispatcher. The original ten custom packs plus an integration override pack are enabled. Frostpale alternatives and a chest-enchantment context issue were repaired. Post-restart startup and console verification had zero ERROR entries; third-party warnings remain. Existing player progress and reward amounts were preserved.
