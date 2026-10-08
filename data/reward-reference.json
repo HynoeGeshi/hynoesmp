@@ -1,0 +1,1709 @@
+{
+  "stages": [
+    {
+      "dollars": 7500,
+      "tokens": 3,
+      "items": [
+        "minecraft:torch 16",
+        "minecraft:iron_ingot 8"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_contracts/function/reward/1.mcfunction",
+      "stage": 1,
+      "mission_dollars": [
+        200,
+        200,
+        200
+      ],
+      "mission_total": 600,
+      "repeatable_stage": false,
+      "bundle_label": "16x Torch + 8x Iron Ingot",
+      "name": "BRONZE 1: THE FIRST FOUNDRY"
+    },
+    {
+      "dollars": 8500,
+      "tokens": 3,
+      "items": [
+        "minecraft:spyglass 1",
+        "minecraft:cooked_beef 16"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_contracts/function/reward/2.mcfunction",
+      "stage": 2,
+      "mission_dollars": [
+        200,
+        200,
+        200,
+        200,
+        200
+      ],
+      "mission_total": 1000,
+      "repeatable_stage": false,
+      "bundle_label": "1x Spyglass + 16x Cooked Beef",
+      "name": "BRONZE 2: CARTOGRAPHER APPRENTICE"
+    },
+    {
+      "dollars": 10000,
+      "tokens": 4,
+      "items": [
+        "minecraft:bone_meal 32",
+        "minecraft:golden_carrot 8"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_contracts/function/reward/3.mcfunction",
+      "stage": 3,
+      "mission_dollars": [
+        200,
+        200,
+        200,
+        200,
+        200
+      ],
+      "mission_total": 1000,
+      "repeatable_stage": false,
+      "bundle_label": "32x Bone Meal + 8x Golden Carrot",
+      "name": "BRONZE 3: MARKET GARDEN"
+    },
+    {
+      "dollars": 12000,
+      "tokens": 4,
+      "items": [
+        "minecraft:lantern 8",
+        "minecraft:oak_log 16"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_contracts/function/reward/4.mcfunction",
+      "stage": 4,
+      "mission_dollars": [
+        200,
+        200,
+        200,
+        200,
+        200
+      ],
+      "mission_total": 1000,
+      "repeatable_stage": false,
+      "bundle_label": "8x Lantern + 16x Oak Log",
+      "name": "BRONZE 4: A PLACE WORTH LIVING"
+    },
+    {
+      "dollars": 15000,
+      "tokens": 5,
+      "items": [
+        "minecraft:barrel 4",
+        "minecraft:coal 16"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_contracts/function/reward/5.mcfunction",
+      "stage": 5,
+      "mission_dollars": [
+        200,
+        200,
+        200,
+        200,
+        200
+      ],
+      "mission_total": 1000,
+      "repeatable_stage": false,
+      "bundle_label": "4x Barrel + 16x Coal",
+      "name": "BRONZE 5: STORAGE AND SUPPLY"
+    },
+    {
+      "dollars": 50000,
+      "tokens": 20,
+      "items": [
+        "minecraft:golden_apple 1",
+        "minecraft:experience_bottle 8"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_contracts/function/reward/6.mcfunction",
+      "stage": 6,
+      "mission_dollars": [
+        400,
+        400,
+        400,
+        400,
+        400
+      ],
+      "mission_total": 2000,
+      "repeatable_stage": false,
+      "bundle_label": "1x Golden Apple + 8x Experience Bottle",
+      "name": "BRONZE 6: BRONZE PROVING GROUNDS"
+    },
+    {
+      "dollars": 18000,
+      "tokens": 6,
+      "items": [
+        "minecraft:emerald 8",
+        "minecraft:name_tag 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_contracts/function/reward/7.mcfunction",
+      "stage": 7,
+      "mission_dollars": [
+        300,
+        300,
+        300,
+        300,
+        300
+      ],
+      "mission_total": 1500,
+      "repeatable_stage": false,
+      "bundle_label": "8x Emerald + 1x Name Tag",
+      "name": "SILVER 7: PEOPLE, NOT NUMBERS"
+    },
+    {
+      "dollars": 22000,
+      "tokens": 8,
+      "items": [
+        "minecraft:emerald 12",
+        "minecraft:golden_carrot 8"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_contracts/function/reward/8.mcfunction",
+      "stage": 8,
+      "mission_dollars": [
+        300,
+        300,
+        300,
+        300,
+        300
+      ],
+      "mission_total": 1500,
+      "repeatable_stage": false,
+      "bundle_label": "12x Emerald + 8x Golden Carrot",
+      "name": "SILVER 8: A HYNOE DYNASTY"
+    },
+    {
+      "dollars": 25000,
+      "tokens": 9,
+      "items": [
+        "minecraft:arrow 32",
+        "minecraft:golden_apple 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_contracts/function/reward/9.mcfunction",
+      "stage": 9,
+      "mission_dollars": [
+        300,
+        300,
+        300,
+        300
+      ],
+      "mission_total": 1200,
+      "repeatable_stage": false,
+      "bundle_label": "32x Arrow + 1x Golden Apple",
+      "name": "SILVER 9: THE WILD HUNT"
+    },
+    {
+      "dollars": 30000,
+      "tokens": 10,
+      "items": [
+        "minecraft:crossbow 1",
+        "minecraft:arrow 16"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_contracts/function/reward/10.mcfunction",
+      "stage": 10,
+      "mission_dollars": [
+        300,
+        300,
+        300,
+        300,
+        300
+      ],
+      "mission_total": 1500,
+      "repeatable_stage": false,
+      "bundle_label": "1x Crossbow + 16x Arrow",
+      "name": "SILVER 10: THE RAIDER WAR"
+    },
+    {
+      "dollars": 35000,
+      "tokens": 12,
+      "items": [
+        "minecraft:obsidian 16",
+        "minecraft:firework_rocket 16"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_contracts/function/reward/11.mcfunction",
+      "stage": 11,
+      "mission_dollars": [
+        300,
+        300,
+        300,
+        300,
+        300
+      ],
+      "mission_total": 1500,
+      "repeatable_stage": false,
+      "bundle_label": "16x Obsidian + 16x Firework Rocket",
+      "name": "SILVER 11: NETHER EXPEDITION"
+    },
+    {
+      "dollars": 90000,
+      "tokens": 40,
+      "items": [
+        "minecraft:golden_apple 2",
+        "minecraft:experience_bottle 16"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_contracts/function/reward/12.mcfunction",
+      "stage": 12,
+      "mission_dollars": [
+        600,
+        600,
+        600,
+        600,
+        600
+      ],
+      "mission_total": 3000,
+      "repeatable_stage": false,
+      "bundle_label": "2x Golden Apple + 16x Experience Bottle",
+      "name": "SILVER 12: WORLDBOSS INITIATE"
+    },
+    {
+      "dollars": 40000,
+      "tokens": 14,
+      "items": [
+        "minecraft:redstone_block 16",
+        "minecraft:iron_block 8"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_contracts/function/reward/13.mcfunction",
+      "stage": 13,
+      "mission_dollars": [
+        400,
+        400,
+        400,
+        400,
+        400
+      ],
+      "mission_total": 2000,
+      "repeatable_stage": false,
+      "bundle_label": "16x Redstone Block + 8x Iron Block",
+      "name": "GOLD 13: INDUSTRIAL REVOLUTION"
+    },
+    {
+      "dollars": 45000,
+      "tokens": 16,
+      "items": [
+        "minecraft:ender_pearl 4",
+        "minecraft:experience_bottle 16"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_contracts/function/reward/14.mcfunction",
+      "stage": 14,
+      "mission_dollars": [
+        400,
+        400,
+        400,
+        400,
+        400
+      ],
+      "mission_total": 2000,
+      "repeatable_stage": false,
+      "bundle_label": "4x Ender Pearl + 16x Experience Bottle",
+      "name": "GOLD 14: THE PERFECT NETWORK"
+    },
+    {
+      "dollars": 50000,
+      "tokens": 18,
+      "items": [
+        "minecraft:golden_carrot 16",
+        "minecraft:honey_bottle 8"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_contracts/function/reward/15.mcfunction",
+      "stage": 15,
+      "mission_dollars": [
+        400,
+        400,
+        400,
+        400,
+        400
+      ],
+      "mission_total": 2000,
+      "repeatable_stage": false,
+      "bundle_label": "16x Golden Carrot + 8x Honey Bottle",
+      "name": "GOLD 15: CULINARY EMPIRE"
+    },
+    {
+      "dollars": 65000,
+      "tokens": 22,
+      "items": [
+        "minecraft:diamond 4",
+        "minecraft:smithing_table 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_contracts/function/reward/16.mcfunction",
+      "stage": 16,
+      "mission_dollars": [
+        400,
+        400,
+        400,
+        400,
+        400
+      ],
+      "mission_total": 2000,
+      "repeatable_stage": false,
+      "bundle_label": "4x Diamond + 1x Smithing Table",
+      "name": "GOLD 16: ARMORER OF THE REALM"
+    },
+    {
+      "dollars": 70000,
+      "tokens": 25,
+      "items": [
+        "minecraft:arrow 64",
+        "minecraft:target 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_contracts/function/reward/17.mcfunction",
+      "stage": 17,
+      "mission_dollars": [
+        400,
+        400,
+        400,
+        400,
+        400
+      ],
+      "mission_total": 2000,
+      "repeatable_stage": false,
+      "bundle_label": "64x Arrow + 1x Target",
+      "name": "GOLD 17: RELIC ARCHER"
+    },
+    {
+      "dollars": 150000,
+      "tokens": 80,
+      "items": [
+        "minecraft:shulker_shell 2",
+        "minecraft:experience_bottle 32"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_contracts/function/reward/18.mcfunction",
+      "stage": 18,
+      "mission_dollars": [
+        800,
+        800,
+        800,
+        800,
+        800
+      ],
+      "mission_total": 4000,
+      "repeatable_stage": false,
+      "bundle_label": "2x Shulker Shell + 32x Experience Bottle",
+      "name": "GOLD 18: IMMERSIVE ORE TRIUMVIRATE"
+    },
+    {
+      "dollars": 85000,
+      "tokens": 30,
+      "items": [
+        "minecraft:chorus_fruit 16",
+        "minecraft:ender_pearl 8"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_contracts/function/reward/19.mcfunction",
+      "stage": 19,
+      "mission_dollars": [
+        500,
+        500,
+        500,
+        500,
+        500
+      ],
+      "mission_total": 2500,
+      "repeatable_stage": false,
+      "bundle_label": "16x Chorus Fruit + 8x Ender Pearl",
+      "name": "MYTHIC 19: BETTER END ASCENDANCY"
+    },
+    {
+      "dollars": 90000,
+      "tokens": 32,
+      "items": [
+        "minecraft:firework_rocket 32",
+        "minecraft:golden_apple 2"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_contracts/function/reward/20.mcfunction",
+      "stage": 20,
+      "mission_dollars": [
+        500,
+        500,
+        500,
+        500,
+        500
+      ],
+      "mission_total": 2500,
+      "repeatable_stage": false,
+      "bundle_label": "32x Firework Rocket + 2x Golden Apple",
+      "name": "MYTHIC 20: HEAVEN AND THE END"
+    },
+    {
+      "dollars": 100000,
+      "tokens": 36,
+      "items": [
+        "minecraft:experience_bottle 32",
+        "minecraft:torch 32"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_contracts/function/reward/21.mcfunction",
+      "stage": 21,
+      "mission_dollars": [
+        500,
+        500,
+        500,
+        500,
+        500
+      ],
+      "mission_total": 2500,
+      "repeatable_stage": false,
+      "bundle_label": "32x Experience Bottle + 32x Torch",
+      "name": "MYTHIC 21: INFINITY CAVE DESCENT"
+    },
+    {
+      "dollars": 115000,
+      "tokens": 40,
+      "items": [
+        "minecraft:recovery_compass 1",
+        "minecraft:firework_rocket 32"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_contracts/function/reward/22.mcfunction",
+      "stage": 22,
+      "mission_dollars": [
+        500,
+        500,
+        500,
+        500,
+        500
+      ],
+      "mission_total": 2500,
+      "repeatable_stage": false,
+      "bundle_label": "1x Recovery Compass + 32x Firework Rocket",
+      "name": "MYTHIC 22: THE GRAND ATLAS"
+    },
+    {
+      "dollars": 125000,
+      "tokens": 45,
+      "items": [
+        "minecraft:emerald 16",
+        "minecraft:name_tag 2"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_contracts/function/reward/23.mcfunction",
+      "stage": 23,
+      "mission_dollars": [
+        500,
+        500,
+        500,
+        500,
+        500
+      ],
+      "mission_total": 2500,
+      "repeatable_stage": false,
+      "bundle_label": "16x Emerald + 2x Name Tag",
+      "name": "MYTHIC 23: LEGENDARY BLOODLINE"
+    },
+    {
+      "dollars": 300000,
+      "tokens": 160,
+      "items": [
+        "minecraft:totem_of_undying 1",
+        "minecraft:experience_bottle 32"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_contracts/function/reward/24.mcfunction",
+      "stage": 24,
+      "mission_dollars": [
+        1200,
+        1200,
+        1200,
+        1200,
+        1200
+      ],
+      "mission_total": 6000,
+      "repeatable_stage": false,
+      "bundle_label": "1x Totem Of Undying + 32x Experience Bottle",
+      "name": "MYTHIC 24: SEVEN WORLD THRONES"
+    },
+    {
+      "dollars": 140000,
+      "tokens": 50,
+      "items": [
+        "minecraft:golden_apple 2",
+        "minecraft:arrow 64"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_contracts/function/reward/25.mcfunction",
+      "stage": 25,
+      "mission_dollars": [
+        650,
+        650,
+        650,
+        650
+      ],
+      "mission_total": 2600,
+      "repeatable_stage": false,
+      "bundle_label": "2x Golden Apple + 64x Arrow",
+      "name": "ASCENDANT 25: MENAGERIE OF LEGENDS"
+    },
+    {
+      "dollars": 150000,
+      "tokens": 55,
+      "items": [
+        "minecraft:shulker_box 1",
+        "minecraft:experience_bottle 16"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_contracts/function/reward/26.mcfunction",
+      "stage": 26,
+      "mission_dollars": [
+        650,
+        650,
+        650,
+        650,
+        650
+      ],
+      "mission_total": 3250,
+      "repeatable_stage": false,
+      "bundle_label": "1x Shulker Box + 16x Experience Bottle",
+      "name": "ASCENDANT 26: THE RELIC VAULT"
+    },
+    {
+      "dollars": 175000,
+      "tokens": 60,
+      "items": [
+        "minecraft:bone_meal 32",
+        "minecraft:golden_carrot 16"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_contracts/function/reward/27.mcfunction",
+      "stage": 27,
+      "mission_dollars": [
+        650,
+        650,
+        650,
+        650,
+        650
+      ],
+      "mission_total": 3250,
+      "repeatable_stage": false,
+      "bundle_label": "32x Bone Meal + 16x Golden Carrot",
+      "name": "ASCENDANT 27: AGRICULTURAL EMPIRE"
+    },
+    {
+      "dollars": 200000,
+      "tokens": 70,
+      "items": [
+        "minecraft:golden_apple 2",
+        "minecraft:arrow 32"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_contracts/function/reward/28.mcfunction",
+      "stage": 28,
+      "mission_dollars": [
+        650,
+        650,
+        650,
+        650,
+        650
+      ],
+      "mission_total": 3250,
+      "repeatable_stage": false,
+      "bundle_label": "2x Golden Apple + 32x Arrow",
+      "name": "ASCENDANT 28: WAR ECONOMY"
+    },
+    {
+      "dollars": 250000,
+      "tokens": 90,
+      "items": [
+        "minecraft:netherite_ingot 1",
+        "minecraft:experience_bottle 32"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_contracts/function/reward/29.mcfunction",
+      "stage": 29,
+      "mission_dollars": [
+        650,
+        650,
+        650,
+        650,
+        650
+      ],
+      "mission_total": 3250,
+      "repeatable_stage": false,
+      "bundle_label": "1x Netherite Ingot + 32x Experience Bottle",
+      "name": "ASCENDANT 29: PANTHEON BREAKER"
+    },
+    {
+      "dollars": 750000,
+      "tokens": 350,
+      "items": [
+        "minecraft:netherite_upgrade_smithing_template 1",
+        "minecraft:firework_rocket 64"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_contracts/function/reward/30.mcfunction",
+      "stage": 30,
+      "mission_dollars": [
+        1500,
+        1500,
+        1500,
+        1500,
+        1500
+      ],
+      "mission_total": 7500,
+      "repeatable_stage": false,
+      "bundle_label": "1x Netherite Upgrade Smithing Template + 64x Firework Rocket",
+      "name": "ASCENDANT 30: HYNOE ASCENDANT"
+    },
+    {
+      "dollars": 250000,
+      "tokens": 125,
+      "items": [
+        "minecraft:dragon_head 1",
+        "minecraft:firework_rocket 64"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_contracts/function/reward/31.mcfunction",
+      "stage": 31,
+      "mission_dollars": [
+        750,
+        750,
+        750,
+        750,
+        750
+      ],
+      "mission_total": 3750,
+      "repeatable_stage": true,
+      "bundle_label": "1x Dragon Head + 64x Firework Rocket",
+      "name": "PRESTIGE 31: GUILD ASCENSION"
+    }
+  ],
+  "daily": [
+    {
+      "dollars": 7500,
+      "tokens": 3,
+      "items": [],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_contracts/function/daily/reward/1_1.mcfunction",
+      "id": "1_1"
+    },
+    {
+      "dollars": 8500,
+      "tokens": 4,
+      "items": [],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_contracts/function/daily/reward/1_2.mcfunction",
+      "id": "1_2"
+    },
+    {
+      "dollars": 10000,
+      "tokens": 4,
+      "items": [],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_contracts/function/daily/reward/1_3.mcfunction",
+      "id": "1_3"
+    },
+    {
+      "dollars": 10000,
+      "tokens": 4,
+      "items": [],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_contracts/function/daily/reward/2_1.mcfunction",
+      "id": "2_1"
+    },
+    {
+      "dollars": 7000,
+      "tokens": 3,
+      "items": [],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_contracts/function/daily/reward/2_2.mcfunction",
+      "id": "2_2"
+    },
+    {
+      "dollars": 8500,
+      "tokens": 3,
+      "items": [],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_contracts/function/daily/reward/2_3.mcfunction",
+      "id": "2_3"
+    },
+    {
+      "dollars": 7500,
+      "tokens": 3,
+      "items": [],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_contracts/function/daily/reward/3_1.mcfunction",
+      "id": "3_1"
+    },
+    {
+      "dollars": 7500,
+      "tokens": 3,
+      "items": [],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_contracts/function/daily/reward/3_2.mcfunction",
+      "id": "3_2"
+    },
+    {
+      "dollars": 10000,
+      "tokens": 4,
+      "items": [],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_contracts/function/daily/reward/3_3.mcfunction",
+      "id": "3_3"
+    },
+    {
+      "dollars": 11000,
+      "tokens": 4,
+      "items": [],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_contracts/function/daily/reward/4_1.mcfunction",
+      "id": "4_1"
+    },
+    {
+      "dollars": 9000,
+      "tokens": 4,
+      "items": [],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_contracts/function/daily/reward/4_2.mcfunction",
+      "id": "4_2"
+    },
+    {
+      "dollars": 12000,
+      "tokens": 5,
+      "items": [],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_contracts/function/daily/reward/4_3.mcfunction",
+      "id": "4_3"
+    },
+    {
+      "dollars": 12000,
+      "tokens": 5,
+      "items": [],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_contracts/function/daily/reward/5_1.mcfunction",
+      "id": "5_1"
+    },
+    {
+      "dollars": 10000,
+      "tokens": 4,
+      "items": [],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_contracts/function/daily/reward/5_2.mcfunction",
+      "id": "5_2"
+    },
+    {
+      "dollars": 11000,
+      "tokens": 4,
+      "items": [],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_contracts/function/daily/reward/5_3.mcfunction",
+      "id": "5_3"
+    },
+    {
+      "dollars": 11000,
+      "tokens": 4,
+      "items": [],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_contracts/function/daily/reward/6_1.mcfunction",
+      "id": "6_1"
+    },
+    {
+      "dollars": 8500,
+      "tokens": 3,
+      "items": [],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_contracts/function/daily/reward/6_2.mcfunction",
+      "id": "6_2"
+    },
+    {
+      "dollars": 10000,
+      "tokens": 4,
+      "items": [],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_contracts/function/daily/reward/6_3.mcfunction",
+      "id": "6_3"
+    },
+    {
+      "dollars": 14000,
+      "tokens": 5,
+      "items": [],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_contracts/function/daily/reward/7_1.mcfunction",
+      "id": "7_1"
+    },
+    {
+      "dollars": 15000,
+      "tokens": 6,
+      "items": [],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_contracts/function/daily/reward/7_2.mcfunction",
+      "id": "7_2"
+    },
+    {
+      "dollars": 18000,
+      "tokens": 7,
+      "items": [],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_contracts/function/daily/reward/7_3.mcfunction",
+      "id": "7_3"
+    }
+  ],
+  "weekly": [
+    {
+      "dollars": 75000,
+      "tokens": 30,
+      "items": [],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_contracts/function/weekly/reward/1.mcfunction",
+      "id": "1"
+    },
+    {
+      "dollars": 85000,
+      "tokens": 35,
+      "items": [],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_contracts/function/weekly/reward/2.mcfunction",
+      "id": "2"
+    },
+    {
+      "dollars": 90000,
+      "tokens": 35,
+      "items": [],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_contracts/function/weekly/reward/3.mcfunction",
+      "id": "3"
+    },
+    {
+      "dollars": 125000,
+      "tokens": 50,
+      "items": [],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_contracts/function/weekly/reward/4.mcfunction",
+      "id": "4"
+    }
+  ],
+  "monthly": [
+    {
+      "dollars": 300000,
+      "tokens": 125,
+      "items": [],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_contracts/function/monthly/reward/1.mcfunction",
+      "id": "1"
+    },
+    {
+      "dollars": 350000,
+      "tokens": 140,
+      "items": [],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_contracts/function/monthly/reward/2.mcfunction",
+      "id": "2"
+    },
+    {
+      "dollars": 375000,
+      "tokens": 150,
+      "items": [],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_contracts/function/monthly/reward/3.mcfunction",
+      "id": "3"
+    },
+    {
+      "dollars": 500000,
+      "tokens": 200,
+      "items": [],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_contracts/function/monthly/reward/4.mcfunction",
+      "id": "4"
+    }
+  ],
+  "seasonal": [
+    {
+      "dollars": 0,
+      "tokens": 2,
+      "items": [
+        "minecraft:paper[minecraft:custom_name={\"text\": \"Cinderbone Relic\", \"color\": \"gold\", \"italic\": false},minecraft:item_model=\"hynoe_fall26:bone_relic\",minecraft:custom_data={hynoe_fall26:{item:\"bone_relic\",edition:2026}},minecraft:lore=[{\"text\": \"Hynoe \\u2022 Fall 2026 exclusive\", \"color\": \"gold\", \"italic\": false}, {\"text\": \"Earned in season. Kept forever.\", \"color\": \"gray\", \"italic\": false}],minecraft:max_stack_size=1] 1"
+      ],
+      "source": "Hynoe_Fall_2026_Datapack_v2.5_DIRECT_BUTTONS_RELIABLE_LEAVES (1)/data/hynoe_fall26/function/claim/bones.mcfunction",
+      "id": "bones"
+    },
+    {
+      "dollars": 0,
+      "tokens": 3,
+      "items": [
+        "minecraft:netherite_hoe[minecraft:custom_name={\"text\": \"Harvestkeeper\\u2019s Scythe\", \"color\": \"gold\", \"italic\": false},minecraft:item_model=\"hynoe_fall26:harvest_scythe\",minecraft:custom_data={hynoe_fall26:{item:\"harvest_scythe\",edition:2026}},minecraft:lore=[{\"text\": \"Hynoe \\u2022 Fall 2026 exclusive\", \"color\": \"gold\", \"italic\": false}, {\"text\": \"Earned in season. Kept forever.\", \"color\": \"gray\", \"italic\": false}],minecraft:max_stack_size=1,minecraft:enchantments={\"minecraft:efficiency\": 5, \"minecraft:unbreaking\": 3}] 1"
+      ],
+      "source": "Hynoe_Fall_2026_Datapack_v2.5_DIRECT_BUTTONS_RELIABLE_LEAVES (1)/data/hynoe_fall26/function/claim/breeder.mcfunction",
+      "id": "breeder"
+    },
+    {
+      "dollars": 0,
+      "tokens": 5,
+      "items": [
+        "minecraft:paper[minecraft:custom_name={\"text\": \"Harvest 2026 Trophy\", \"color\": \"gold\", \"italic\": false},minecraft:item_model=\"hynoe_fall26:harvest_trophy\",minecraft:custom_data={hynoe_fall26:{item:\"harvest_trophy\",edition:2026}},minecraft:lore=[{\"text\": \"Hynoe \\u2022 Fall 2026 exclusive\", \"color\": \"gold\", \"italic\": false}, {\"text\": \"Earned in season. Kept forever.\", \"color\": \"gray\", \"italic\": false}],minecraft:max_stack_size=1] 1"
+      ],
+      "source": "Hynoe_Fall_2026_Datapack_v2.5_DIRECT_BUTTONS_RELIABLE_LEAVES (1)/data/hynoe_fall26/function/claim/explorer.mcfunction",
+      "id": "explorer"
+    },
+    {
+      "dollars": 0,
+      "tokens": 4,
+      "items": [
+        "minecraft:bundle[minecraft:custom_name={\"text\": \"Homecoming Satchel \\u2022 2026\", \"color\": \"gold\", \"italic\": false},minecraft:item_model=\"hynoe_fall26:homecoming_satchel\",minecraft:custom_data={hynoe_fall26:{item:\"homecoming_satchel\",edition:2026}},minecraft:lore=[{\"text\": \"Hynoe • Fall 2026 exclusive\", \"color\": \"gold\", \"italic\": false}, {\"text\": \"Prepared at the final Fall 2026 feast.\", \"color\": \"gray\", \"italic\": false}],minecraft:max_stack_size=1] 1"
+      ],
+      "source": "Hynoe_Fall_2026_Datapack_v2.5_DIRECT_BUTTONS_RELIABLE_LEAVES (1)/data/hynoe_fall26/function/claim/homecoming.mcfunction",
+      "id": "homecoming"
+    },
+    {
+      "dollars": 0,
+      "tokens": 5,
+      "items": [
+        "minecraft:totem_of_undying[minecraft:custom_name={\"text\": \"Nightfall Totem \\u2022 2026\", \"color\": \"gold\", \"italic\": false},minecraft:item_model=\"hynoe_fall26:nightfall_totem\",minecraft:custom_data={hynoe_fall26:{item:\"nightfall_totem\",edition:2026}},minecraft:lore=[{\"text\": \"Hynoe • Fall 2026 exclusive\", \"color\": \"gold\", \"italic\": false}, {\"text\": \"A one-time relic from Hynoe After Dark.\", \"color\": \"gray\", \"italic\": false}],minecraft:max_stack_size=1] 1"
+      ],
+      "source": "Hynoe_Fall_2026_Datapack_v2.5_DIRECT_BUTTONS_RELIABLE_LEAVES (1)/data/hynoe_fall26/function/claim/relics.mcfunction",
+      "id": "relics"
+    },
+    {
+      "dollars": 0,
+      "tokens": 2,
+      "items": [
+        "minecraft:paper[minecraft:custom_name={\"text\": \"Harvest Lantern\", \"color\": \"gold\", \"italic\": false},minecraft:item_model=\"hynoe_fall26:harvest_lantern\",minecraft:custom_data={hynoe_fall26:{item:\"harvest_lantern\",edition:2026}},minecraft:lore=[{\"text\": \"Hynoe \\u2022 Fall 2026 exclusive\", \"color\": \"gold\", \"italic\": false}, {\"text\": \"Earned in season. Kept forever.\", \"color\": \"gray\", \"italic\": false}],minecraft:max_stack_size=1] 1"
+      ],
+      "source": "Hynoe_Fall_2026_Datapack_v2.5_DIRECT_BUTTONS_RELIABLE_LEAVES (1)/data/hynoe_fall26/function/claim/supplies.mcfunction",
+      "id": "supplies"
+    },
+    {
+      "dollars": 0,
+      "tokens": 5,
+      "items": [
+        "minecraft:paper[minecraft:custom_name={\"text\": \"After Dark 2026 Trophy\", \"color\": \"gold\", \"italic\": false},minecraft:item_model=\"hynoe_fall26:night_trophy\",minecraft:custom_data={hynoe_fall26:{item:\"night_trophy\",edition:2026}},minecraft:lore=[{\"text\": \"Hynoe \\u2022 Fall 2026 exclusive\", \"color\": \"gold\", \"italic\": false}, {\"text\": \"Earned in season. Kept forever.\", \"color\": \"gray\", \"italic\": false}],minecraft:max_stack_size=1] 1"
+      ],
+      "source": "Hynoe_Fall_2026_Datapack_v2.5_DIRECT_BUTTONS_RELIABLE_LEAVES (1)/data/hynoe_fall26/function/claim/void.mcfunction",
+      "id": "void"
+    },
+    {
+      "dollars": 0,
+      "tokens": 3,
+      "items": [
+        "minecraft:diamond_sword[minecraft:custom_name={\"text\": \"Duskblade 2026\", \"color\": \"gold\", \"italic\": false},minecraft:item_model=\"hynoe_fall26:duskblade\",minecraft:custom_data={hynoe_fall26:{item:\"duskblade\",edition:2026}},minecraft:lore=[{\"text\": \"Hynoe \\u2022 Fall 2026 exclusive\", \"color\": \"gold\", \"italic\": false}, {\"text\": \"Earned in season. Kept forever.\", \"color\": \"gray\", \"italic\": false}],minecraft:max_stack_size=1,minecraft:enchantments={\"minecraft:smite\": 5, \"minecraft:unbreaking\": 3}] 1"
+      ],
+      "source": "Hynoe_Fall_2026_Datapack_v2.5_DIRECT_BUTTONS_RELIABLE_LEAVES (1)/data/hynoe_fall26/function/claim/witch.mcfunction",
+      "id": "witch"
+    },
+    {
+      "dollars": 0,
+      "tokens": 1,
+      "items": [
+        "minecraft:paper[minecraft:custom_name={\"text\": \"Keeper of Fall \\u2022 2026\", \"color\": \"gold\", \"italic\": false},minecraft:item_model=\"hynoe_fall26:founder_crown\",minecraft:custom_data={hynoe_fall26:{item:\"founder_crown\",edition:2026}},minecraft:lore=[{\"text\": \"Hynoe • Fall 2026 exclusive\", \"color\": \"gold\", \"italic\": false}, {\"text\": \"Completed every Fall 2026 seasonal claim.\", \"color\": \"gray\", \"italic\": false}],minecraft:max_stack_size=1] 1"
+      ],
+      "source": "Hynoe_Fall_2026_Datapack_v2.5_DIRECT_BUTTONS_RELIABLE_LEAVES (1)/data/hynoe_fall26/function/meta.mcfunction",
+      "id": "completion"
+    }
+  ],
+  "token_rewards": [
+    {
+      "dollars": 0,
+      "tokens": 10,
+      "items": [],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/challenge/gauntlet_reward.mcfunction"
+    },
+    {
+      "dollars": 0,
+      "tokens": 2,
+      "items": [],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/earn/elder_guardian.mcfunction"
+    },
+    {
+      "dollars": 0,
+      "tokens": 3,
+      "items": [],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/earn/ender_dragon.mcfunction"
+    },
+    {
+      "dollars": 0,
+      "tokens": 2,
+      "items": [],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/earn/playtime.mcfunction"
+    },
+    {
+      "dollars": 0,
+      "tokens": 6,
+      "items": [],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/earn/void_worm.mcfunction"
+    },
+    {
+      "dollars": 0,
+      "tokens": 4,
+      "items": [],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/earn/warden.mcfunction"
+    },
+    {
+      "dollars": 0,
+      "tokens": 2,
+      "items": [],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/earn/wither.mcfunction"
+    },
+    {
+      "dollars": 0,
+      "tokens": 5,
+      "items": [],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/milestone/boss_10.mcfunction"
+    },
+    {
+      "dollars": 0,
+      "tokens": 10,
+      "items": [],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/milestone/boss_25.mcfunction"
+    },
+    {
+      "dollars": 0,
+      "tokens": 3,
+      "items": [],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/milestone/boss_5.mcfunction"
+    },
+    {
+      "dollars": 0,
+      "tokens": 3,
+      "items": [],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/milestone/structure_3.mcfunction"
+    },
+    {
+      "dollars": 0,
+      "tokens": 5,
+      "items": [],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/milestone/structure_6.mcfunction"
+    },
+    {
+      "dollars": 0,
+      "tokens": 8,
+      "items": [],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/milestone/structure_9.mcfunction"
+    },
+    {
+      "dollars": 0,
+      "tokens": 25,
+      "items": [],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/milestone/time_100h.mcfunction"
+    },
+    {
+      "dollars": 0,
+      "tokens": 4,
+      "items": [],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/milestone/time_10h.mcfunction"
+    },
+    {
+      "dollars": 0,
+      "tokens": 8,
+      "items": [],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/milestone/time_25h.mcfunction"
+    },
+    {
+      "dollars": 0,
+      "tokens": 15,
+      "items": [],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/milestone/time_50h.mcfunction"
+    },
+    {
+      "dollars": 0,
+      "tokens": 15,
+      "items": [],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/modpack/ascension.mcfunction"
+    },
+    {
+      "dollars": 0,
+      "tokens": 10,
+      "items": [],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/modpack/enderium_ingot.mcfunction"
+    },
+    {
+      "dollars": 0,
+      "tokens": 15,
+      "items": [],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/modpack/enderium_set.mcfunction"
+    },
+    {
+      "dollars": 0,
+      "tokens": 4,
+      "items": [],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/modpack/vibranium_ingot.mcfunction"
+    },
+    {
+      "dollars": 0,
+      "tokens": 6,
+      "items": [],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/modpack/vibranium_set.mcfunction"
+    },
+    {
+      "dollars": 0,
+      "tokens": 4,
+      "items": [],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/modpack/void_worm_first.mcfunction"
+    },
+    {
+      "dollars": 0,
+      "tokens": 6,
+      "items": [],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/modpack/vulpus_ingot.mcfunction"
+    },
+    {
+      "dollars": 0,
+      "tokens": 10,
+      "items": [],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/modpack/vulpus_set.mcfunction"
+    },
+    {
+      "dollars": 0,
+      "tokens": 20,
+      "items": [],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/modpack/worldbreaker.mcfunction"
+    },
+    {
+      "dollars": 0,
+      "tokens": 15,
+      "items": [],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_tokens/function/reward/adventuring_time.mcfunction"
+    },
+    {
+      "dollars": 0,
+      "tokens": 8,
+      "items": [],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_tokens/function/reward/beacon.mcfunction"
+    },
+    {
+      "dollars": 0,
+      "tokens": 8,
+      "items": [],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_tokens/function/reward/dragon.mcfunction"
+    },
+    {
+      "dollars": 0,
+      "tokens": 4,
+      "items": [],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_tokens/function/reward/end.mcfunction"
+    },
+    {
+      "dollars": 0,
+      "tokens": 2,
+      "items": [],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_tokens/function/reward/nether.mcfunction"
+    },
+    {
+      "dollars": 0,
+      "tokens": 5,
+      "items": [],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_tokens/function/reward/wither.mcfunction"
+    }
+  ],
+  "shops": [
+    {
+      "id": "boss_shrine_set",
+      "price": 140,
+      "items": [
+        "worldbosses:overworld_shrine 1",
+        "worldbosses:nether_shrine 1",
+        "worldbosses:end_shrine 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/boss_shrine_set_success.mcfunction"
+    },
+    {
+      "id": "elytra",
+      "price": 75,
+      "items": [
+        "minecraft:elytra 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/elytra_success.mcfunction"
+    },
+    {
+      "id": "enchant_bane_of_arthropods_50",
+      "price": 100,
+      "items": [
+        "minecraft:enchanted_book[minecraft:stored_enchantments={\"minecraft:bane_of_arthropods\":50}] 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/enchant_bane_of_arthropods_50_success.mcfunction"
+    },
+    {
+      "id": "enchant_blast_protection_50",
+      "price": 100,
+      "items": [
+        "minecraft:enchanted_book[minecraft:stored_enchantments={\"minecraft:blast_protection\":50}] 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/enchant_blast_protection_50_success.mcfunction"
+    },
+    {
+      "id": "enchant_breach_50",
+      "price": 100,
+      "items": [
+        "minecraft:enchanted_book[minecraft:stored_enchantments={\"minecraft:breach\":50}] 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/enchant_breach_50_success.mcfunction"
+    },
+    {
+      "id": "enchant_channeling_50",
+      "price": 100,
+      "items": [
+        "minecraft:enchanted_book[minecraft:stored_enchantments={\"minecraft:channeling\":50}] 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/enchant_channeling_50_success.mcfunction"
+    },
+    {
+      "id": "enchant_density_50",
+      "price": 100,
+      "items": [
+        "minecraft:enchanted_book[minecraft:stored_enchantments={\"minecraft:density\":50}] 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/enchant_density_50_success.mcfunction"
+    },
+    {
+      "id": "enchant_depth_strider_50",
+      "price": 100,
+      "items": [
+        "minecraft:enchanted_book[minecraft:stored_enchantments={\"minecraft:depth_strider\":50}] 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/enchant_depth_strider_50_success.mcfunction"
+    },
+    {
+      "id": "enchant_efficiency_50",
+      "price": 100,
+      "items": [
+        "minecraft:enchanted_book[minecraft:stored_enchantments={\"minecraft:efficiency\":50}] 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/enchant_efficiency_50_success.mcfunction"
+    },
+    {
+      "id": "enchant_feather_falling_50",
+      "price": 100,
+      "items": [
+        "minecraft:enchanted_book[minecraft:stored_enchantments={\"minecraft:feather_falling\":50}] 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/enchant_feather_falling_50_success.mcfunction"
+    },
+    {
+      "id": "enchant_fire_aspect_50",
+      "price": 100,
+      "items": [
+        "minecraft:enchanted_book[minecraft:stored_enchantments={\"minecraft:fire_aspect\":50}] 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/enchant_fire_aspect_50_success.mcfunction"
+    },
+    {
+      "id": "enchant_fire_protection_50",
+      "price": 100,
+      "items": [
+        "minecraft:enchanted_book[minecraft:stored_enchantments={\"minecraft:fire_protection\":50}] 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/enchant_fire_protection_50_success.mcfunction"
+    },
+    {
+      "id": "enchant_fortune_50",
+      "price": 100,
+      "items": [
+        "minecraft:enchanted_book[minecraft:stored_enchantments={\"minecraft:fortune\":50}] 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/enchant_fortune_50_success.mcfunction"
+    },
+    {
+      "id": "enchant_impaling_50",
+      "price": 100,
+      "items": [
+        "minecraft:enchanted_book[minecraft:stored_enchantments={\"minecraft:impaling\":50}] 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/enchant_impaling_50_success.mcfunction"
+    },
+    {
+      "id": "enchant_knockback_50",
+      "price": 100,
+      "items": [
+        "minecraft:enchanted_book[minecraft:stored_enchantments={\"minecraft:knockback\":50}] 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/enchant_knockback_50_success.mcfunction"
+    },
+    {
+      "id": "enchant_looting_50",
+      "price": 100,
+      "items": [
+        "minecraft:enchanted_book[minecraft:stored_enchantments={\"minecraft:looting\":50}] 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/enchant_looting_50_success.mcfunction"
+    },
+    {
+      "id": "enchant_loyalty_50",
+      "price": 100,
+      "items": [
+        "minecraft:enchanted_book[minecraft:stored_enchantments={\"minecraft:loyalty\":50}] 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/enchant_loyalty_50_success.mcfunction"
+    },
+    {
+      "id": "enchant_luck_of_the_sea_50",
+      "price": 100,
+      "items": [
+        "minecraft:enchanted_book[minecraft:stored_enchantments={\"minecraft:luck_of_the_sea\":50}] 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/enchant_luck_of_the_sea_50_success.mcfunction"
+    },
+    {
+      "id": "enchant_lunge_50",
+      "price": 100,
+      "items": [
+        "minecraft:enchanted_book[minecraft:stored_enchantments={\"minecraft:lunge\":50}] 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/enchant_lunge_50_success.mcfunction"
+    },
+    {
+      "id": "enchant_lure_50",
+      "price": 100,
+      "items": [
+        "minecraft:enchanted_book[minecraft:stored_enchantments={\"minecraft:lure\":50}] 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/enchant_lure_50_success.mcfunction"
+    },
+    {
+      "id": "enchant_multishot_50",
+      "price": 100,
+      "items": [
+        "minecraft:enchanted_book[minecraft:stored_enchantments={\"minecraft:multishot\":50}] 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/enchant_multishot_50_success.mcfunction"
+    },
+    {
+      "id": "enchant_piercing_50",
+      "price": 100,
+      "items": [
+        "minecraft:enchanted_book[minecraft:stored_enchantments={\"minecraft:piercing\":50}] 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/enchant_piercing_50_success.mcfunction"
+    },
+    {
+      "id": "enchant_power_50",
+      "price": 100,
+      "items": [
+        "minecraft:enchanted_book[minecraft:stored_enchantments={\"minecraft:power\":50}] 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/enchant_power_50_success.mcfunction"
+    },
+    {
+      "id": "enchant_projectile_protection_50",
+      "price": 100,
+      "items": [
+        "minecraft:enchanted_book[minecraft:stored_enchantments={\"minecraft:projectile_protection\":50}] 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/enchant_projectile_protection_50_success.mcfunction"
+    },
+    {
+      "id": "enchant_protection_50",
+      "price": 100,
+      "items": [
+        "minecraft:enchanted_book[minecraft:stored_enchantments={\"minecraft:protection\":50}] 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/enchant_protection_50_success.mcfunction"
+    },
+    {
+      "id": "enchant_punch_50",
+      "price": 100,
+      "items": [
+        "minecraft:enchanted_book[minecraft:stored_enchantments={\"minecraft:punch\":50}] 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/enchant_punch_50_success.mcfunction"
+    },
+    {
+      "id": "enchant_quick_charge_50",
+      "price": 100,
+      "items": [
+        "minecraft:enchanted_book[minecraft:stored_enchantments={\"minecraft:quick_charge\":50}] 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/enchant_quick_charge_50_success.mcfunction"
+    },
+    {
+      "id": "enchant_respiration_50",
+      "price": 100,
+      "items": [
+        "minecraft:enchanted_book[minecraft:stored_enchantments={\"minecraft:respiration\":50}] 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/enchant_respiration_50_success.mcfunction"
+    },
+    {
+      "id": "enchant_riptide_50",
+      "price": 100,
+      "items": [
+        "minecraft:enchanted_book[minecraft:stored_enchantments={\"minecraft:riptide\":50}] 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/enchant_riptide_50_success.mcfunction"
+    },
+    {
+      "id": "enchant_sharpness_50",
+      "price": 100,
+      "items": [
+        "minecraft:enchanted_book[minecraft:stored_enchantments={\"minecraft:sharpness\":50}] 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/enchant_sharpness_50_success.mcfunction"
+    },
+    {
+      "id": "enchant_smite_50",
+      "price": 100,
+      "items": [
+        "minecraft:enchanted_book[minecraft:stored_enchantments={\"minecraft:smite\":50}] 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/enchant_smite_50_success.mcfunction"
+    },
+    {
+      "id": "enchant_sweeping_edge_50",
+      "price": 100,
+      "items": [
+        "minecraft:enchanted_book[minecraft:stored_enchantments={\"minecraft:sweeping_edge\":50}] 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/enchant_sweeping_edge_50_success.mcfunction"
+    },
+    {
+      "id": "enchant_swift_sneak_50",
+      "price": 100,
+      "items": [
+        "minecraft:enchanted_book[minecraft:stored_enchantments={\"minecraft:swift_sneak\":50}] 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/enchant_swift_sneak_50_success.mcfunction"
+    },
+    {
+      "id": "enchant_thorns_50",
+      "price": 100,
+      "items": [
+        "minecraft:enchanted_book[minecraft:stored_enchantments={\"minecraft:thorns\":50}] 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/enchant_thorns_50_success.mcfunction"
+    },
+    {
+      "id": "enchant_unbreaking_50",
+      "price": 100,
+      "items": [
+        "minecraft:enchanted_book[minecraft:stored_enchantments={\"minecraft:unbreaking\":50}] 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/enchant_unbreaking_50_success.mcfunction"
+    },
+    {
+      "id": "enchant_wind_burst_50",
+      "price": 100,
+      "items": [
+        "minecraft:enchanted_book[minecraft:stored_enchantments={\"minecraft:wind_burst\":50}] 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/enchant_wind_burst_50_success.mcfunction"
+    },
+    {
+      "id": "enchanted_apples",
+      "price": 30,
+      "items": [
+        "minecraft:enchanted_golden_apple 10"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/enchanted_apples_success.mcfunction"
+    },
+    {
+      "id": "end_shrine",
+      "price": 60,
+      "items": [
+        "worldbosses:end_shrine 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/end_shrine_success.mcfunction"
+    },
+    {
+      "id": "explosive_totem",
+      "price": 30,
+      "items": [
+        "moretotems:explosive_totem_of_undying 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/explosive_totem_success.mcfunction"
+    },
+    {
+      "id": "ghastly_totem",
+      "price": 35,
+      "items": [
+        "moretotems:ghastly_totem_of_undying 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/ghastly_totem_success.mcfunction"
+    },
+    {
+      "id": "heavy_core",
+      "price": 75,
+      "items": [
+        "minecraft:heavy_core 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/heavy_core_success.mcfunction"
+    },
+    {
+      "id": "max_sword",
+      "price": 30,
+      "items": [
+        "minecraft:netherite_sword[minecraft:enchantments={\"minecraft:sharpness\":5,\"minecraft:looting\":3,\"minecraft:unbreaking\":3}] 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/max_sword_success.mcfunction"
+    },
+    {
+      "id": "mending",
+      "price": 20,
+      "items": [
+        "minecraft:enchanted_book[minecraft:stored_enchantments={\"minecraft:mending\":1}] 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/mending_success.mcfunction"
+    },
+    {
+      "id": "nether_shrine",
+      "price": 45,
+      "items": [
+        "worldbosses:nether_shrine 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/nether_shrine_success.mcfunction"
+    },
+    {
+      "id": "netherite_backpack",
+      "price": 50,
+      "items": [
+        "travelersbackpack:netherite[travelersbackpack:tier=4] 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/netherite_backpack_success.mcfunction"
+    },
+    {
+      "id": "netherite_template",
+      "price": 20,
+      "items": [
+        "minecraft:netherite_upgrade_smithing_template 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/netherite_template_success.mcfunction"
+    },
+    {
+      "id": "overworld_shrine",
+      "price": 35,
+      "items": [
+        "worldbosses:overworld_shrine 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/overworld_shrine_success.mcfunction"
+    },
+    {
+      "id": "pearls",
+      "price": 8,
+      "items": [
+        "minecraft:ender_pearl 16"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/pearls_success.mcfunction"
+    },
+    {
+      "id": "rotting_totem",
+      "price": 20,
+      "items": [
+        "moretotems:rotting_totem_of_undying 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/rotting_totem_success.mcfunction"
+    },
+    {
+      "id": "shrine_locator",
+      "price": 25,
+      "items": [
+        "worldbosses:shrine_locator_compass 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/shrine_locator_success.mcfunction"
+    },
+    {
+      "id": "shulker_shells",
+      "price": 12,
+      "items": [
+        "minecraft:shulker_shell 2"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/shulker_shells_success.mcfunction"
+    },
+    {
+      "id": "skeletal_totem",
+      "price": 35,
+      "items": [
+        "moretotems:skeletal_totem_of_undying 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/skeletal_totem_success.mcfunction"
+    },
+    {
+      "id": "stinging_totem",
+      "price": 25,
+      "items": [
+        "moretotems:stinging_totem_of_undying 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/stinging_totem_success.mcfunction"
+    },
+    {
+      "id": "teleporting_totem",
+      "price": 45,
+      "items": [
+        "moretotems:teleporting_totem_of_undying 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/teleporting_totem_success.mcfunction"
+    },
+    {
+      "id": "tentacled_totem",
+      "price": 30,
+      "items": [
+        "moretotems:tentacled_totem_of_undying 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/tentacled_totem_success.mcfunction"
+    },
+    {
+      "id": "totem_collection",
+      "price": 220,
+      "items": [
+        "minecraft:totem_of_undying 1",
+        "moretotems:rotting_totem_of_undying 1",
+        "moretotems:stinging_totem_of_undying 1",
+        "moretotems:explosive_totem_of_undying 1",
+        "moretotems:tentacled_totem_of_undying 1",
+        "moretotems:ghastly_totem_of_undying 1",
+        "moretotems:skeletal_totem_of_undying 1",
+        "moretotems:teleporting_totem_of_undying 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/totem_collection_success.mcfunction"
+    },
+    {
+      "id": "totem",
+      "price": 15,
+      "items": [
+        "minecraft:totem_of_undying 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/totem_success.mcfunction"
+    },
+    {
+      "id": "waystone_andesite",
+      "price": 35,
+      "items": [
+        "waystones:andesite_waystone 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/waystone_andesite_success.mcfunction"
+    },
+    {
+      "id": "waystone_blackstone",
+      "price": 35,
+      "items": [
+        "waystones:blackstone_waystone 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/waystone_blackstone_success.mcfunction"
+    },
+    {
+      "id": "waystone_deepslate",
+      "price": 35,
+      "items": [
+        "waystones:deepslate_waystone 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/waystone_deepslate_success.mcfunction"
+    },
+    {
+      "id": "waystone_end_stone",
+      "price": 35,
+      "items": [
+        "waystones:end_stone_waystone 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/waystone_end_stone_success.mcfunction"
+    },
+    {
+      "id": "waystone_mossy_andesite",
+      "price": 35,
+      "items": [
+        "waystones:mossy_andesite_waystone 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/waystone_mossy_andesite_success.mcfunction"
+    },
+    {
+      "id": "waystone_mud_bricks",
+      "price": 35,
+      "items": [
+        "waystones:mud_bricks_waystone 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/waystone_mud_bricks_success.mcfunction"
+    },
+    {
+      "id": "waystone_network_kit",
+      "price": 100,
+      "items": [
+        "waystones:andesite_waystone 1",
+        "waystones:blackstone_waystone 1",
+        "waystones:end_stone_waystone 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/waystone_network_kit_success.mcfunction"
+    },
+    {
+      "id": "waystone_prismarine",
+      "price": 35,
+      "items": [
+        "waystones:prismarine_waystone 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/waystone_prismarine_success.mcfunction"
+    },
+    {
+      "id": "waystone_purpur",
+      "price": 35,
+      "items": [
+        "waystones:purpur_waystone 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/waystone_purpur_success.mcfunction"
+    },
+    {
+      "id": "waystone_red_nether_bricks",
+      "price": 35,
+      "items": [
+        "waystones:red_nether_bricks_waystone 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/waystone_red_nether_bricks_success.mcfunction"
+    },
+    {
+      "id": "waystone_sandstone",
+      "price": 35,
+      "items": [
+        "waystones:sandstone_waystone 1"
+      ],
+      "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/ht/function/buy/waystone_sandstone_success.mcfunction"
+    }
+  ],
+  "daily_bonus": {
+    "dollars": 15000,
+    "tokens": 5,
+    "items": [],
+    "source": "Hynoe_Progression_v15.1_26.2_LIVE_DETAIL_COUNTS/data/hynoe_contracts/function/daily/bonus.mcfunction"
+  },
+  "totals": {
+    "missions": 151,
+    "mission_dollars": 76150,
+    "stages_1_to_30_dollars": 3223000,
+    "stages_1_to_30_tokens": 1317,
+    "season_tokens": 30
+  },
+  "verified_date": "2026-10-08",
+  "scope": "Reward definitions and advertised amounts; historical player payments not certified."
+}
