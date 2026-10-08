@@ -36,13 +36,45 @@ const BLOCKED_TERM_PATTERNS = BLOCKED_TERMS.map(termPattern);
 const BLOCKED_HARASSMENT_PATTERNS = Object.freeze([
   /(?:^|\s)k+\s*y+\s*s+(?:$|\s)/i,
   /(?:^|\s)(?:go\s+)?kill\s+yourself(?:$|\s)/i,
+  /(?:^|\s)(?:i\s+will|i\s*am\s+going\s+to|i\s*ll)\s+(?:kill|hurt|shoot|stab)\s+(?:you|u|them|him|her)(?:$|\s)/i,
 ]);
+
+const BLOCKED_SEXUAL_SOLICITATION_PATTERNS = Object.freeze([
+  /(?:^|\s)(?:send|show|give|dm|trade|share)\s+(?:me\s+)?(?:your\s+)?(?:nudes?|naked\s+pics?|dick\s+pics?|nude\s+pics?)(?:$|\s)/i,
+  /(?:^|\s)(?:send|show|give|dm|trade|share)\s+(?:me\s+)?(?:your\s+)?(?:tits|boobs|ass)(?:$|\s)/i,
+]);
+
+const CENSORED_PROFANITY = Object.freeze([
+  'motherfuckers', 'motherfucker', 'motherfucking', 'motherfucked', 'motherfuck',
+  'fucking', 'fucked', 'fuckers', 'fucker', 'fucks', 'fuck',
+  'shitting', 'shitty', 'shits', 'shit',
+  'bitches', 'bitchy', 'bitch', 'bastards', 'bastard', 'asshole', 'assholes',
+  'pissing', 'pissed', 'piss', 'dickhead', 'dickheads', 'dicks', 'dick',
+  'cocks', 'cock', 'pussies', 'pussy', 'crap', 'damned', 'damn', 'hell',
+]);
+
+function profanityPattern(term) {
+  const letters = [...term].map((char) => `${char}+`).join('[^A-Za-z0-9]*');
+  return new RegExp(`(^|[^A-Za-z0-9])(${letters})(?=$|[^A-Za-z0-9])`, 'gi');
+}
+
+const CENSORED_PROFANITY_PATTERNS = CENSORED_PROFANITY.map(profanityPattern);
 
 export function containsBlockedChatContent(input) {
   const comparable = moderationComparable(input);
   if (!comparable) return false;
   return BLOCKED_TERM_PATTERNS.some((pattern) => pattern.test(comparable))
-    || BLOCKED_HARASSMENT_PATTERNS.some((pattern) => pattern.test(comparable));
+    || BLOCKED_HARASSMENT_PATTERNS.some((pattern) => pattern.test(comparable))
+    || BLOCKED_SEXUAL_SOLICITATION_PATTERNS.some((pattern) => pattern.test(comparable));
+}
+
+export function censorChatProfanity(input) {
+  let value = String(input ?? '');
+  for (const pattern of CENSORED_PROFANITY_PATTERNS) {
+    value = value.replace(pattern, (match, boundary, word) =>
+      boundary + word.replace(/[A-Za-z0-9]/g, '*'));
+  }
+  return value;
 }
 
 export function normalizeMessageBody(input) {

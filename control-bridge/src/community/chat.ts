@@ -1,4 +1,4 @@
-import { containsBlockedChatContent } from './content.mjs';
+import { censorChatProfanity, containsBlockedChatContent } from './content.mjs';
 
 export type FeedMessage = {id:string; author:{id:string;username:string;global_name?:string;bot?:boolean};content:string;timestamp:string;webhook_id?:string};
 type Dependencies = {
@@ -17,7 +17,7 @@ export function minecraftCommand(name:string,body:string) {
 export function publicMessages(input:FeedMessage[],botId:string) {
   return input.filter(m=>m.content && !containsBlockedChatContent(m.content) && (!m.author.bot || m.webhook_id || m.author.id===botId)).map(m=>{
     const web=m.author.id===botId && /^\[WEB\] ([^\n:]{1,24}): ([\s\S]*)$/.exec(m.content);
-    return {id:m.id,display_name:web?web[1]:(m.author.global_name||m.author.username),body:(web?web[2]:m.content).slice(0,2000),created_at:m.timestamp,source:web?'Website':m.webhook_id?'Minecraft':m.author.bot?'Server':'Discord'};
+    return {id:m.id,display_name:censorChatProfanity(web?web[1]:(m.author.global_name||m.author.username)),body:censorChatProfanity(web?web[2]:m.content).slice(0,2000),created_at:m.timestamp,source:web?'Website':m.webhook_id?'Minecraft':m.author.bot?'Server':'Discord'};
   }).reverse();
 }
 export function createCommunityHandler(deps:Dependencies) {
@@ -40,9 +40,10 @@ export function createCommunityHandler(deps:Dependencies) {
     let payload;
     try {const text=await req.text();if(text.length>4096) throw Error();payload=JSON.parse(text);}
     catch {return json({error:'Invalid or oversized message.'},400);}
-    const body=typeof payload?.body==='string'?payload.body.trim():'';
+    const submittedBody=typeof payload?.body==='string'?payload.body.trim():'';
     const requestId=payload?.request_id;
-    if(!body || body.length>300 || /[\x00-\x1f\x7f\u00a7\u200b-\u200f\u202a-\u202e\u2060-\u206f]/.test(body) || /^\//.test(body) || containsBlockedChatContent(body) || typeof requestId!=='string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(requestId)) return json({error:'Use an allowed, single-line chat message of 1–300 characters. Commands are unavailable.'},400);
+    if(!submittedBody || submittedBody.length>300 || /[\x00-\x1f\x7f\u00a7\u200b-\u200f\u202a-\u202e\u2060-\u206f]/.test(submittedBody) || /^\//.test(submittedBody) || containsBlockedChatContent(submittedBody) || typeof requestId!=='string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(requestId)) return json({error:'Use an allowed, single-line chat message of 1–300 characters. Commands are unavailable.'},400);
+    const body=censorChatProfanity(submittedBody);
     let userId:string;
     try {userId=await deps.verifyUser(token);if(!userId) throw Error();}
     catch {return json({error:'Your site session expired. Join the community again.'},401);}

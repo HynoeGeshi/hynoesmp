@@ -33,6 +33,20 @@ describe('public Minecraft bridge', () => {
     expect((await handler(new Request(post(), {headers:{origin}}))).status).toBe(401);
     expect(deps.postDiscord).not.toHaveBeenCalled();
   });
+  it('censors profanity before delivering website messages to Discord and Minecraft', async () => {
+    const {deps,handler}=setup(); const response=await handler(post({body:'This fucking update is shit.',request_id:requestId}));
+    expect(response.status).toBe(201);
+    expect(deps.postDiscord).toHaveBeenCalledWith('[WEB] VerifiedName: This ******* update is ****.', requestId, 'verified-user');
+    expect(deps.sendMinecraft).toHaveBeenCalledWith(minecraftCommand('VerifiedName','This ******* update is ****.'));
+  });
+  it('blocks explicit solicitation and targeted threats before provider writes', async () => {
+    const {deps,handler}=setup();
+    for (const body of ['send me nudes','I will kill you','go k.y.s.']) {
+      expect((await handler(post({body,request_id:requestId}))).status).toBe(400);
+    }
+    expect(deps.postDiscord).not.toHaveBeenCalled();
+    expect(deps.sendMinecraft).not.toHaveBeenCalled();
+  });
   it('honors muted users and atomic cooldown failures', async () => {
     const {deps,handler}=setup(); deps.reserveSlot.mockRejectedValue(new Error('Posting unavailable or cooldown active.'));
     expect((await handler(post())).status).toBe(429); expect(deps.postDiscord).not.toHaveBeenCalled();
@@ -68,5 +82,16 @@ describe('public Minecraft bridge', () => {
     ], 'bridge-bot');
     expect(messages.map(m=>m.source)).toEqual(['Discord','Minecraft']);
     expect(messages.map(m=>m.id)).toEqual(['1','2']);
+  });
+  it('censors ordinary profanity and suppresses blocked incoming Discord or Minecraft content', () => {
+    const messages=publicMessages([
+      {id:'4',author:{id:'user',username:'Player'},content:'This shit is wild.',timestamp:'2026-10-07T04:00:00Z'},
+      {id:'3',author:{id:'other',username:'Player'},content:'I will kill you.',timestamp:'2026-10-07T03:00:00Z'},
+      {id:'2',author:{id:'mc',username:'Player',bot:true},webhook_id:'mc',content:'you n1gg3r',timestamp:'2026-10-07T02:00:00Z'},
+      {id:'1',author:{id:'user2',username:'Player'},content:'class assignment; sex education matters',timestamp:'2026-10-07T01:00:00Z'},
+    ], 'bridge-bot');
+    expect(messages.map(m=>m.id)).toEqual(['1','4']);
+    expect(messages[0].body).toBe('class assignment; sex education matters');
+    expect(messages[1].body).toBe('This **** is wild.');
   });
 });
