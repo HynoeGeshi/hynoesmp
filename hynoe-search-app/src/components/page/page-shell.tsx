@@ -27,6 +27,7 @@ export function PageShell({ page, inquiryPageId }: { page: HynoePage; inquiryPag
     <PageViewTracker slug={page.slug} pageType={page.pageType} />
     <PageHeader />
     <section className={styles.hero}>
+      <div className={styles.metaRow}><span className={styles.metaPill}>Hynoe Page</span></div>
       <div className="eyebrow">{page.categories.join(' · ') || pageTypeLabels[page.pageType]}</div>
       <h1>{page.name}</h1>
       <p className={styles.summary}>{page.summary}</p>

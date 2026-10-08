@@ -4,19 +4,36 @@ on:
   push:
     branches:
       - hynoe-search-phase2a-impl
+      - hynoe-search-public-discovery-20261007
+    paths:
+      - 'hynoe-search-app/**'
+      - '.github/workflows/hynoe-search-phase2a-ci.yml'
+  pull_request:
+    branches:
+      - hynoe-search-phase2a-impl
     paths:
       - 'hynoe-search-app/**'
       - '.github/workflows/hynoe-search-phase2a-ci.yml'
   workflow_dispatch:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: hynoe-search-phase2a-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   verify:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     defaults:
       run:
         working-directory: hynoe-search-app
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -26,3 +43,15 @@ jobs:
       - run: npm test
       - run: npm run test:domain
       - run: npm run build
+      - name: Install browser for public route checks
+        run: npx playwright install --with-deps chromium
+      - name: Desktop and mobile public flows
+        run: npx playwright test e2e/home.spec.ts e2e/search.spec.ts e2e/page.spec.ts e2e/retention.spec.ts e2e/public-discovery.spec.ts --project=desktop --project=mobile
+      - name: Save public discovery screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: public-discovery-screenshots
+          path: hynoe-search-app/test-results/**/public-discovery.png
+          if-no-files-found: ignore
+          retention-days: 3
