@@ -4,8 +4,6 @@ import type { SearchFilters, SearchResult } from './types';
 
 function tokenMatch(haystack: string, token: string): boolean {
   if (token.length < 3) return haystack.split(' ').includes(token);
-  // Forward prefixes support type-ahead. Reversing this comparison makes
-  // common words such as "a" match "Adobe", and empty fields match anything.
   return haystack.split(/\s+/).some((word) => word.startsWith(token));
 }
 
@@ -18,12 +16,9 @@ export function searchPages(pages: readonly HynoePage[], query: string, filters:
     if (filters.category && !page.categories.some((c) => normalizeQuery(c) === normalizeQuery(filters.category!))) return false;
     return true;
   });
-
-  if (!tokens.length) {
-    return filtered
-      .map((page) => ({ page, score: page.featured ? 1 : 0, matchedFields: page.featured ? ['featured'] : [] }))
-      .sort((a, b) => b.score - a.score || a.page.name.localeCompare(b.page.name));
-  }
+  // Neutral browse order. Hynoe ownership and featured flags never boost a result.
+  if (!tokens.length) return filtered.map((page) => ({ page, score: 0, matchedFields: [] as string[] }))
+    .sort((a, b) => a.page.name.localeCompare(b.page.name));
 
   const results: SearchResult[] = [];
   for (const page of filtered) {
@@ -33,7 +28,6 @@ export function searchPages(pages: readonly HynoePage[], query: string, filters:
     const summary = normalizeQuery(`${page.summary} ${page.description}`);
     let score = 0;
     const matched = new Set<string>();
-
     if (name === normalized) { score += 100; matched.add('name'); }
     for (const token of tokens) {
       if (tokenMatch(name, token)) { score += 35; matched.add('name'); }
@@ -43,6 +37,5 @@ export function searchPages(pages: readonly HynoePage[], query: string, filters:
     }
     if (score > 0) results.push({ page, score, matchedFields: [...matched] });
   }
-
   return results.sort((a, b) => b.score - a.score || a.page.name.localeCompare(b.page.name));
 }
