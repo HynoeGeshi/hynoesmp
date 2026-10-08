@@ -13,7 +13,7 @@ test('review summary separates 13 waiting, four approved and four rejected witho
   assert.equal(typeof core.reviewQueue, 'function');
   const original=structuredClone(rows);
   const queue=core.reviewQueue(rows);
-  assert.deepEqual(queue.counts,{ready:0,awaiting:13,approved:4,rejected:4,attention:0});
+  assert.deepEqual(queue.counts,{ready:0,awaiting:13,approved:4,rejected:4,attention:0,posted:0,uploaded:0});
   assert.equal(queue.active.length,17);
   assert.equal(queue.rejected.length,4);
   assert.ok(queue.active.every(row=>row.approval_state!=='rejected'));
@@ -32,8 +32,8 @@ test('ready review requires pending approval, ready render, and a preview refere
     {approval_state:'approved',render_status:'ready',preview_uri:'c.mp4'},
     {approval_state:'rejected',render_status:'ready',preview_uri:'d.mp4'},
   ]);
-  assert.deepEqual(queue.counts,{ready:2,awaiting:1,approved:1,rejected:1,attention:3});
-  assert.deepEqual(core.reviewQueue([]).counts,{ready:0,awaiting:0,approved:0,rejected:0,attention:0});
+  assert.deepEqual(queue.counts,{ready:2,awaiting:1,approved:1,rejected:1,attention:3,posted:0,uploaded:0});
+  assert.deepEqual(core.reviewQueue([]).counts,{ready:0,awaiting:0,approved:0,rejected:0,attention:0,posted:0,uploaded:0});
 });
 
 class Element {
@@ -48,7 +48,7 @@ class Element {
 const flatten = element => [element,...element.children.flatMap(flatten)];
 
 async function boot(data,newline,overrides={}){
-  const ids=Object.fromEntries(['authPanel','reviewPanel','candidateList','rejectedHistory','rejectedSummary','rejectedList','status','loginForm','signOut','refreshClips'].map(id=>[id,new Element()]));
+  const ids=Object.fromEntries(['authPanel','reviewPanel','candidateList','rejectedHistory','rejectedSummary','rejectedList','postedHistory','postedSummary','postedList','uploadedHistory','uploadedSummary','uploadedList','status','loginForm','signOut','refreshClips'].map(id=>[id,new Element()]));
   let current=data; let authCallback; const signs=[];const rpcCalls=[];
   const supabase={
     from(){return{select:async()=>({data:current,error:null})};},
@@ -139,6 +139,24 @@ test('Refresh clips cannot load private cards after sign out',async()=>{
   assert.equal(app.ids.candidateList.children.length,0);
   assert.equal(app.ids.status.textContent,'Sign in to review Shorts.');
   assert.deepEqual(app.rpcCalls,[]);
+});
+
+test('actual app puts confirmed public and uploaded-private clips in separate history without approval buttons',async()=>{
+  const channel='31031ac7-034b-420f-b8ec-de9952669afa';
+  const data=[
+    {id:'posted',channel_id:channel,title:'Posted title',approval_state:'approved',render_status:'ready',preview_uri:'posted.mp4',publishing_jobs:[{id:'job-posted',channel_id:channel,clip_candidate_id:'posted',state:'published',youtube_video_id:'kFTPLWoi86c',published_at:'2026-10-08T20:19:00Z'}]},
+    {id:'private',channel_id:channel,title:'Private title',approval_state:'approved',render_status:'ready',preview_uri:'private.mp4',publishing_jobs:[{id:'job-private',channel_id:channel,clip_candidate_id:'private',state:'uploaded_private',youtube_video_id:'Ab1Cd2Ef3Gh'}]},
+    {id:'draft',approval_state:'approved',render_status:'ready',preview_uri:'draft.mp4'},
+  ];
+  const {ids,signs,rpcCalls,signOut}=await boot(data,undefined,{loadCandidates:async()=>data});
+  assert.equal(ids.candidateList.children.length,1); assert.equal(ids.postedList.children.length,1); assert.equal(ids.uploadedList.children.length,1);
+  assert.equal(ids.postedSummary.textContent,'Posted history (1)'); assert.equal(ids.uploadedSummary.textContent,'Uploaded privately (1)');
+  const postedNodes=flatten(ids.postedList), privateNodes=flatten(ids.uploadedList);
+  assert.equal(postedNodes.some(n=>n.tagName==='button'&&['Approve','Reject'].includes(n.textContent)),false);
+  assert.equal(privateNodes.some(n=>n.tagName==='button'&&['Approve','Reject'].includes(n.textContent)),false);
+  assert.ok(postedNodes.some(n=>n.tagName==='a'&&n.href==='https://www.youtube.com/shorts/kFTPLWoi86c'));
+  assert.ok(!signs.includes('posted.mp4')); assert.deepEqual(rpcCalls,[]);
+  signOut(); assert.equal(ids.postedList.children.length,0); assert.equal(ids.uploadedList.children.length,0);
 });
 const exactPackage={clip_candidate_id:'one',video_source_id:'source',start_ms:1000,end_ms:2000,render_uri:'one.mp4',
   media_sha256:'a'.repeat(64),metadata:{snippet:{title:'Exact reviewed title',description:'Exact reviewed description',tags:[],categoryId:'20'},status:{privacyStatus:'private',selfDeclaredMadeForKids:false}}};

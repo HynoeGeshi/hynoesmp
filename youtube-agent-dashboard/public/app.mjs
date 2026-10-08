@@ -1,5 +1,5 @@
 import { createClient } from '/vendor/supabase.mjs';
-import { loadCandidates, attachPreview, submitApproval, prepareUploadReview, recordExactUploadApproval, reviewQueue, previewPath } from '/dashboard-core.mjs';
+import { loadCandidates, attachPreview, submitApproval, prepareUploadReview, recordExactUploadApproval, reviewQueue, previewPath, publicationStatus } from '/dashboard-core.mjs';
 
 const config = window.__HYNOE_YOUTUBE_AGENT_CONFIG__ || {};
 const supabase = createClient(config.supabaseUrl, config.supabaseAnonKey);
@@ -9,6 +9,12 @@ const candidateList = document.querySelector('#candidateList');
 const rejectedHistory = document.querySelector('#rejectedHistory');
 const rejectedSummary = document.querySelector('#rejectedSummary');
 const rejectedList = document.querySelector('#rejectedList');
+const postedHistory = document.querySelector('#postedHistory');
+const postedSummary = document.querySelector('#postedSummary');
+const postedList = document.querySelector('#postedList');
+const uploadedHistory = document.querySelector('#uploadedHistory');
+const uploadedSummary = document.querySelector('#uploadedSummary');
+const uploadedList = document.querySelector('#uploadedList');
 const status = document.querySelector('#status');
 const loginForm = document.querySelector('#loginForm');
 const signOut = document.querySelector('#signOut');
@@ -77,6 +83,11 @@ function buildPreview(candidate) {
 function buildActions(candidate) {
   const actions = document.createElement('div');
   actions.className = 'actions';
+  const publication = publicationStatus(candidate);
+  if (publication) {
+    actions.append(textEl('span','action-feedback',publication.kind === 'uploaded' ? 'Already uploaded privately. Exact public release approval is separate.' : publication.kind === 'posted' ? 'Posted publicly.' : 'Existing upload needs visibility verification before another review action.'));
+    return actions;
+  }
   if (candidate.approval_state === 'rejected') return actions;
 
   const approve = document.createElement('button');
@@ -186,8 +197,21 @@ function renderCandidateCard(candidate) {
   card.append(buildPreview(candidate));
   if (candidate.hook) card.append(textEl('p', 'hook', candidate.hook));
   if (candidate.transcript_excerpt) card.append(textEl('p', 'excerpt', candidate.transcript_excerpt));
-  card.append(textEl('p', `render-state ${candidate.render_status || 'unknown'}`, renderState(candidate)));
+  card.append(textEl('p', `render-state ${candidate.render_status || 'unknown'}`, publicationStatus(candidate)?.kind === 'uploaded' ? 'Uploaded privately; awaiting exact public release.' : renderState(candidate)));
   card.append(textEl('p', 'approval-state', `Prior review: ${candidate.approval_state || 'pending'}. Exact publication consent is checked separately.`));
+  return card;
+}
+
+function renderPostedCard(candidate) {
+  const card = document.createElement('article');
+  card.className = 'card'; card.dataset.clipId = candidate.id;
+  card.append(textEl('h2','',candidate.title || 'Untitled Short'));
+  const publication = publicationStatus(candidate);
+  card.append(textEl('p','approval-state','Posted publicly · ' + publication.youtube_video_id));
+  const link = textEl('a','','Watch posted Short');
+  link.href = 'https://www.youtube.com/shorts/' + publication.youtube_video_id;
+  link.target = '_blank'; link.rel = 'noopener noreferrer';
+  card.append(link);
   return card;
 }
 
@@ -199,12 +223,20 @@ async function refreshCandidates() {
     if (!signedIn || generation !== refreshGeneration) return;
     candidateList.replaceChildren();
     rejectedList.replaceChildren();
-    const { active, rejected, counts } = reviewQueue(candidates);
+    postedList.replaceChildren(); uploadedList.replaceChildren();
+    const { active, rejected, posted, uploaded, counts } = reviewQueue(candidates);
     for (const candidate of active) candidateList.append(renderCandidateCard(candidate));
     for (const candidate of rejected) rejectedList.append(renderCandidateCard(candidate));
+    for (const candidate of posted) postedList.append(renderPostedCard(candidate));
+    for (const candidate of uploaded) uploadedList.append(renderCandidateCard(candidate));
     rejectedSummary.textContent = `Rejected history (${counts.rejected})`;
+    postedSummary.textContent = `Posted history (${counts.posted})`;
+    uploadedSummary.textContent = `Uploaded privately (${counts.uploaded})`;
+    uploadedHistory.classList[counts.uploaded ? 'remove' : 'add']('hidden');
     status.textContent = `${counts.ready} ready to review · ${counts.awaiting} awaiting render · ${counts.approved} approved · ${counts.rejected} rejected`;
     if (counts.attention) status.textContent += ` · ${counts.attention} need attention`;
+    if (counts.posted) status.textContent += ` · ${counts.posted} posted`;
+    if (counts.uploaded) status.textContent += ` · ${counts.uploaded} uploaded privately`;
   } catch (error) {
     if (signedIn && generation === refreshGeneration) status.textContent = error?.message || 'Could not load Shorts.';
   }
@@ -216,6 +248,9 @@ async function applySession(session) {
     refreshGeneration += 1;
     candidateList.replaceChildren();
     rejectedList.replaceChildren();
+    postedList.replaceChildren(); uploadedList.replaceChildren();
+    postedSummary.textContent = 'Posted history'; uploadedSummary.textContent = 'Uploaded privately';
+    postedHistory.open = false; uploadedHistory.open = false;
     rejectedSummary.textContent = 'Rejected history';
     rejectedHistory.open = false;
     authPanel.classList.remove('hidden');

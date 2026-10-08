@@ -1,17 +1,42 @@
 import { uploadPackage } from './upload-package.mjs';
 const BUCKET_ORDER = { review: 0, ready: 1, processing: 2, terminal: 3 };
+const YOUTUBE_ID = /^[A-Za-z0-9_-]{11}$/;
+
+function uploadedJobs(candidate) {
+  return (Array.isArray(candidate?.publishing_jobs) ? candidate.publishing_jobs : []).filter(job =>
+    candidate.id && candidate.channel_id && job.clip_candidate_id === candidate.id && job.channel_id === candidate.channel_id && YOUTUBE_ID.test(job.youtube_video_id ?? ''));
+}
+
+export function publicationStatus(candidate) {
+  const jobs = uploadedJobs(candidate);
+  for (const job of jobs) {
+    const catalog = (candidate.publication_catalog ?? []).find(row => row.channel_id === candidate.channel_id && row.video_id === job.youtube_video_id);
+    if (catalog?.privacy === 'public' || (!catalog && job.state === 'published' && Number.isFinite(Date.parse(job.published_at)))) {
+      return {kind:'posted',youtube_video_id:job.youtube_video_id,job_id:job.id};
+    }
+  }
+  const privateJob = jobs.find(job => job.state === 'uploaded_private');
+  if (privateJob) return {kind:'uploaded',youtube_video_id:privateJob.youtube_video_id,job_id:privateJob.id};
+  if (jobs.length) return {kind:'unverified',youtube_video_id:jobs[0].youtube_video_id,job_id:jobs[0].id};
+  return null;
+}
 
 export function reviewQueue(candidates = []) {
   const active = [];
   const rejected = [];
-  const counts = { ready: 0, awaiting: 0, approved: 0, rejected: 0, attention: 0 };
+  const posted = [], uploaded = [];
+  const counts = { ready: 0, awaiting: 0, approved: 0, rejected: 0, attention: 0, posted: 0, uploaded: 0 };
   for (const candidate of candidates) {
+    const publication = publicationStatus(candidate);
+    if (publication?.kind === 'posted') {posted.push(candidate); counts.posted += 1; continue;}
+    if (publication?.kind === 'uploaded') {uploaded.push(candidate); counts.uploaded += 1; continue;}
     if (candidate.approval_state === 'rejected') {
       rejected.push(candidate);
       counts.rejected += 1;
       continue;
     }
     active.push(candidate);
+    if (publication?.kind === 'unverified') {counts.attention += 1; continue;}
     if (candidate.approval_state === 'approved') counts.approved += 1;
     if (candidate.approval_state === 'pending') {
       if (candidate.render_status === 'ready' && previewPath(candidate)) counts.ready += 1;
@@ -19,7 +44,7 @@ export function reviewQueue(candidates = []) {
       else counts.attention += 1;
     }
   }
-  return { active, rejected, counts };
+  return { active, rejected, posted, uploaded, counts };
 }
 
 export function candidateBucket(candidate) {
@@ -41,12 +66,22 @@ export function sortCandidates(candidates = []) {
 
 export async function loadCandidates(supabase) {
   const fields = [
-    'id','video_source_id','start_ms','end_ms','category','score','transcript_excerpt','hook','title','description','hashtags',
-    'render_uri','preview_uri','render_status','approval_state','reviewer_notes','created_at','updated_at','render_error_message'
+    'id','channel_id','video_source_id','start_ms','end_ms','category','score','transcript_excerpt','hook','title','description','hashtags',
+    'render_uri','preview_uri','render_status','approval_state','reviewer_notes','created_at','updated_at','render_error_message',
+    'publishing_jobs(id,channel_id,clip_candidate_id,state,youtube_video_id,published_at)'
   ].join(',');
   const { data, error } = await supabase.from('clip_candidates').select(fields);
   if (error) throw error;
-  return sortCandidates(data ?? []);
+  const candidates = data ?? [];
+  const jobs = candidates.flatMap(uploadedJobs);
+  if (!jobs.length) return sortCandidates(candidates);
+  // Match only actual Short upload IDs from jobs. Source video IDs and generic
+  // approval flags are never evidence of publication. These are owner/RLS reads.
+  const {data: catalog, error: catalogError} = await supabase.from('revival_catalog').select('channel_id,video_id,privacy')
+    .in('channel_id',[...new Set(jobs.map(job => job.channel_id))])
+    .in('video_id',[...new Set(jobs.map(job => job.youtube_video_id))]);
+  if (catalogError) throw catalogError;
+  return sortCandidates(candidates.map(candidate => ({...candidate, publication_catalog:(catalog ?? []).filter(row => row.channel_id === candidate.channel_id)})));
 }
 
 export function previewPath(candidate) {

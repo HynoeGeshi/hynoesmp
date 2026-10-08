@@ -19,6 +19,14 @@
     <section id="reviewPanel" class="hidden">
       <div class="toolbar"><strong>Shorts review queue</strong><div class="toolbar-actions"><button id="refreshClips" type="button">Refresh clips</button><button id="signOut" type="button">Sign out</button></div></div>
       <div id="candidateList" class="cards"></div>
+      <details id="uploadedHistory" class="panel hidden">
+        <summary id="uploadedSummary">Uploaded privately</summary>
+        <div id="uploadedList" class="cards"></div>
+      </details>
+      <details id="postedHistory" class="panel">
+        <summary id="postedSummary">Posted history</summary>
+        <div id="postedList" class="cards"></div>
+      </details>
       <details id="rejectedHistory" class="panel">
         <summary id="rejectedSummary">Rejected history</summary>
         <div id="rejectedList" class="cards"></div>
