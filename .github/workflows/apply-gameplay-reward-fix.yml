@@ -1,0 +1,75 @@
+name: Verify gameplay-only reward repair
+on:
+  push:
+    branches: ['fix/gameplay-rewards-20261007']
+    paths: ['.github/workflows/apply-gameplay-reward-fix.yml']
+permissions:
+  contents: write
+concurrency:
+  group: gameplay-reward-repair
+  cancel-in-progress: false
+jobs:
+  repair:
+    if: github.repository == 'HynoeGeshi/hynoesmp' && github.ref == 'refs/heads/fix/gameplay-rewards-20261007'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: fix/gameplay-rewards-20261007
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+      - name: Apply exact guarded UI changes on repair branch only
+        shell: bash
+        run: |
+          python - <<'PY'
+          import hashlib
+          from pathlib import Path
+          expected={'assets/watch.mjs':'f1c60f35357b6a91884d219b8243c4393d5414aa','watch.html':'69cec8e73b62472142744da7c298882b849989cc'}
+          for name,sha in expected.items():
+              b=Path(name).read_bytes()
+              actual=hashlib.sha1(b'blob '+str(len(b)).encode()+b'\0'+b).hexdigest()
+              if actual!=sha: raise SystemExit('Source changed; review before applying: '+name)
+          w=Path('assets/watch.mjs');s=w.read_text()
+          old=next(l for l in s.splitlines() if l.startswith('function renderStreamRun()'))
+          new="function renderStreamRun(){const root=$('stream-run');if(!root)return;const v=S.view(streamRun,state),done=v.missions.filter(m=>m.done).length;$('watch-progress').max=v.missions.length;$('watch-progress').value=done;$('watch-progress').setAttribute('aria-label',done+' of '+v.missions.length+' gameplay goals completed');const nodes=v.missions.map(m=>{const e=document.createElement('span'),title=document.createElement('b'),detail=document.createElement('small');e.className=m.done?'done':'';title.textContent=(m.done?'✓ ':'')+m.label;detail.textContent=Math.min(m.progress,m.target)+' / '+m.target;e.append(title,detail);return e;});$('watch-missions').replaceChildren(...nodes);$('watch-mission-bonus').textContent=v.missionClaimed?'PLAY BONUS CLAIMED · +75 ore + 1 Insight':'Finish all 3 play goals · +75 ore + 1 Insight';}"
+          assert s.count(old)==1
+          s=s.replace(old,new)
+          assert s.count('S.tick(streamRun,state,elapsed,!document.hidden)')==1
+          s=s.replace('S.tick(streamRun,state,elapsed,!document.hidden)','S.tick(streamRun,state)')
+          assert s.count("'./watch-session.mjs?v=20261006d'")==1
+          s=s.replace("'./watch-session.mjs?v=20261006d'","'./watch-session.mjs?v=20261006d&rewards=gameplay-only-20261007'")
+          w.write_text(s)
+          w=Path('watch.html');s=w.read_text();start=s.index('<section class="stream-run"');end=s.index('</section>',start)+len('</section>')
+          replacement='''<section class="stream-run" id="stream-run" aria-labelledby="stream-run-title">
+            <div class="stream-run-head"><div><span>GAMEPLAY ONLY</span><h2 id="stream-run-title">Daily Play Goals</h2><p>Earn this bonus by mining, building, and exploring. No video, like, subscription, or time spent watching is required.</p></div></div>
+            <div class="stream-run-meter"><progress id="watch-progress" max="3" value="0" aria-label="0 of 3 gameplay goals completed"></progress></div>
+            <div class="watch-play-goals"><div><span>BUILD YOUR OUTPOST</span><strong id="watch-mission-bonus">Finish all 3 play goals · +75 ore + 1 Insight</strong></div><div class="watch-missions" id="watch-missions"></div></div>
+          </section>'''
+          s=s[:start]+replacement+s[end:]
+          assert s.count('src="assets/watch.mjs?v=20261006d"')==1
+          s=s.replace('src="assets/watch.mjs?v=20261006d"','src="assets/watch.mjs?v=20261006d&amp;rewards=gameplay-only-20261007"')
+          w.write_text(s)
+          PY
+      - name: Check game modules
+        run: |
+          node --check assets/watch.mjs
+          node --check assets/watch-session.mjs
+      - name: Run full Node test suite
+        run: node --test tests/*.test.mjs
+      - name: Run Python regression tests
+        run: python -m unittest discover -s tests -p 'test_*.py'
+      - name: Save verified patch on repair branch without retaining this one-off workflow
+        run: |
+          test "$(git branch --show-current)" = fix/gameplay-rewards-20261007
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/apply-gameplay-reward-fix.yml
+          git add assets/watch.mjs watch.html
+          git diff --cached --check
+          git commit -m 'fix: replace viewing incentive UI with independent gameplay goals'
+          git push origin HEAD:refs/heads/fix/gameplay-rewards-20261007
