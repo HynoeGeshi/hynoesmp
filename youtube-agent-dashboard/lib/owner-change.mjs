@@ -118,7 +118,8 @@ export async function runApprovedCopyLayout(client,proposals,options={}) {
   if(matching) {
    request=matching.request;approvalId=matching.approval.id;
    if(matching.approval.consumed_at) {
-    if(!['applied','write_uncertain'].includes(request.state)||!request.result_resource_id)throw Error('Consumed change requires owner inspection before continuing');
+    const unknownCreatedIdentity=request.action==='channel_section'&&request.resource_id.startsWith('new:')&&!request.result_resource_id;
+    if(!['applied','write_uncertain'].includes(request.state)||unknownCreatedIdentity)throw Error('Consumed change requires owner inspection before continuing');
     emit({phase:'inspecting',index,proposal,request,approvalId});
     try{await inspectExactChange(client,request,approvalId);}catch(error){throw Error('Read-only inspection unresolved; package stopped: '+error.message);}
     result.completed++;result.resumed++;emit({phase:'resumed',index,proposal,request,approvalId});continue;

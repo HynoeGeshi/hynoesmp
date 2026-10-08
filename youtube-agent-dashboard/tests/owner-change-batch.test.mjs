@@ -163,3 +163,26 @@ test('equivalent canonical and legacy existing Home snapshots skip public writes
   assert.equal(result.unchanged,1);
   assert.ok(!calls.some(x=>x.name==='approve_youtube_owner_change'||x.body?.operation==='apply'));
 });
+
+test('a consumed existing resource with unknown response identity resumes by GET-only inspection', async () => {
+  const package_=packageFor();
+  const {client,calls}=fixture({receipts:[{
+    request:{id:requestId,channel_id:api.CHANGE_CHANNEL,action:proposal.action,resource_id:proposal.resource_id,package:package_,state:'write_uncertain',result_resource_id:null},
+    approval:{id:approvalId,request_id:requestId,channel_id:api.CHANGE_CHANNEL,approved_by:owner,package:package_,approved_at:'2026-10-08T00:00:00Z',consumed_at:'2026-10-08T00:00:00Z',revoked_at:null}
+  }]});
+  const result=await api.runApprovedCopyLayout(client,[proposal],options());
+  assert.equal(result.resumed,1);
+  assert.deepEqual(calls.filter(x=>x.body).map(x=>x.body.operation),['inspect']);
+});
+
+test('an uncertain created section without a known provider ID still stops before any request', async () => {
+  const proposal=HOME_DRAFTS.find(x=>x.key==='home:survival');
+  const package_=sectionPackage(proposal,'singlePlaylist');
+  const {client,calls}=fixture({receipts:[{
+    request:{id:requestId,channel_id:api.CHANGE_CHANNEL,action:proposal.action,resource_id:proposal.resource_id,package:package_,state:'write_uncertain',result_resource_id:null},
+    approval:{id:approvalId,request_id:requestId,channel_id:api.CHANGE_CHANNEL,approved_by:owner,package:package_,approved_at:'2026-10-08T00:00:00Z',consumed_at:'2026-10-08T00:00:00Z',revoked_at:null}
+  }]});
+  await assert.rejects(()=>api.runApprovedCopyLayout(client,[proposal],options()),/owner inspection/);
+  assert.deepEqual(calls.filter(x=>x.body),[]);
+});
+
