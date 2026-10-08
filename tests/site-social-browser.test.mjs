@@ -21,8 +21,9 @@ test('public community pages load social assets while admin and legal pages rema
       assert.doesNotMatch(html, /site-social-panel\.mjs/i, `${page} must not mount visitor launcher`);
       continue;
     }
-    assert.match(html, /assets\/site-social\.css\?v=20261006b/i, `${page} missing social CSS`);
-    assert.match(html, /assets\/site-social-panel\.mjs\?v=20261006b/i, `${page} missing social panel module`);
+    assert.match(html, /assets\/site-social\.css\?v=20261007-minecraft/i, `${page} missing social CSS`);
+    assert.match(html, /assets\/site-social-panel\.mjs\?v=20261007-minecraft/i, `${page} missing social panel module`);
+    assert.match(html, /connect-src [^;]*https:\/\/hynoe-control-bridge\.onrender\.com/, `${page} blocks the Minecraft bridge`);
   }
 });
 
@@ -43,6 +44,7 @@ test('shared panel exposes explicit Global Chat and Ask Hynoe tabs with accessib
   const source = await text('assets/site-social-panel.mjs');
   assert.match(source, /GLOBAL CHAT/);
   assert.match(source, /ASK HYNOE/);
+  assert.match(source, /MINECRAFT CHAT/);
   assert.match(source, /role[^\n]*dialog|setAttribute\(['"]role['"],\s*['"]dialog['"]\)/i);
   assert.match(source, /aria-modal/i);
   assert.match(source, /Escape/);

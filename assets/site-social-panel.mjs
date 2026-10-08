@@ -20,6 +20,7 @@ import {
   messageDisplayBody,
 } from './site-social-core.mjs';
 import { askHynoe, appendPrivateHistory } from './ask-hynoe.mjs';
+import { loadMinecraftMessages, sendMinecraftMessage } from './minecraft-chat.mjs';
 
 const DISPLAY_NAME_KEY = 'hynoeSiteDisplayName';
 const FOCUSABLE = 'button:not([disabled]),a[href],input:not([disabled]),textarea:not([disabled]),select:not([disabled]),[tabindex]:not([tabindex="-1"])';
@@ -98,13 +99,15 @@ panel.append(header);
 const tabs = el('div', { className: 'site-social-tabs', role: 'tablist', 'aria-label': 'Community tools' });
 const chatTab = el('button', { type: 'button', role: 'tab', 'aria-selected': 'true', 'data-social-tab': 'chat' }, 'GLOBAL CHAT');
 const askTab = el('button', { type: 'button', role: 'tab', 'aria-selected': 'false', 'data-social-tab': 'ask' }, 'ASK HYNOE');
-tabs.append(chatTab, askTab);
+const minecraftTab = el('button', { type: 'button', role: 'tab', 'aria-selected': 'false', 'data-social-tab': 'minecraft' }, 'MINECRAFT CHAT');
+tabs.append(chatTab, minecraftTab, askTab);
 panel.append(tabs);
 
 const body = el('div', { className: 'site-social-body' });
 const chatPane = el('section', { className: 'site-social-pane', role: 'tabpanel', 'aria-label': 'Global Chat' });
 const askPane = el('section', { className: 'site-social-pane', role: 'tabpanel', 'aria-label': 'Ask Hynoe', hidden: true });
-body.append(chatPane, askPane);
+const minecraftPane = el('section', { className: 'site-social-pane', role: 'tabpanel', 'aria-label': 'Minecraft Chat', hidden: true });
+body.append(chatPane, minecraftPane, askPane);
 panel.append(body);
 
 const announcementBox = el('div', { className: 'site-social-announcement', hidden: true });
@@ -178,6 +181,71 @@ panel.append(safety);
 
 document.body.append(backdrop, launcher, panel);
 
+const minecraftIntro = el('div', { className: 'site-social-minecraft-intro' });
+minecraftIntro.append(el('strong', {}, 'Minecraft ↔ Discord ↔ Website'));
+minecraftIntro.append(el('p', {}, 'Public server chat from Discord’s minecraft-chat channel. Website posts appear in Discord and in-game. Use Global Chat to choose your name first.'));
+minecraftPane.append(minecraftIntro);
+const minecraftConnection = el('p', { className: 'site-social-meta', role: 'status' }, 'Open this tab to connect.');
+const minecraftMessages = el('div', { className: 'site-social-messages', role: 'log', 'aria-label': 'Minecraft and Discord messages' });
+const minecraftForm = el('form', { className: 'site-social-composer' });
+const minecraftInput = el('textarea', { rows: 2, maxlength: 300, placeholder: 'Send a public message to Minecraft and Discord…', 'aria-label': 'Minecraft Chat message' });
+const minecraftFoot = el('div', { className: 'site-social-composer-foot' });
+const minecraftStatus = el('small', { role: 'status' }, '15-second cooldown');
+const minecraftSend = el('button', { type: 'submit', className: 'site-social-primary' }, 'SEND');
+minecraftFoot.append(minecraftStatus, minecraftSend);
+minecraftForm.append(minecraftInput, minecraftFoot);
+minecraftPane.append(minecraftConnection, minecraftMessages, minecraftForm);
+let minecraftTimer;
+let minecraftBusy = false;
+let minecraftSending = false;
+let minecraftSignature = '';
+async function refreshMinecraft() {
+  if (minecraftBusy || !state.open || state.activeTab !== 'minecraft' || document.hidden) return;
+  minecraftBusy = true;
+  try {
+    minecraftConnection.textContent = 'Connecting to Minecraft / Discord…';
+    const feed = await loadMinecraftMessages();
+    const signature = JSON.stringify(feed);
+    if (signature !== minecraftSignature) {
+      const nearBottom = minecraftMessages.scrollHeight - minecraftMessages.scrollTop - minecraftMessages.clientHeight < 90;
+      const nodes = feed.map(message => {
+        const article = el('article', { className: 'site-social-message' });
+        const head = el('div', { className: 'site-social-message-head' });
+        head.append(el('strong', {}, message.display_name || 'Server'), el('small', {}, message.source), el('time', { dateTime: message.created_at }, timeLabel(message.created_at)));
+        article.append(head, el('p', { className: 'site-social-message-body' }, message.body));
+        return article;
+      });
+      minecraftMessages.replaceChildren(...(nodes.length ? nodes : [el('p', { className: 'site-social-empty' }, 'No server messages yet.')]));
+      minecraftSignature = signature;
+      if (nearBottom) minecraftMessages.scrollTop = minecraftMessages.scrollHeight;
+    }
+    minecraftConnection.textContent = '● LIVE · Minecraft / Discord · updates every 5 seconds';
+  } catch (error) { minecraftConnection.textContent = error.message; }
+  finally { minecraftBusy = false; }
+}
+function scheduleMinecraft() {
+  clearInterval(minecraftTimer);
+  if (!state.open || state.activeTab !== 'minecraft') return;
+  refreshMinecraft();
+  minecraftTimer = setInterval(refreshMinecraft, 5000);
+}
+minecraftInput.addEventListener('keydown', event => {
+  if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) { event.preventDefault(); if (!minecraftSending) minecraftForm.requestSubmit(); }
+});
+minecraftForm.addEventListener('submit', async event => {
+  event.preventDefault();
+  if (minecraftSending || !minecraftInput.value.trim()) return;
+  minecraftSending = true; minecraftSend.disabled = true; minecraftStatus.textContent = 'SENDING…';
+  try {
+    const result = await sendMinecraftMessage(state.client, minecraftInput.value.trim());
+    minecraftInput.value = '';
+    minecraftStatus.textContent = result.minecraft ? 'Sent to Discord · accepted by Minecraft' : result.error;
+    await refreshMinecraft();
+  } catch (error) { minecraftStatus.textContent = error.message; }
+  finally { minecraftSending = false; minecraftSend.disabled = false; }
+});
+document.addEventListener('visibilitychange', scheduleMinecraft);
+
 function setHeadStatus(text) {
   brandText.querySelector('small').textContent = text;
 }
@@ -192,6 +260,7 @@ function setOpen(open, returnFocus = true) {
   panel.hidden = !state.open;
   backdrop.hidden = !state.open;
   launcher.setAttribute('aria-expanded', String(state.open));
+  scheduleMinecraft();
   document.documentElement.classList.toggle('site-social-open', state.open);
   if (state.open) {
     state.unread = 0;
@@ -203,12 +272,15 @@ function setOpen(open, returnFocus = true) {
 }
 
 function setTab(tab) {
-  state.activeTab = tab === 'ask' ? 'ask' : 'chat';
+  state.activeTab = ['ask', 'minecraft'].includes(tab) ? tab : 'chat';
   chatPane.hidden = state.activeTab !== 'chat';
   askPane.hidden = state.activeTab !== 'ask';
+  minecraftPane.hidden = state.activeTab !== 'minecraft';
   chatTab.setAttribute('aria-selected', String(state.activeTab === 'chat'));
   askTab.setAttribute('aria-selected', String(state.activeTab === 'ask'));
-  (state.activeTab === 'chat' ? chatTab : askTab).focus();
+  minecraftTab.setAttribute('aria-selected', String(state.activeTab === 'minecraft'));
+  ({chat: chatTab, ask: askTab, minecraft: minecraftTab})[state.activeTab].focus();
+  scheduleMinecraft();
 }
 
 launcher.addEventListener('click', () => setOpen(!state.open, false));
@@ -216,6 +288,7 @@ backdrop.addEventListener('click', () => setOpen(false));
 closeButton.addEventListener('click', () => setOpen(false));
 chatTab.addEventListener('click', () => setTab('chat'));
 askTab.addEventListener('click', () => setTab('ask'));
+minecraftTab.addEventListener('click', () => setTab('minecraft'));
 
 document.addEventListener('click', (event) => {
   const opener = event.target.closest?.('[data-open-site-social]');
