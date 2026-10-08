@@ -24,7 +24,8 @@ function controls() {
   for (const row of rows.values()) {
     const allowed = ownerVerified && !busy && row.state !== 'applied';
     row.prepare.disabled = !allowed;
-    row.approve.disabled = !allowed || !row.request || !!row.approvalId;
+    row.consent.disabled = !allowed || !row.request || !!row.approvalId;
+    row.approve.disabled = !allowed || !row.request || !row.consent.checked || !!row.approvalId;
     row.apply.disabled = !allowed || !row.request || !row.approvalId || row.applyUncertain;
   }
 }
@@ -33,6 +34,11 @@ function reset() {
   ownerVerified = false;
   busy = false;
   weeklyLoaded = false;
+  for (const row of rows.values()) {
+    row.consent.checked = false;
+    row.request = null;
+    row.approvalId = null;
+  }
   rows.clear();
   $('weeklyItems').replaceChildren();
   $('channelItems').replaceChildren();
@@ -56,9 +62,12 @@ async function assertSession(ticket) {
   }
 }
 function showPackage(row) {
+  row.consent.checked = false;
+  row.approvalId = null;
   row.packageText.textContent = JSON.stringify(row.request.package, null, 2);
   row.packageReview.open = true;
   row.packageReview.classList.remove('hidden');
+  row.consentPanel.classList.remove('hidden');
   row.status.textContent = 'Exact live package prepared · awaiting_review · approval not recorded';
   const title = row.request.package.before?.snippet?.title;
   if (row.proposal.action === 'restore_week_upload_visibility' && typeof title === 'string') {
@@ -80,8 +89,10 @@ async function operate(row, operation) {
     if (operation === 'prepare') {
       row.request = null;
       row.approvalId = null;
+      row.consent.checked = false;
       row.applyUncertain = false;
       row.packageReview.classList.add('hidden');
+      row.consentPanel.classList.add('hidden');
       row.status.textContent = 'Reading the current YouTube state and preparing exact review…';
       notice('Preparing one exact change. Review and approval are separate steps.');
       const {action, resource_id, target} = row.proposal;
@@ -93,11 +104,7 @@ async function operate(row, operation) {
       notice('Exact change prepared. Read the complete live package before recording owner approval.');
     } else if (operation === 'approve') {
       if (!row.request || row.approvalId) throw Error('Prepare a fresh exact package before recording approval.');
-      const completePackage = JSON.stringify(row.request.package, null, 2);
-      if (!window.confirm('Record owner approval for this exact YouTube change?\n\n' + completePackage + '\n\n' + CHANGE_CONFIRMATION)) {
-        notice('Approval was not recorded. The item remains awaiting_review.');
-        return;
-      }
+      if (!row.consent.checked) throw Error('Review the complete package and check the exact consent box before recording approval.');
       await assertSession(ticket);
       const approvalId = await recordExactChange(client, row.request, CHANGE_CONFIRMATION);
       if (ticket !== generation) return;
@@ -155,6 +162,19 @@ function renderCard(proposal, container, group) {
   const packageText = node('pre');
   packageText.className = 'package';
   packageReview.append(node('summary', 'Complete exact package · live before / proposed after'), packageText);
+  const consentPanel = node('div');
+  consentPanel.className = 'consent-panel hidden';
+  const consentId = 'exact-consent-' + rows.size;
+  const consent = node('input');
+  consent.type = 'checkbox';
+  consent.id = consentId;
+  consent.checked = false;
+  const consentLabel = node('label', CHANGE_CONFIRMATION);
+  consentLabel.htmlFor = consentId;
+  const consentLine = node('div');
+  consentLine.className = 'consent-line';
+  consentLine.append(consent, consentLabel);
+  consentPanel.append(node('p', 'Read the complete live before/after package above, then choose your exact consent.'), consentLine);
   const actions = node('div');
   actions.className = 'actions';
   const prepare = node('button', 'Prepare exact change');
@@ -164,10 +184,11 @@ function renderCard(proposal, container, group) {
   apply.className = 'secondary';
   for (const button of [prepare, approve, apply]) button.type = 'button';
   actions.append(prepare, approve, apply);
-  card.append(packageReview, actions);
+  card.append(packageReview, consentPanel, actions);
   container.append(card);
-  const row = {proposal, card, status, heading, packageReview, packageText, prepare, approve, apply, group, request: null, approvalId: null, state: 'awaiting_review', applyUncertain: false};
+  const row = {proposal, card, status, heading, packageReview, packageText, consentPanel, consent, consentLabel, prepare, approve, apply, group, request: null, approvalId: null, state: 'awaiting_review', applyUncertain: false};
   rows.set(proposal.key, row);
+  consent.addEventListener('change', controls);
   prepare.addEventListener('click', () => void operate(row, 'prepare'));
   approve.addEventListener('click', () => void operate(row, 'approve'));
   apply.addEventListener('click', () => void operate(row, 'apply'));
