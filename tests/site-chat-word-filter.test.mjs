@@ -36,8 +36,8 @@ test('server filter censors ordinary profanity before accepting the message', ()
   });
 });
 
-test('server filter blocks explicit sexual solicitation and targeted threats', () => {
-  for (const value of ['send me nudes', 'I will kill you', 'go k.y.s.']) {
+test('server filter blocks explicit sexual solicitation and targeted or credible threats', () => {
+  for (const value of ['send me nudes', 'I will kill you', 'go k.y.s.', 'ive got multiple bombs', 'I will plant a bomb']) {
     const result = validateMessageBody(value);
     assert.equal(result.ok, false, value);
     assert.equal(result.code, 'filtered_content');

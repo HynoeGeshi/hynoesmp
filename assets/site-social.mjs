@@ -1,5 +1,5 @@
 import { createClient } from './vendor/supabase.mjs';
-import { normalizeDisplayName, validateDisplayName, validateClientMessage, validateReaction, validateReport, isAnnouncementActive, sanitizeSiteChatMessages } from './site-social-core.mjs?v=20261008-language-filter';
+import { normalizeDisplayName, validateDisplayName, validateClientMessage, validateReaction, validateReport, isAnnouncementActive, sanitizeSiteChatMessages } from './site-social-core.mjs?v=20261008-language-filter-threats';
 
 export const SITE_SOCIAL_CONFIG_PATH = '/data/site-social-config.json';
 const SESSION_RESTORE_TIMEOUT_MS = 3500;

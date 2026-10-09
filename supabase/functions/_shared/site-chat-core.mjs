@@ -37,6 +37,8 @@ const BLOCKED_HARASSMENT_PATTERNS = Object.freeze([
   /(?:^|\s)k+\s*y+\s*s+(?:$|\s)/i,
   /(?:^|\s)(?:go\s+)?kill\s+yourself(?:$|\s)/i,
   /(?:^|\s)(?:i\s+will|i\s*am\s+going\s+to|i\s*ll)\s+(?:kill|hurt|shoot|stab)\s+(?:you|u|them|him|her)(?:$|\s)/i,
+  /(?:^|\s)(?:i\s+(?:have|got)|i\s+ve\s+got|ive\s+got|im\s+carrying|i\s+am\s+carrying)\s+(?:a|one|two|three|four|several|multiple|\d+)?\s*bombs?(?:$|\s)/i,
+  /(?:^|\s)(?:i\s+will|im\s+going\s+to|i\s+am\s+going\s+to|i\s*ll)\s+(?:plant|place|detonate|set\s+off)\s+(?:a|the|multiple|\d+)?\s*bombs?(?:$|\s)/i,
 ]);
 
 const BLOCKED_SEXUAL_SOLICITATION_PATTERNS = Object.freeze([

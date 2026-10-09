@@ -41,6 +41,7 @@ test('website chat read filter censors profanity and hides blocked history', () 
   const messages = sanitizeSiteChatMessages([
     { id: '1', display_name: 'Player', body: 'That was fucking wild.' },
     { id: '2', display_name: 'Player', body: 'I will kill you.' },
+    { id: '5', display_name: 'Player', body: 'ive got multiple bombs' },
     { id: '3', display_name: 'Player', body: 'you n1gg3r' },
     { id: '4', display_name: 'Shithead', body: 'class assignment; sex education matters' },
   ]);
@@ -49,6 +50,7 @@ test('website chat read filter censors profanity and hides blocked history', () 
   assert.equal(messages[1].display_name, '********');
   assert.equal(messages[1].body, 'class assignment; sex education matters');
   assert.equal(containsBlockedChatContent('go k.y.s.'), true);
+  assert.equal(containsBlockedChatContent('I’ve got multiple bombs'), true);
   assert.equal(censorChatProfanity('f.u.c.k.'), '*.*.*.*.');
   assert.equal(messageDisplayBody({ body: 'send me nudes' }), 'Message hidden by the language filter.');
 });
