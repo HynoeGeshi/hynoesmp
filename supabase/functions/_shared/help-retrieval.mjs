@@ -1,5 +1,5 @@
 const STOP_WORDS = new Set([
-  'the','and','for','that','with','this','from','your','you','are','but','not','into','has','have','was','will','can','our','all','use','its','how','what','when','where','who','why','a','an','to','of','in','on','at','as','or','is','be','by','it','do','does','i','me','my','about','learn','work','players','current','see'
+  'the','and','for','that','with','this','from','your','you','are','but','not','into','has','have','was','will','can','our','all','use','its','how','what','when','where','who','why','a','an','to','of','in','on','at','as','or','is','be','by','it','do','does','i','me','my','about','learn','work','players','current','see','up','many'
 ]);
 
 const INJECTION_PATTERNS = [
@@ -16,7 +16,11 @@ function normalize(value) {
 
 function tokenize(value) {
   const raw = normalize(value).toLowerCase().match(/\/[a-z0-9_-]+|[a-z0-9][a-z0-9'-]{1,}/g) ?? [];
-  return [...new Set(raw.filter((token) => !STOP_WORDS.has(token)))];
+  return [...new Set(raw.filter((token) => !STOP_WORDS.has(token)).map((token) =>
+    !token.startsWith('/') && token.length > 3 && token.endsWith('s') && !token.endsWith('ss')
+      ? token.slice(0, token.endsWith('sses') ? -2 : -1)
+      : token
+  ))];
 }
 
 function stripInstructionLikeText(value) {
@@ -120,6 +124,7 @@ export function rankHelpChunks(question, chunks = [], options = {}) {
     const body = `${chunk.text} ${chunk.tokens.join(' ')}`.toLowerCase();
     const all = `${title} ${body}`;
     const chunkTokens = new Set(tokenize(all));
+    const textTokens = new Set(tokenize(chunk.text));
     let score = 0;
     let matches = 0;
 
@@ -141,9 +146,11 @@ export function rankHelpChunks(question, chunks = [], options = {}) {
     if (chunk.status === 'confirmed') score += 0.4;
     if (matches >= Math.min(3, qTokens.length)) score += 3;
 
-    if (score > 0) results.push({
+    // Page routing and recency can order evidence, but cannot create a match.
+    if (matches > 0 && score > 0 && focusedExcerpt(q, chunk)) results.push({
       score: Number(score.toFixed(3)),
       matches,
+      bodyMatches: qTokens.filter((token) => textTokens.has(token)).length,
       queryTokenCount: qTokens.length,
       coverage: qTokens.length ? Number((matches / qTokens.length).toFixed(3)) : 0,
       privateQuery: isPrivateInfoQuery(q),
@@ -152,7 +159,7 @@ export function rankHelpChunks(question, chunks = [], options = {}) {
   }
 
   return results
-    .sort((a, b) => b.score - a.score || String(b.chunk.dated_at ?? '').localeCompare(String(a.chunk.dated_at ?? '')) || a.chunk.id.localeCompare(b.chunk.id))
+    .sort((a, b) => b.score - a.score || b.bodyMatches - a.bodyMatches || String(b.chunk.dated_at ?? '').localeCompare(String(a.chunk.dated_at ?? '')) || a.chunk.id.localeCompare(b.chunk.id))
     .slice(0, limit);
 }
 
@@ -288,6 +295,34 @@ function naturalServerOverview(question, results = []) {
   return sentences.join(' ');
 }
 
+function focusedExcerpt(question, chunk) {
+  const query = tokenize(question);
+  const matches = (text) => {
+    const tokens = new Set(tokenize(text));
+    return query.filter((token) => tokens.has(token)).length;
+  };
+  const sentences = normalize(chunk.text).split(/(?<=[.!?])\s+(?=[A-Z0-9/])/);
+  const start = sentences.findIndex((sentence) => /[a-z]/.test(sentence) && matches(sentence) > 0);
+  // A narrow heading can supply the subject of a useful follow-up paragraph
+  // (for example, Homes followed by the names of unlock milestones).
+  if (start < 0) {
+    if (matches(chunk.heading) < Math.ceil(query.length / 2)) return '';
+    const text = normalize(chunk.text);
+    return text.length > 360 ? `${text.slice(0, 357).trim()}…` : text;
+  }
+  const excerpt = [];
+  for (const sentence of sentences.slice(start)) {
+    if (!/[a-z]/.test(sentence) || !matches(sentence)) break;
+    const next = [...excerpt, sentence].join(' ');
+    if (next.length > 360) {
+      if (!excerpt.length) return `${sentence.slice(0, 357).trim()}…`;
+      break;
+    }
+    excerpt.push(sentence);
+  }
+  return excerpt.join(' ');
+}
+
 export function buildFallbackAnswer(question, results = []) {
   const classification = classifyRetrieval(results);
   const sources = sourceList(results);
@@ -313,14 +348,17 @@ export function buildFallbackAnswer(question, results = []) {
   }
 
   const excerpts = [];
-  for (const result of results.slice(0, 3)) {
-    const text = normalize(result.chunk.text);
+  const evidence = [];
+  for (const result of results) {
+    const text = focusedExcerpt(question, result.chunk);
     if (!text) continue;
-    excerpts.push(text.length > 360 ? `${text.slice(0, 357).trim()}…` : text);
+    excerpts.push(text);
+    evidence.push(result);
+    if (excerpts.length >= 3) break;
   }
   return {
     answer: excerpts.join('\n\n') || 'I found relevant official Hynoe information, but there was not enough readable text to answer safely.',
-    sources,
+    sources: sourceList(evidence),
     confidence: classification.confidence,
     conflict: false,
   };
