@@ -22,7 +22,7 @@ test('public community pages load social assets while admin and legal pages rema
       continue;
     }
     assert.match(html, /assets\/site-social\.css\?v=20261007-minecraft/i, `${page} missing social CSS`);
-    assert.match(html, /assets\/site-social-panel\.mjs\?v=20261007-minecraft/i, `${page} missing social panel module`);
+    assert.match(html, /assets\/site-social-panel\.mjs\?v=20261008-language-filter/i, `${page} missing social panel module`);
     assert.match(html, /connect-src [^;]*https:\/\/hynoe-control-bridge\.onrender\.com/, `${page} blocks the Minecraft bridge`);
   }
 });

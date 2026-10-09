@@ -73,6 +73,20 @@ test('site message request builds authoritative insert payload from authenticate
   });
 });
 
+test('site message insert stores the censored body rather than the original profanity', () => {
+  const result = prepareSiteMessage({
+    userId: 'u1',
+    profile: { user_id: 'u1', is_banned: false, muted_until: null, last_post_at: null },
+    settings: { posting_paused: false },
+    body: 'That update was fucking wild.',
+    reply: null,
+    requestId: crypto.randomUUID(),
+    now: 30_000,
+  });
+  assert.equal(result.ok, true);
+  assert.equal(result.row.body, 'That update was ******* wild.');
+});
+
 test('request IDs must be UUIDs and allowed origins are explicit', () => {
   assert.equal(validateRequestId(crypto.randomUUID()).ok, true);
   assert.equal(validateRequestId('not-a-uuid').ok, false);

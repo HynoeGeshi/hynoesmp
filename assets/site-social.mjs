@@ -1,5 +1,5 @@
 import { createClient } from './vendor/supabase.mjs';
-import { normalizeDisplayName, validateDisplayName, validateClientMessage, validateReaction, validateReport, isAnnouncementActive } from './site-social-core.mjs';
+import { normalizeDisplayName, validateDisplayName, validateClientMessage, validateReaction, validateReport, isAnnouncementActive, sanitizeSiteChatMessages } from './site-social-core.mjs?v=20261008-language-filter';
 
 export const SITE_SOCIAL_CONFIG_PATH = '/data/site-social-config.json';
 const SESSION_RESTORE_TIMEOUT_MS = 3500;
@@ -174,7 +174,7 @@ export async function loadRecentMessages(client, limit = 50) {
     .order('created_at', { ascending: false })
     .limit(safeLimit);
   if (error) throw new Error('Could not load Global Chat history.');
-  return [...(data ?? [])].reverse();
+  return sanitizeSiteChatMessages([...(data ?? [])]).reverse();
 }
 
 export async function connectGlobalChannel(client, {

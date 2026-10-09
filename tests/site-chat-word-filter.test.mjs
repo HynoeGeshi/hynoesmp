@@ -25,13 +25,31 @@ test('server message validation blocks targeted self-harm harassment', () => {
   }
 });
 
-test('server word filter does not ban ordinary profanity or innocent substrings', () => {
+test('server filter censors ordinary profanity before accepting the message', () => {
+  assert.deepEqual(validateMessageBody('This fucking boss is shit.'), {
+    ok: true,
+    value: 'This ******* boss is ****.',
+  });
+  assert.deepEqual(validateMessageBody('That was f.u.c.k.'), {
+    ok: true,
+    value: 'That was *.*.*.*.',
+  });
+});
+
+test('server filter blocks explicit sexual solicitation and targeted threats', () => {
+  for (const value of ['send me nudes', 'I will kill you', 'go k.y.s.']) {
+    const result = validateMessageBody(value);
+    assert.equal(result.ok, false, value);
+    assert.equal(result.code, 'filtered_content');
+  }
+});
+
+test('server filter preserves benign words and neutral educational discussion', () => {
   for (const value of [
-    'damn this boss is hard as fuck',
-    'that was bullshit lol',
     'I sniggered at the joke',
     'class assignment',
+    'sex education matters',
   ]) {
-    assert.equal(validateMessageBody(value).ok, true, value);
+    assert.deepEqual(validateMessageBody(value), { ok: true, value });
   }
 });

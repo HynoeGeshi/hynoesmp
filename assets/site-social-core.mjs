@@ -7,6 +7,77 @@ export const SITE_DISPLAY_NAME_RENAME_COOLDOWN_DAYS = 30;
 
 const CONTROL_OR_INVISIBLE = /[\u0000-\u001F\u007F-\u009F\u200B-\u200F\u202A-\u202E\u2060-\u206F]/g;
 const RESERVED_NAMES = new Set(['hynoe', 'admin', 'administrator', 'mod', 'moderator', 'staff', 'owner', 'system']);
+const CHAT_BLOCKED_TERMS = Object.freeze([
+  'nigger', 'nigga', 'faggot', 'kike', 'chink', 'gook', 'spic', 'wetback',
+  'beaner', 'tranny', 'coon', 'porchmonkey', 'raghead', 'retard',
+]);
+const CHAT_LEET_MAP = Object.freeze({ '0':'o', '1':'i', '3':'e', '4':'a', '5':'s', '7':'t', '8':'b', '9':'g', '@':'a', '$':'s', '!':'i', '|':'i', '+':'t' });
+const CHAT_CENSORED_TERMS = Object.freeze([
+  'motherfuckers', 'motherfucker', 'motherfucking', 'motherfucked', 'motherfuck',
+  'fucking', 'fucked', 'fuckers', 'fucker', 'fucks', 'fuck',
+  'shitheads', 'shithead', 'shitting', 'shitty', 'shits', 'shit',
+  'bitches', 'bitchy', 'bitch', 'bastards', 'bastard', 'asshole', 'assholes',
+  'pissing', 'pissed', 'piss', 'dickhead', 'dickheads', 'dicks', 'dick',
+  'cocks', 'cock', 'pussies', 'pussy', 'crap', 'damned', 'damn', 'hell',
+]);
+const CHAT_CENSORED_PATTERNS = CHAT_CENSORED_TERMS.map((term) => {
+  const letters = [...term].map((char) => `${char}+`).join('[^A-Za-z0-9]*');
+  return new RegExp(`(^|[^A-Za-z0-9])(${letters})(?=$|[^A-Za-z0-9])`, 'gi');
+});
+
+function comparableChatText(input) {
+  return String(input ?? '')
+    .normalize('NFKD')
+    .toLowerCase()
+    .replace(/[\u0300-\u036f]/g, '')
+    .split('')
+    .map((char) => CHAT_LEET_MAP[char] ?? char)
+    .join('')
+    .replace(/[^a-z]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function chatTermPattern(term) {
+  return new RegExp(`(?:^|\\s)${[...term].map((char) => `${char}+`).join('\\s*')}(?:$|\\s)`, 'i');
+}
+
+const CHAT_BLOCKED_PATTERNS = CHAT_BLOCKED_TERMS.map(chatTermPattern);
+const CHAT_BLOCKED_PHRASES = Object.freeze([
+  /(?:^|\s)k+\s*y+\s*s+(?:$|\s)/i,
+  /(?:^|\s)(?:go\s+)?kill\s+yourself(?:$|\s)/i,
+  /(?:^|\s)(?:i\s+will|i\s*am\s+going\s+to|i\s*ll)\s+(?:kill|hurt|shoot|stab)\s+(?:you|u|them|him|her)(?:$|\s)/i,
+  /(?:^|\s)(?:send|show|give|dm|trade|share)\s+(?:me\s+)?(?:your\s+)?(?:nudes?|naked\s+pics?|dick\s+pics?|nude\s+pics?)(?:$|\s)/i,
+  /(?:^|\s)(?:send|show|give|dm|trade|share)\s+(?:me\s+)?(?:your\s+)?(?:tits|boobs|ass)(?:$|\s)/i,
+]);
+
+export function containsBlockedChatContent(input) {
+  const comparable = comparableChatText(input);
+  return Boolean(comparable) && (
+    CHAT_BLOCKED_PATTERNS.some((pattern) => pattern.test(comparable))
+    || CHAT_BLOCKED_PHRASES.some((pattern) => pattern.test(comparable))
+  );
+}
+
+export function censorChatProfanity(input) {
+  let value = String(input ?? '');
+  for (const pattern of CHAT_CENSORED_PATTERNS) {
+    value = value.replace(pattern, (match, boundary, word) => boundary + word.replace(/[A-Za-z0-9]/g, '*'));
+  }
+  return value;
+}
+
+export function sanitizeSiteChatMessages(messages = []) {
+  return (messages ?? []).flatMap((message) => {
+    if (!message || typeof message !== 'object') return [];
+    if (!message.is_deleted && containsBlockedChatContent(message.body)) return [];
+    return [{
+      ...message,
+      display_name: censorChatProfanity(message.display_name),
+      body: message.is_deleted ? message.body : censorChatProfanity(message.body),
+    }];
+  });
+}
 
 export function normalizeDisplayName(input) {
   return String(input ?? '')
@@ -91,7 +162,8 @@ export function validateReport(reason, details = '') {
 
 export function messageDisplayBody(message) {
   if (message?.is_deleted || message?.deleted_at) return 'Message removed by moderation.';
-  return String(message?.body ?? '');
+  if (containsBlockedChatContent(message?.body)) return 'Message hidden by the language filter.';
+  return censorChatProfanity(message?.body);
 }
 
 export function isAnnouncementActive(announcement, now = Date.now()) {
