@@ -66,3 +66,16 @@ test('Edge Function requires user auth, bounds requests, never reads Global Chat
   assert.doesNotMatch(source,/site_chat_messages|site_chat_public_messages|site_chat_reactions/);
   assert.doesNotMatch(source,/service_role|sb_secret_/i);
 });
+
+test('retrieval endpoint excludes unrelated seasonal marketing answers and citations', async () => {
+  const result = await answerAskHynoe({
+    question:'Why are my seasonal collection counts not updating?',
+    chunks:index.chunks,
+    provider:null,
+  });
+  assert.match(result.answer, /Refresh Counts|reopen/i);
+  assert.doesNotMatch(result.answer, /weekend sprint|long-term world/i);
+  assert.ok(result.sources.length > 0);
+  assert.ok(result.sources.every(source => source.url !== '/modded-minecraft-server.html'));
+  assert.ok(result.sources.every(source => source.id && source.label && source.url));
+});
