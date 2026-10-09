@@ -41,7 +41,7 @@ describe('public Minecraft bridge', () => {
   });
   it('blocks explicit solicitation and targeted threats before provider writes', async () => {
     const {deps,handler}=setup();
-    for (const body of ['send me nudes','I will kill you','go k.y.s.']) {
+    for (const body of ['send me nudes','I will kill you','go k.y.s.','ive got multiple bombs','I will plant a bomb']) {
       expect((await handler(post({body,request_id:requestId}))).status).toBe(400);
     }
     expect(deps.postDiscord).not.toHaveBeenCalled();
@@ -87,6 +87,7 @@ describe('public Minecraft bridge', () => {
     const messages=publicMessages([
       {id:'4',author:{id:'user',username:'Player'},content:'This shit is wild.',timestamp:'2026-10-07T04:00:00Z'},
       {id:'3',author:{id:'other',username:'Player'},content:'I will kill you.',timestamp:'2026-10-07T03:00:00Z'},
+      {id:'5',author:{id:'other2',username:'Player'},content:'ive got multiple bombs',timestamp:'2026-10-07T02:30:00Z'},
       {id:'2',author:{id:'mc',username:'Player',bot:true},webhook_id:'mc',content:'you n1gg3r',timestamp:'2026-10-07T02:00:00Z'},
       {id:'1',author:{id:'user2',username:'Player'},content:'class assignment; sex education matters',timestamp:'2026-10-07T01:00:00Z'},
     ], 'bridge-bot');
