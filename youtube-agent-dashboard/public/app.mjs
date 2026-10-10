@@ -1,5 +1,6 @@
 import { createClient } from '/vendor/supabase.mjs';
 import { loadCandidates, attachPreview, submitApproval, prepareUploadReview, recordExactUploadApproval, reviewQueue, previewPath, publicationStatus, todayReadyCount } from '/dashboard-core.mjs';
+import { finishApprovedSchedule } from '/approve-schedule.mjs';
 
 const config = window.__HYNOE_YOUTUBE_AGENT_CONFIG__ || {};
 const supabase = createClient(config.supabaseUrl, config.supabaseAnonKey);
@@ -85,15 +86,15 @@ function buildActions(candidate) {
   const actions = document.createElement('div');
   actions.className = 'actions';
   const publication = publicationStatus(candidate);
-  if (publication) {
-    actions.append(textEl('span','action-feedback',publication.kind === 'uploaded' ? 'Already uploaded privately. Exact public release approval is separate.' : publication.kind === 'posted' ? 'Posted publicly.' : 'Existing upload needs visibility verification before another review action.'));
+  if (publication && publication.kind !== 'uploaded') {
+    actions.append(textEl('span','action-feedback',publication.kind === 'scheduled' ? 'Scheduled for ' + new Date(publication.scheduled_for).toLocaleString() : publication.kind === 'posted' ? 'Posted publicly.' : 'Existing upload needs visibility verification before another review action.'));
     return actions;
   }
   if (candidate.approval_state === 'rejected') return actions;
 
   const approve = document.createElement('button');
   approve.type = 'button';
-  approve.textContent = 'Approve';
+  approve.textContent = candidate.approval_state === 'approved' ? 'Schedule approved clip' : 'Review & schedule';
   const reject = document.createElement('button');
   reject.type = 'button';
   reject.className = 'reject';
@@ -108,8 +109,15 @@ function buildActions(candidate) {
   const showExactReview = (package_) => {
     review = document.createElement('section');
     review.className = 'exact-upload-review';
-    review.append(textEl('h3', '', 'Exact private YouTube upload'));
-    review.append(textEl('p', '', 'Review this video and its exact title, description and private visibility. Confirming records approval for one upload.'));
+    review.append(textEl('h3', '', 'Approve once and schedule'));
+    review.append(textEl('p', '', 'Review the video, title and description below. Choose a publish time. One approval uploads privately and schedules public release. Keep this page open until scheduling finishes.'));
+    const timeLabel = textEl('label', '', 'Publish time (your local time)');
+    const publishTime = document.createElement('input');
+    publishTime.type = 'datetime-local';
+    const defaultTime = new Date(Date.now() + 2*60*60*1000);
+    publishTime.value = new Date(defaultTime.getTime()-defaultTime.getTimezoneOffset()*60000).toISOString().slice(0,16);
+    timeLabel.append(publishTime);
+    review.append(timeLabel);
     const details = document.createElement('details');
     details.open = true;
     details.append(textEl('summary', '', 'Exact upload package'));
@@ -120,10 +128,10 @@ function buildActions(candidate) {
     consent.checked = false;
     const label = document.createElement('label');
     label.className = 'exact-upload-consent';
-    label.append(consent, textEl('span', '', 'I approve this exact YouTube upload'));
+    label.append(consent, textEl('span', '', 'I approve this clip, title, description and public release at the selected time.'));
     const confirm = document.createElement('button');
     confirm.type = 'button';
-    confirm.textContent = 'Confirm approval';
+    confirm.textContent = candidate.approval_state === 'approved' ? 'Schedule this approved clip' : 'Approve & schedule';
     confirm.disabled = true;
     const cancel = document.createElement('button');
     cancel.type = 'button';
@@ -140,13 +148,24 @@ function buildActions(candidate) {
       cancel.disabled = true;
       feedback.textContent = 'Recording exact approval…';
       try {
-        await recordExactUploadApproval(supabase, package_, 'I approve this exact YouTube upload');
+        const publishAt = new Date(publishTime.value).toISOString();
+        if (Date.parse(publishAt) <= Date.now()) throw Error('Choose a future publish time');
+        publishTime.disabled = true;
+        const {data:prior,error:priorError} = await supabase.from('youtube_upload_approvals').select('id,publishing_job_id,package,consumed_at,revoked_at').eq('clip_candidate_id',candidate.id).order('approved_at',{ascending:false});
+        if(priorError) throw priorError;
+        if (!publication && (prior || []).some(p=>p.consumed_at&&!p.revoked_at)) throw Error('An upload was already attempted. Refresh and inspect its status before any new upload.');
+        const canonical = value => Array.isArray(value) ? value.map(canonical) : value && typeof value === 'object' ? Object.fromEntries(Object.keys(value).sort().map(key=>[key,canonical(value[key])])) : value;
+        const samePackage = p => JSON.stringify(canonical(p)) === JSON.stringify(canonical(package_));
+        const existing = (prior || []).find(p => !p.revoked_at && samePackage(p.package) && (publication?.kind === 'uploaded' ? p.consumed_at : !p.consumed_at));
+        const recorded = existing ? {publishing_job_id:existing.publishing_job_id,upload_approval_id:existing.id} : await recordExactUploadApproval(supabase, package_, 'I approve this exact YouTube upload');
+        await finishApprovedSchedule(supabase, recorded, publishAt, {youtubeVideoId:publication?.kind === 'uploaded' ? publication.youtube_video_id : undefined,onStatus:message => {feedback.textContent=message;}});
         close();
-        feedback.textContent = 'Exact private upload consent recorded; no upload performed';
+        feedback.textContent = 'Schedule verified on YouTube';
         await refreshCandidates();
       } catch (error) {
         feedback.textContent = error?.message || 'Review action failed';
       } finally {
+        publishTime.disabled = false;
         recording = false;
         confirm.disabled = !consent.checked;
         cancel.disabled = false;
@@ -199,7 +218,7 @@ function renderCandidateCard(candidate) {
   if (candidate.hook) card.append(textEl('p', 'hook', candidate.hook));
   if (candidate.transcript_excerpt) card.append(textEl('p', 'excerpt', candidate.transcript_excerpt));
   card.append(textEl('p', `render-state ${candidate.render_status || 'unknown'}`, publicationStatus(candidate)?.kind === 'uploaded' ? 'Uploaded privately; awaiting exact public release.' : renderState(candidate)));
-  card.append(textEl('p', 'approval-state', `Prior review: ${candidate.approval_state || 'pending'}. Exact publication consent is checked separately.`));
+  card.append(textEl('p', 'approval-state', `Approval: ${candidate.approval_state || 'pending'}. ${candidate.approval_state === 'approved' ? 'Clip approval saved; choose a schedule if needed.' : 'Approve once with your chosen publish time.'}`));
   return card;
 }
 
@@ -234,7 +253,7 @@ async function refreshCandidates() {
     for (const candidate of uploaded) uploadedList.append(renderCandidateCard(candidate));
     rejectedSummary.textContent = `Rejected history (${counts.rejected})`;
     postedSummary.textContent = `Posted history (${counts.posted})`;
-    uploadedSummary.textContent = `Uploaded privately (${counts.uploaded})`;
+    uploadedSummary.textContent = `Scheduled / uploaded privately (${counts.uploaded})`;
     uploadedHistory.classList[counts.uploaded ? 'remove' : 'add']('hidden');
     status.textContent = `${counts.ready} ready to review · ${counts.awaiting} awaiting render · ${counts.approved} approved · ${counts.rejected} rejected`;
     if (counts.attention) status.textContent += ` · ${counts.attention} need attention`;

@@ -49,6 +49,7 @@ function applySecurityHeaders(res) {
 const routes = new Map([
   ['/', ['index.html', 'text/html; charset=utf-8']],
   ['/upload-package.mjs', ['../lib/upload-package.mjs', 'text/javascript; charset=utf-8']],
+  ['/approve-schedule.mjs', ['../lib/approve-schedule.mjs', 'text/javascript; charset=utf-8']],
   ['/app.mjs', ['app.mjs', 'text/javascript; charset=utf-8']],
   ['/styles.css', ['styles.css', 'text/css; charset=utf-8']],
   ['/metadata', ['metadata.html', 'text/html; charset=utf-8']],

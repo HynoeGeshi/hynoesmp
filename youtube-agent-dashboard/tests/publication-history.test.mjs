@@ -1,12 +1,18 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {loadCandidates, reviewQueue} from '../lib/dashboard-core.mjs';
+import {loadCandidates, reviewQueue, publicationStatus} from '../lib/dashboard-core.mjs';
 
 const CHANNEL = '31031ac7-034b-420f-b8ec-de9952669afa';
 const NEW_IDS = ['kFTPLWoi86c','_ZKpf_BqFz0','5TFLR3uQ1uw','MgYHwsdLP4U','xMcGlb15pbc'];
 const LEGACY_IDS = ['oNwQjlWj5S0','2WxaP1anLVM','B9J_MQHeEZw','YXy7fcWg5ts'];
 const clip = (id, job = {}) => ({id,channel_id:CHANNEL,approval_state:'approved',render_status:'ready',render_uri:id+'.mp4',publishing_jobs:[{id:'job-'+id,channel_id:CHANNEL,clip_candidate_id:id,...job}]});
 const catalogue = LEGACY_IDS.map(video_id => ({channel_id:CHANNEL,video_id,privacy:'public'}));
+test('verified scheduled clips leave the review queue and retain their publish time',()=>{
+ const scheduled=clip('scheduled',{state:'scheduled',youtube_video_id:'Ab1Cd2Ef3Gh',scheduled_for:'2099-10-10T19:00:00Z'});
+ assert.equal(publicationStatus(scheduled).kind,'scheduled');
+ assert.equal(reviewQueue([scheduled]).active.length,0);
+ assert.equal(reviewQueue([scheduled]).uploaded.length,1);
+});
 const completed = [
   ...NEW_IDS.map((youtube_video_id,i) => clip('new-'+i,{state:'published',youtube_video_id,published_at:'2026-10-08T20:19:00Z'})),
   ...LEGACY_IDS.map((youtube_video_id,i) => ({...clip('legacy-'+i,{state:'awaiting_review',youtube_video_id}),publication_catalog:catalogue})),
@@ -55,7 +61,7 @@ test('load reads owner-visible nested jobs and public catalogue only for actual 
   }};
   const loaded=await loadCandidates(supabase), queue=reviewQueue(loaded);
   assert.equal(queue.posted.length,9); assert.equal(queue.active.length,0);
-  assert.match(calls[0].fields,/publishing_jobs\(id,channel_id,clip_candidate_id,state,youtube_video_id,published_at\)/);
+  assert.match(calls[0].fields,/publishing_jobs\(id,channel_id,clip_candidate_id,state,youtube_video_id,published_at,scheduled_for\)/);
   assert.deepEqual(calls.find(c=>c.key==='video_id').values.sort(),[...NEW_IDS,...LEGACY_IDS].sort());
   assert.equal(calls.find(c=>c.table==='revival_catalog').fields,'channel_id,video_id,privacy');
 });

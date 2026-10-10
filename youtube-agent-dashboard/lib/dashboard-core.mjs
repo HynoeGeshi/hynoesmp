@@ -34,6 +34,8 @@ export function publicationStatus(candidate) {
     }
   }
   const privateJob = jobs.find(job => job.state === 'uploaded_private');
+  const scheduledJob = jobs.find(job => job.state === 'scheduled' && Number.isFinite(Date.parse(job.scheduled_for)));
+  if (scheduledJob) return {kind:'scheduled',youtube_video_id:scheduledJob.youtube_video_id,job_id:scheduledJob.id,scheduled_for:scheduledJob.scheduled_for};
   if (privateJob) return {kind:'uploaded',youtube_video_id:privateJob.youtube_video_id,job_id:privateJob.id};
   if (jobs.length) return {kind:'unverified',youtube_video_id:jobs[0].youtube_video_id,job_id:jobs[0].id};
   return null;
@@ -47,7 +49,7 @@ export function reviewQueue(candidates = []) {
   for (const candidate of candidates) {
     const publication = publicationStatus(candidate);
     if (publication?.kind === 'posted') {posted.push(candidate); counts.posted += 1; continue;}
-    if (publication?.kind === 'uploaded') {uploaded.push(candidate); counts.uploaded += 1; continue;}
+    if (publication?.kind === 'uploaded' || publication?.kind === 'scheduled') {uploaded.push(candidate); counts.uploaded += 1; continue;}
     if (candidate.approval_state === 'rejected') {
       rejected.push(candidate);
       counts.rejected += 1;
@@ -86,7 +88,7 @@ export async function loadCandidates(supabase) {
   const fields = [
     'id','channel_id','video_source_id','start_ms','end_ms','category','score','transcript_excerpt','hook','title','description','hashtags',
     'render_uri','preview_uri','render_status','approval_state','reviewer_notes','created_at','updated_at','render_error_message',
-    'publishing_jobs(id,channel_id,clip_candidate_id,state,youtube_video_id,published_at)'
+    'publishing_jobs(id,channel_id,clip_candidate_id,state,youtube_video_id,published_at,scheduled_for)'
   ].join(',');
   const { data, error } = await supabase.from('clip_candidates').select(fields);
   if (error) throw error;
