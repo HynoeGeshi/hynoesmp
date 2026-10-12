@@ -12,8 +12,8 @@ test('exact review hashes rendered bytes, not lower-resolution preview; never up
  await recordExactUploadApproval(db,package_,'I approve this exact YouTube upload');
  assert.equal(calls[1][0],'approve_clip_upload');assert.deepEqual(calls[1][1].p_package,package_);
 });
-test('90-point quality gate cannot be bypassed by generic approval',async()=>{
- const query={select(){return this},eq(){return this},async single(){return {data:{score:89,approved:true,auto_publish:true,render_status:'ready',render_uri:'x'}}}};
+test('80-point quality gate cannot be bypassed by generic approval',async()=>{
+ const query={select(){return this},eq(){return this},async single(){return {data:{score:79,approved:true,auto_publish:true,render_status:'ready',render_uri:'x'}}}};
  const db={from(){return query}};
- await assert.rejects(()=>prepareUploadReview(db,'clip'),/90\+/);
+ await assert.rejects(()=>prepareUploadReview(db,'clip'),/80\+/);
 });

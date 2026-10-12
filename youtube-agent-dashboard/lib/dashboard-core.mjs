@@ -166,7 +166,7 @@ export async function submitApproval(supabase, clipId, action, notes = null) {
 export async function prepareUploadReview(supabase, clipId, fetchMedia = fetch) {
   const {data:clip,error} = await supabase.from('clip_candidates').select('*').eq('id',clipId).single();
   if(error) throw error;
-  if(clip.render_status !== 'ready' || !clip.render_uri || Number(clip.score)<90) throw new Error('A 90+ score and finished private render are required');
+  if(clip.render_status !== 'ready' || !clip.render_uri || Number(clip.score)<80) throw new Error('An 80+ score and finished private render are required');
   const {data:signed,error:signError}=await supabase.storage.from('clip-previews').createSignedUrl(clip.render_uri,600);
   if(signError) throw signError;
   const media=await fetchMedia(signed.signedUrl);

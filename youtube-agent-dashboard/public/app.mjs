@@ -101,7 +101,7 @@ function buildActions(candidate) {
   reject.textContent = 'Reject';
   const feedback = textEl('span', 'action-feedback', '');
   const buttons = [approve, reject];
-  const canApprove = candidate.render_status === 'ready' && Boolean(candidate.render_uri) && Number(candidate.score) >= 90;
+  const canApprove = candidate.render_status === 'ready' && Boolean(candidate.render_uri) && Number(candidate.score) >= 80;
   let review = null;
   const unlock = () => {approve.disabled = !canApprove;reject.disabled = false;};
   unlock();
