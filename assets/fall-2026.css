@@ -1,0 +1,38 @@
+/*! Copyright © 2026 Hynoe. All rights reserved. See /COPYRIGHT.md. */
+/* Fall 2026: a shared seasonal finish over the existing page layouts. */
+:root{
+  --bg:#10150f;--bg2:#151c13;--panel:#1c241a;--panel2:#263023;
+  --gold:#efb66e;--gold2:#ffdb9e;--grass:#a3b77d;--emerald:#9ac18a;
+  --refresh-bg:#10150f;--refresh-panel:#1c241a;--refresh-panel-2:#263023;
+  --refresh-line:#786044;--refresh-gold:#efb66e;--refresh-cream:#fff1d8;
+  --refresh-muted:#c8c0ad;--refresh-green:#a3b77d;
+  --hub-bg:#101810;--hub-panel:#20271c;--hub-panel-2:#2a3022;
+  --hub-line:#775b3c;--hub-gold:#ffc77f;--hub-green:#acc58e;
+  --hub-text:#fff1dc;--hub-muted:#d0c4ae;
+}
+body{background:radial-gradient(ellipse at 12% 0,#9c4c2026,transparent 44%),var(--bg)}
+body[data-page="home"]{background:radial-gradient(ellipse at 20% 0,#a753283b,transparent 46%),radial-gradient(ellipse at 90% 22%,#54753a24,transparent 36%),var(--hub-bg)}
+body:before{background:radial-gradient(circle at 15% 12%,#c66d2820,transparent 32%),radial-gradient(circle at 85% 25%,#6d8a3a14,transparent 30%)}
+body[data-page] .world-hud,.topbar{background:linear-gradient(180deg,#1c251af7,#10170ff7);border-bottom-color:#80613f}
+body[data-page] .hotbar,.site-pages{background:#111b10f5;border-color:#775c3e}
+body[data-page] .hotbar-slot.active,body[data-page] .hotbar-slot:hover{background:#3b2d1e;border-color:#d5a064}
+body[data-page] .hotbar-slot.active b{color:#ffdb9e}
+body[data-page="home"] .gate-copy{border-color:#a47747;background:linear-gradient(135deg,#32261bea,#172115e6)}
+body[data-page="home"] .world-gate-bg{filter:sepia(.27) saturate(.88) contrast(1.04)}
+body[data-page="home"] .world-gate h1 em{color:#ffc77f}
+body[data-page="home"] .hero-lead{border-left-color:#dc9755;background:#1e1d12b5}
+body[data-page="home"] .world-dashboard a,body[data-page="home"] .quick-start-grid a{background:linear-gradient(145deg,#30291eea,#192318ed);border-color:#775b3c}
+body[data-page="home"] .recent-updates{background:#1d261a;border-color:#947044}
+body[data-page="home"] .update-strip article{background:#172014;border-color:#6d5438}
+body[data-page] .october-panel{border-color:#8d683e;background:linear-gradient(135deg,#2a2619,#172014)}
+body[data-page] .october-panel h1,body[data-page] .october-panel h2{color:#ffe2b0}
+body[data-page] .october-panel p,body[data-page] .october-panel li{color:#eee3d0}
+body[data-page] .october-panel a:not(.mc-button){color:#ffcd8a}
+body[data-page] .quest-tag{border-color:#b47a40;background:#4c301bc9}
+body[data-page] .eyebrow,body[data-page] .updates-live{color:#ffd297}
+.fall-announcement{max-width:1220px;margin:24px auto 0;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;gap:18px 30px;background:linear-gradient(110deg,#45301e,#1e2c1c);border:1px solid #a57946;border-radius:12px;color:#fff0d5}
+.fall-announcement small{display:block;color:#ffd297;font-size:11px;font-weight:800;letter-spacing:.14em}
+.fall-announcement p{margin:5px 0 0;font-size:15px;line-height:1.6}
+.fall-announcement a{flex-shrink:0;color:#ffdb9e;font-size:13px;font-weight:700;text-underline-offset:4px}
+.fall-announcement :focus-visible{outline:3px solid #ffdb9e;outline-offset:5px}
+@media(max-width:700px){.fall-announcement{margin:16px 12px 0;padding:18px;flex-direction:column;align-items:flex-start;gap:10px}.fall-announcement p{font-size:14px}}
