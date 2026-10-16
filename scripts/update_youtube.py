@@ -87,6 +87,23 @@ def meta_value(parser, attr, value):
 
 def video_info(video_id: str) -> dict:
     page = get(f"https://www.youtube.com/watch?v={video_id}")
+    # A title (or an HTTP 200 watch page) does not establish playability: private,
+    # restricted, and removed videos can still have watch-page metadata.
+    match = re.search(r'(?:var\s+)?ytInitialPlayerResponse\s*=\s*', page)
+    if not match:
+        raise ValueError("YouTube player metadata missing; cannot verify availability")
+    try:
+        player, _ = json.JSONDecoder().raw_decode(page[match.end():])
+    except (ValueError, TypeError) as error:
+        raise ValueError("YouTube player metadata unreadable") from error
+    details = player.get("videoDetails", {})
+    playback = player.get("playabilityStatus", {})
+    if details.get("isPrivate") or playback.get("status") != "OK":
+        raise ValueError("YouTube video unavailable or private")
+    if details.get("videoId") != video_id:
+        raise ValueError("YouTube player video does not match requested video")
+    if playback.get("playableInEmbed") is not True:
+        raise ValueError("YouTube video has not allowed embedding")
     parsed = page_meta(page)
 
     # Prefer canonical watch-page metadata. If YouTube serves a reduced watch page

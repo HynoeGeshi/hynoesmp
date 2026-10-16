@@ -13,7 +13,9 @@ if(playButton){
 }
 
 function setStatus(data){
-  if(!data?.videoId){
+  statusEl?.classList.toggle('live',data?.status==='live');
+  if(!/^[A-Za-z0-9_-]{11}$/.test(data?.videoId||'')){
+    stream=null;
     if(statusEl)statusEl.textContent='STREAM UNAVAILABLE';
     if(titleEl)titleEl.textContent='Hynoe broadcasts';
     if(playButton){
@@ -34,7 +36,7 @@ function setStatus(data){
     playButton.textContent=data.status==='live'?'▶ Watch live here on Hynoe':'▶ Play latest stream here';
   }
   if(youtubeEl){
-    youtubeEl.href=data.url||`https://www.youtube.com/watch?v=${encodeURIComponent(data.videoId)}`;
+    youtubeEl.href=`https://www.youtube.com/watch?v=${encodeURIComponent(data.videoId)}`;
     youtubeEl.textContent='OPEN ON YOUTUBE ↗';
   }
 }

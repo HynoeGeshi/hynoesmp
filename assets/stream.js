@@ -8,6 +8,7 @@
   const headingEl=root.querySelector('[data-stream-heading]');
   const watchEl=root.querySelector('[data-stream-watch]');
   const videoEl=root.querySelector('[data-stream-video]');
+  const youtubeEl=root.querySelector('[data-stream-youtube]');
 
   const labels={
     live:{short:'LIVE NOW',heading:'Live from Hynoe SMP'},
@@ -30,7 +31,7 @@
   }
 
   function render(data){
-    if(!data||!data.videoId){
+    if(!/^[A-Za-z0-9_-]{11}$/.test(data?.videoId||'')){
       setStatus('syncing');
       titleEl.textContent='The broadcast beacon is waiting for its first YouTube sync.';
       return;
@@ -38,6 +39,7 @@
 
     setStatus(data.status||'latest');
     titleEl.textContent=data.title||'Hynoe SMP livestream';
+    if(youtubeEl)youtubeEl.href='https://www.youtube.com/watch?v='+encodeURIComponent(data.videoId);
 
     const iframe=document.createElement('iframe');
     iframe.src='https://www.youtube-nocookie.com/embed/'+encodeURIComponent(data.videoId)+'?rel=0&playsinline=1';
