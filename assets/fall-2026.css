@@ -36,3 +36,12 @@ body[data-page] .eyebrow,body[data-page] .updates-live{color:#ffd297}
 .fall-announcement a{flex-shrink:0;color:#ffdb9e;font-size:13px;font-weight:700;text-underline-offset:4px}
 .fall-announcement :focus-visible{outline:3px solid #ffdb9e;outline-offset:5px}
 @media(max-width:700px){.fall-announcement{margin:16px 12px 0;padding:18px;flex-direction:column;align-items:flex-start;gap:10px}.fall-announcement p{font-size:14px}}
+
+.season-table-scroll{max-width:100%;overflow-x:auto;margin:20px 0;border:1px solid #8d683e;border-radius:8px}
+.season-table-scroll:focus-visible{outline:3px solid #ffdb9e;outline-offset:4px}
+.season-completion-table{width:100%;min-width:680px;border-collapse:collapse;font-size:14px;text-align:left}
+.season-completion-table caption{padding:12px;text-align:left;color:#ffdb9e;font-weight:700}
+.season-completion-table th,.season-completion-table td{padding:12px;border-top:1px solid #786044;vertical-align:top}
+.season-completion-table thead th{background:#30291e;color:#ffe2b0}
+.season-completion-table tbody th{width:23%;color:#fff0d5}
+.season-completion-table td:last-child{min-width:150px}
