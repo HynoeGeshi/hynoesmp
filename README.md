@@ -2,6 +2,22 @@
 
 Official website and player guide for **Hynoe SMP**.
 
+## Join Hynoe SMP
+
+**Server address: `hynoesmp.com`** · **Minecraft Java 26.2** · **Fabric**
+
+Install the required **Hynoe SMP client pack** before joining. Build a home, take on a 31-stage campaign, hunt bosses, explore expanded biomes and dimensions, and trade with other players. Claims, homes, Jobs+, and MCA village life help you settle in.
+
+- [Install and join](https://hynoesmp.com/join.html)
+- [Official client pack](https://hynoesmp.com/modpack.html)
+- [Player handbook and guides](https://hynoesmp.com/start.html)
+- [Join the Discord community](https://discord.gg/wYTePCkXd5)
+- [Watch Hynoe SMP on YouTube](https://www.youtube.com/@Hynoe)
+
+**Fall 2026:** Harvest is live. AfterDark opens **October 31 at midnight Eastern**; finish and claim its four tasks before **November 7 at midnight Eastern**, when Homecoming opens. Read the [seasonal task guide](https://hynoesmp.com/start.html#seasonal-counts) for requirements and rewards.
+
+Play respectfully: no griefing, stealing, cheating, duplication, exploits, or harassment. The [joining guide](https://hynoesmp.com/join.html) has the current requirements and server rules.
+
 ## Website
 This repository is the production source for the Hynoe SMP website. It is proprietary, not open source. Public visibility does not grant permission to copy, rehost, redistribute, or build another product from the code or assets. See [COPYRIGHT.md](COPYRIGHT.md).
 
