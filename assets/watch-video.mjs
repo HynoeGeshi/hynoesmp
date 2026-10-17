@@ -1,4 +1,5 @@
 /*! Copyright © 2026 Hynoe. All rights reserved. See /COPYRIGHT.md. */
+import {playYouTube} from './youtube-player.mjs?v=20261017-recovery';
 
 const host=document.getElementById('video');
 const playButton=host?.querySelector('.play-broadcast');
@@ -43,14 +44,7 @@ function setStatus(data){
 
 function playOnSite(){
   if(!host||!stream?.videoId)return;
-  const iframe=document.createElement('iframe');
-  iframe.src='https://www.youtube-nocookie.com/embed/'+encodeURIComponent(stream.videoId)+'?rel=0&autoplay=1&playsinline=1';
-  iframe.title=stream.title||'Hynoe livestream';
-  iframe.allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
-  iframe.referrerPolicy='strict-origin-when-cross-origin';
-  iframe.allowFullscreen=true;
-  host.replaceChildren(iframe);
-  host.classList.add('playing');
+  playYouTube(host,stream);
 }
 
 playButton?.addEventListener('click',playOnSite);

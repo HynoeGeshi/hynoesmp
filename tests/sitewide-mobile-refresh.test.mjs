@@ -50,7 +50,7 @@ test('primary homepage stream CTA stays on Hynoe instead of navigating to YouTub
 });
 
 test('watch video module creates a privacy enhanced iframe on the Hynoe page',()=>{
-  const js=read('assets/watch-video.mjs');
+  const js=read('assets/watch-video.mjs')+read('assets/youtube-player.mjs');
   assert.match(js,/youtube-nocookie\.com\/embed/);
   assert.match(js,/play-broadcast/);
   assert.match(js,/data\/stream\.json/);

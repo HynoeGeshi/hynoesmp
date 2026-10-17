@@ -1,3 +1,4 @@
+import {playYouTube} from './youtube-player.mjs?v=20261017-recovery';
 (()=>{
   const root=document.querySelector('[data-broadcast]');
   if(!root)return;
@@ -41,14 +42,15 @@
     titleEl.textContent=data.title||'Hynoe SMP livestream';
     if(youtubeEl)youtubeEl.href='https://www.youtube.com/watch?v='+encodeURIComponent(data.videoId);
 
-    const iframe=document.createElement('iframe');
-    iframe.src='https://www.youtube-nocookie.com/embed/'+encodeURIComponent(data.videoId)+'?rel=0&playsinline=1';
-    iframe.title=data.title||'Hynoe livestream';
-    iframe.loading='lazy';
-    iframe.allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
-    iframe.referrerPolicy='strict-origin-when-cross-origin';
-    iframe.allowFullscreen=true;
-    videoEl.replaceChildren(iframe);
+    const placeholder=document.createElement('div');
+    placeholder.className='broadcast-placeholder';
+    const play=document.createElement('button');
+    play.type='button';
+    play.className='mc-button red';
+    play.textContent=data.status==='live'?'▶ PLAY LIVE STREAM HERE':'▶ PLAY LATEST STREAM HERE';
+    play.addEventListener('click',()=>playYouTube(videoEl,data));
+    placeholder.append(play);
+    videoEl.replaceChildren(placeholder);
   }
 
   fetch('data/stream.json?ts='+Date.now(),{cache:'no-store'})

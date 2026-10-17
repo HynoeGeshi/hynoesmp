@@ -1,0 +1,4 @@
+.youtube-recovery{display:grid;place-content:center;gap:12px;padding:20px;text-align:center;background:#151810;color:#f4ecd9;min-height:100%;font:600 14px/1.5 system-ui,sans-serif;overflow-wrap:anywhere}
+.youtube-recovery p{margin:0}
+.youtube-recovery a{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 14px;border:1px solid #d5ae67;border-radius:5px;background:#302714;color:#ffe0a3;text-decoration:none;font-size:12px}
+.youtube-recovery a:focus-visible{outline:3px solid #ffe0a3;outline-offset:3px}

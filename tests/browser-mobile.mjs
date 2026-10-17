@@ -28,6 +28,43 @@ async function mockLeaderboard(page){
   });
 }
 
+async function mockYouTube(page){
+  // Exercise our official API integration deterministically, without depending
+  // on YouTube's account, regional, or embedding policies in CI.
+  await page.route('https://www.youtube.com/iframe_api',route=>route.fulfill({
+    contentType:'application/javascript',body:`
+      window.YT={Player:class{
+        constructor(iframe,options){this.iframe=iframe;this.options=options;window.__hynoeTestPlayer=this;queueMicrotask(()=>options.events.onReady({target:this}));}
+        loadVideoById(id){this.requested=id;}
+      }};
+      window.onYouTubeIframeAPIReady();
+    `
+  }));
+  await page.route('https://www.youtube-nocookie.com/embed/**',route=>route.fulfill({contentType:'text/html',body:'<!doctype html><title>Test YouTube player</title>'}));
+}
+
+async function assertYouTubeRecovery(page,hostSelector,playSelector,label){
+  const beforeUrl=page.url();
+  assert.equal(await page.locator('script[src="https://www.youtube.com/iframe_api"]').count(),0,`${label}: YouTube API loaded before Play`);
+  assert.equal(await page.locator(`${hostSelector} iframe`).count(),0,`${label}: player loaded before Play`);
+  const play=page.locator(playSelector);
+  assert.ok(await play.isVisible(),`${label}: on-site stream play button is missing`);
+  await page.waitForFunction(selector=>{const button=document.querySelector(selector);return !!button&&!button.disabled;},playSelector,{timeout:4000});
+  await play.click();
+  await page.waitForSelector(`${hostSelector} iframe`,{timeout:4000});
+  const frameSrc=await page.locator(`${hostSelector} iframe`).getAttribute('src');
+  assert.match(frameSrc||'',/youtube-nocookie\.com\/embed\//,`${label}: stream iframe is not privacy-enhanced YouTube embed`);
+  const videoId=new URL(frameSrc).pathname.split('/').pop();
+  await page.waitForFunction(id=>window.__hynoeTestPlayer?.requested===id,videoId,{timeout:4000});
+  assert.equal(await page.locator(`${hostSelector} .youtube-recovery`).count(),0,`${label}: ready player was replaced prematurely`);
+  await page.evaluate(()=>window.__hynoeTestPlayer.options.events.onError({data:150}));
+  const recovery=page.locator(`${hostSelector} .youtube-recovery a`);
+  assert.ok(await recovery.isVisible(),`${label}: playback error did not expose a visible watch action`);
+  assert.equal(await recovery.getAttribute('href'),'https://www.youtube.com/watch?v='+videoId,`${label}: fallback changed videos`);
+  assert.equal(await page.locator(`${hostSelector} iframe`).count(),0,`${label}: failed player was not replaced`);
+  assert.equal(page.url(),beforeUrl,`${label}: player or recovery navigated away without a user choice`);
+}
+
 function captureErrors(page,label){
   const errors=[];
   page.on('pageerror',error=>errors.push(`${label} pageerror: ${error.message}`));
@@ -107,6 +144,7 @@ for(const viewport of [...phoneViewports,...extraViewports]){
   const context=await browser.newContext({viewport,hasTouch:isMobile,isMobile});
   const page=await context.newPage();
   await mockLeaderboard(page);
+  await mockYouTube(page);
   const label=`watch ${viewport.width}x${viewport.height}`;
   const errors=captureErrors(page,label);
   await page.goto(`${base}/watch.html`,{waitUntil:'domcontentloaded'});
@@ -151,15 +189,7 @@ for(const viewport of [...phoneViewports,...extraViewports]){
   }
 
   if(viewport.width===390){
-    const beforeUrl=page.url();
-    const play=page.locator('#video .play-broadcast');
-    assert.ok(await play.isVisible(),`${label}: on-site stream play button is missing`);
-    await page.waitForFunction(()=>{const button=document.querySelector('#video .play-broadcast');return !!button&&!button.disabled;},null,{timeout:4000});
-    await play.click();
-    await page.waitForSelector('#video iframe',{timeout:4000});
-    const frameSrc=await page.locator('#video iframe').getAttribute('src');
-    assert.match(frameSrc||'',/youtube-nocookie\.com\/embed\//,`${label}: stream iframe is not privacy-enhanced YouTube embed`);
-    assert.equal(new URL(page.url()).pathname,new URL(beforeUrl).pathname,`${label}: primary stream button navigated away from Hynoe`);
+    await assertYouTubeRecovery(page,'#video','#video .play-broadcast',label);
   }
 
   if(viewport.width===390||viewport.width===1024){
@@ -173,6 +203,7 @@ for(const viewport of [{width:320,height:800},{width:390,height:844},{width:430,
   const context=await browser.newContext({viewport,hasTouch:viewport.width<900,isMobile:viewport.width<900});
   const page=await context.newPage();
   await mockLeaderboard(page);
+  await mockYouTube(page);
   const label=`home ${viewport.width}x${viewport.height}`;
   const errors=captureErrors(page,label);
   await page.goto(`${base}/index.html`,{waitUntil:'domcontentloaded'});
@@ -187,6 +218,7 @@ for(const viewport of [{width:320,height:800},{width:390,height:844},{width:430,
   assert.ok(minHeights.every(n=>n>=44),`${label}: a primary CTA is smaller than 44px`);
   const dashCols=await page.locator('.world-dashboard').evaluate(el=>getComputedStyle(el).gridTemplateColumns.trim().split(/\s+/).filter(Boolean).length);
   if(viewport.width<=600)assert.equal(dashCols,1,`${label}: dashboard should be one column on narrow phones`);
+  if(viewport.width===390)await assertYouTubeRecovery(page,'[data-stream-video]','[data-stream-video] button',label);
   if(viewport.width===390||viewport.width===1024){
     await page.screenshot({path:`test-artifacts/home-${viewport.width}.png`,fullPage:true});
   }
@@ -198,6 +230,7 @@ for(const pageName of publicPages){
   const context=await browser.newContext({viewport:{width:390,height:844},hasTouch:true,isMobile:true});
   const page=await context.newPage();
   await mockLeaderboard(page);
+  await mockYouTube(page);
   const label=`sitewide ${pageName}`;
   const errors=captureErrors(page,label);
   await page.goto(`${base}/${pageName}`,{waitUntil:'domcontentloaded'});
