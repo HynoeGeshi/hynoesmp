@@ -1,46 +1,41 @@
-name: Update Hynoe YouTube Broadcast
+name: Diagnose Public YouTube Iframe Playback
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: "*/15 * * * *"
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
-  group: hynoe-youtube-broadcast
-  cancel-in-progress: true
+  group: hynoe-youtube-iframe-diagnostic-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
-  update-stream:
+  diagnose-iframe-playback:
     runs-on: ubuntu-latest
-
+    timeout-minutes: 3
     steps:
-      - name: Check out website
+      - name: Check out diagnostic branch
         uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
-
-      - name: Verify broadcast updater
-        run: python -m unittest discover -s tests -p test_update_youtube.py
-
-      - name: Find latest Hynoe livestream
-        run: python scripts/update_youtube.py
-
-      - name: Commit broadcast change
-        shell: bash
-        run: |
-          if git diff --quiet -- data/stream.json; then
-            echo "No stream change."
-            exit 0
-          fi
-
-          git config user.name "hynoe-broadcast-bot"
-          git config user.email "actions@users.noreply.github.com"
-          git add data/stream.json
-          git commit -m "Update Hynoe broadcast"
-          git push
+          persist-credentials: false
+      - name: Set up existing browser test runtime
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install pinned Playwright in temporary directory
+        run: npm install --prefix "$RUNNER_TEMP/hynoe-iframe-probe" --no-save --no-package-lock --ignore-scripts playwright@1.63.0
+      - name: Probe one public video in installed Chrome
+        env:
+          NODE_PATH: ${{ runner.temp }}/hynoe-iframe-probe/node_modules
+        run: node scripts/probe_youtube_iframe.cjs
+      - name: Upload sanitized diagnostic evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hynoe-public-iframe-diagnostic
+          path: |
+            test-artifacts/iframe-probe.json
+            test-artifacts/iframe-probe-failure.png
+          if-no-files-found: ignore
+          retention-days: 1
