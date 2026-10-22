@@ -10,7 +10,8 @@ No YouTube API key is required. The script:
 5) otherwise publishes the newest completed stream.
 
 If YouTube changes its page markup or temporarily blocks the request,
-the existing JSON file is left untouched so the website keeps working.
+the existing JSON file is left untouched and the refresh exits nonzero so
+automation reports the failure while the website keeps working.
 """
 
 from __future__ import annotations
@@ -99,7 +100,11 @@ def video_info(video_id: str) -> dict:
     details = player.get("videoDetails", {})
     playback = player.get("playabilityStatus", {})
     if details.get("isPrivate") or playback.get("status") != "OK":
-        raise ValueError("YouTube video unavailable or private")
+        raise ValueError(
+            "YouTube video unavailable or private: "
+            f"{playback.get('status', 'missing status')} / "
+            f"{playback.get('reason', 'no reason provided')}"
+        )
     if details.get("videoId") != video_id:
         raise ValueError("YouTube player video does not match requested video")
     if playback.get("playableInEmbed") is not True:
@@ -153,7 +158,7 @@ def main() -> int:
         streams = get(STREAMS_URL)
     except Exception as e:
         print(f"YouTube streams page unavailable: {e}")
-        return 0
+        return 1
 
     ids = []
     seen = set()
@@ -166,7 +171,7 @@ def main() -> int:
 
     if not ids:
         print("No stream video IDs found; leaving existing data untouched.")
-        return 0
+        return 1
 
     candidates = []
     for vid in ids[:6]:
@@ -180,7 +185,7 @@ def main() -> int:
 
     if not candidates:
         print("No stream metadata could be read; leaving existing data untouched.")
-        return 0
+        return 1
 
     # Active livestream wins. Otherwise prefer the newest completed stream.
     selected = next((c for c in candidates if c["status"] == "live"), None)

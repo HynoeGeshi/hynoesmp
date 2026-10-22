@@ -25,6 +25,9 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Verify broadcast updater
+        run: python -m unittest discover -s tests -p test_update_youtube.py
+
       - name: Find latest Hynoe livestream
         run: python scripts/update_youtube.py
 
