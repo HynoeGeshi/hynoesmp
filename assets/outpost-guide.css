@@ -1,0 +1,7 @@
+/*! Copyright © 2026 Hynoe. All rights reserved. */
+.guide-dialog{max-height:calc(100dvh - 24px);overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain}
+.guide-dialog>h3{margin:20px 24px 10px}
+.guide-dialog .guide-steps strong{font-size:14px}
+.guide-dialog .guide-steps small{font-size:13px;line-height:1.55}
+.guide-dialog>form{padding:5px 24px 22px}
+.guide-dialog .dialog-close{min-width:44px;min-height:44px}
