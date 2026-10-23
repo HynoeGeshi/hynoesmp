@@ -2,7 +2,7 @@
 (()=>{
   const body=document.body;
   const hotbar=document.querySelector('.hotbar');
-  if(hotbar&&!hotbar.querySelector('[data-outpost-link]')){
+  if(hotbar&&!hotbar.querySelector('[data-outpost-link],a[href="watch.html"],a[href="/watch.html"]')){
     const link=document.createElement('a');link.href='watch.html';link.className='hotbar-slot outpost-slot';link.dataset.outpostLink='true';link.innerHTML='<span>▶</span><b>Watch, Play<br>& Chat</b>';hotbar.insertBefore(link,hotbar.children[1]||null);
   }
   document.querySelectorAll('.hud-action.youtube').forEach(a=>{a.textContent='▶ WATCH, PLAY & CHAT';});
@@ -53,7 +53,14 @@
   const obs='IntersectionObserver' in window ? new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target);}}),{threshold:.08}) : {observe:el=>el.classList.add('visible')};
   document.documentElement.classList.add('reveal-ready');
   document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
-  document.querySelectorAll('.hotbar a').forEach(a=>{if(a.getAttribute('href')===(location.pathname.split('/').pop()||'index.html')){a.classList.add('active');a.setAttribute('aria-current','page');}});
+  const currentUrl=new URL(location.href),currentPath=currentUrl.pathname.replace(/\/$/,'/index.html');
+  let currentLink=null;
+  document.querySelectorAll('.hotbar a').forEach(a=>{
+    a.classList.remove('active');a.removeAttribute('aria-current');
+    const target=new URL(a.getAttribute('href'),location.href);
+    if(!currentLink&&target.origin===currentUrl.origin&&target.pathname.replace(/\/$/,'/index.html')===currentPath)currentLink=a;
+  });
+  if(currentLink){currentLink.classList.add('active');currentLink.setAttribute('aria-current','page');}
   const tabs=document.querySelectorAll('.vault-tabs button');
   if(tabs.length){tabs.forEach(btn=>btn.addEventListener('click',()=>{tabs.forEach(b=>b.classList.remove('active'));btn.classList.add('active');const tier=btn.dataset.tier;document.querySelectorAll('#vault-grid article').forEach(card=>card.classList.toggle('hidden',tier!=='all'&&card.dataset.tier!==tier));}));}
   if(newly){
@@ -70,7 +77,9 @@ const worldMeta={
  progression:['03','DEEP MINES','POWER ROADMAP','Y: -42'],
  economy:['04','MARKET DISTRICT','PLAYER TRADE','X: -215  Z: 610'],
  bosses:['05','FORBIDDEN SHRINE','ENDGAME ROUTE','DANGER'],
- join:['06','PORTAL GATE','SERVER ENTRY','READY']
+ join:['06','PORTAL GATE','SERVER ENTRY','READY'],
+ discovery:['W','DISCOVERY GATE','SERVER OVERVIEW','EXPLORE'],
+ modpack:['↓','CLIENT WORKSHOP','PACK INSTALLATION','READY']
 };
 const meta=worldMeta[page]||worldMeta.home;
 const ctx=document.createElement('div');ctx.className='world-context';ctx.innerHTML=`<div class="wc-icon">${meta[0]}</div><div class="wc-copy"><small>CURRENT LOCATION</small><b>${meta[1]}</b><em>${meta[2]} // ${meta[3]}</em></div>`;document.body.appendChild(ctx);
@@ -88,6 +97,8 @@ const appMeta={
  economy:{icon:'◆',label:'MARKET MISSION',title:'Choose how your play becomes value',task:'Use Dollars for trade, Tokens for progression rewards, and Jobs+ for profession growth.',reward:'A sustainable income path without confusing the three balances.',cta:'Compare currencies',href:'#currency-map'},
  bosses:{icon:'⚔',label:'ENDGAME MISSION',title:'Prepare before you summon',task:'Study the route, stage supplies, protect nearby builds, and agree on team loot.',reward:'Rare materials, boss progression, and the Worldbreaker route.',cta:'Study the boss route',href:'#boss-route'},
  join:{icon:'⬢',label:'PORTAL MISSION',title:'Enter the server with the right client',task:'Join Discord, install the pack, learn Genesis gates, then create your first anchor.',reward:'A clean first login without missing-mod or progression confusion.',cta:'Open install guide',href:'modpack.html'},
+ discovery:{icon:'⌂',label:'DISCOVERY MISSION',title:'Find your place in Hynoe SMP',task:'Explore the server, install the client pack, and follow the first-day route.',reward:'A clear route from discovering the world to starting your adventure.',cta:'Start the first-day route',href:'start.html'},
+ modpack:{icon:'↓',label:'INSTALL MISSION',title:'Install the Hynoe SMP client',task:'Install the pack through Modrinth, launch its profile, and follow the join steps.',reward:'The required client pack and a ready-to-join installation.',cta:'Follow the install steps',href:'#install-steps'},
  updates:{icon:'✧',label:'UPDATE TERMINAL',title:'See what changed before you play',task:'Scan rewards, commands, campaign clarity, and seasonal changes that affect your next session.',reward:'No guessing about new systems or the current rollout.',cta:'Jump to player commands',href:'#commands'}
 };
 const app=appMeta[page]||appMeta.home,main=document.querySelector('main');
