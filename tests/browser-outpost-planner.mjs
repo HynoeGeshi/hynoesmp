@@ -95,5 +95,37 @@ try{
  assert.equal(await legacy.evaluate(()=>localStorage.getItem('hynoeDeepDeeperV1')),legacyRaw);
  assert.equal(await legacy.evaluate(()=>localStorage.getItem('hynoeOutpostV1')),null);
  await legacyContext.close();
+ for(const width of [390,1440])for(const away of [0,120000]){
+  const clock=Date.now(),guideState=G.fresh(clock-away);guideState.ore=100;guideState.total=100;guideState.crew=1;
+  guideState.progress.crewDeck.cards.coalhand={stars:1,shards:0};guideState.progress.crewDeck.active=['coalhand'];
+  const context=await browser.newContext({viewport:{width,height:844},hasTouch:width<600,isMobile:width<600});
+  await context.route('**/*',route=>route.request().url().startsWith(base)?route.continue():route.abort());
+  await context.addInitScript(({raw,clock})=>{Date.now=()=>clock;localStorage.setItem('hynoeOutpostV1',raw);},{raw:JSON.stringify(guideState),clock});
+  const page=await context.newPage(),errors=[];page.on('pageerror',error=>errors.push(error.message));
+  await page.goto(base+'/watch.html');await page.waitForFunction(()=>document.querySelector('#save-status')?.textContent.includes('Saved on this device at'));
+  const stored=await page.evaluate(()=>({game:localStorage.getItem('hynoeOutpostV1'),prefs:localStorage.getItem('hynoeOutpostPlannerV1')}));
+  const originalRecap=await page.locator('#recap-details').innerText();
+  if(away)await page.locator('#dismiss-offline-recap').click();
+  for(const [label,target] of [['Open pinned goals','pinned-goal-select'],['Open crew presets','preset-mining-save'],['Open offline earnings','dismiss-offline-recap']]){
+   await page.locator('#open-help').click();const dialog=page.locator('#how-to-play'),button=dialog.getByRole('button',{name:label,exact:true});
+   assert.equal(await button.count(),1,'guide shortcut should exist: '+label);
+   if(width<600)await button.tap();else{await button.focus();await button.press('Enter');}
+   assert.equal(await dialog.isVisible(),false,label+' closes the guide');
+   await page.waitForFunction(id=>document.activeElement?.id===id,target,{timeout:3000});
+   const bounds=await page.locator('#'+target).evaluate(element=>{const r=element.getBoundingClientRect(),nav=document.querySelector('[data-site-navigation]').getBoundingClientRect();return {top:r.top,bottom:r.bottom,header:nav.bottom,height:innerHeight};});
+   assert.ok(bounds.top>=bounds.header&&bounds.bottom<=bounds.height,label+' destination must be clear of sticky navigation');
+   if(target==='preset-mining-save')assert.equal(await page.locator('#tab-crew').getAttribute('aria-selected'),'true');
+   if(target==='dismiss-offline-recap'){
+    assert.equal(await page.locator('#offline-recap').isVisible(),true);
+    const text=await page.locator('#recap-details').innerText();
+    if(away)assert.equal(text,originalRecap,'reopening keeps the same already-credited report');
+    else assert.match(text,/reopen.*minute|no.*summary/i,'fresh players get a truthful empty state');
+    await page.locator('#dismiss-offline-recap').click();assert.equal(await page.locator('#offline-recap').isVisible(),false);
+    assert.equal(await page.evaluate(()=>document.activeElement?.id),away?'show-offline-recap':'open-help');
+   }
+   assert.deepEqual(await page.evaluate(()=>({game:localStorage.getItem('hynoeOutpostV1'),prefs:localStorage.getItem('hynoeOutpostPlannerV1')})),stored,'guide links must not change progress or settings');
+  }
+  assert.deepEqual(errors,[]);await context.close();
+ }
  console.log('Outpost planner browser checks passed: pin/source, preset save/apply/reload, recap, progress preservation, desktop and phone.');
 }finally{await browser.close();}

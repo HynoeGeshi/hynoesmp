@@ -5,3 +5,4 @@
 .guide-dialog .guide-steps small{font-size:13px;line-height:1.55}
 .guide-dialog>form{padding:5px 24px 22px}
 .guide-dialog .dialog-close{min-width:44px;min-height:44px}
+.guide-dialog .guide-link{display:block;width:100%;min-height:44px;margin-top:12px;padding:10px;white-space:normal}

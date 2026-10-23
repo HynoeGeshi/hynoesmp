@@ -2,7 +2,7 @@
 import {mountCommand} from './watch-command.mjs?v=20261023a';
 import * as G from './watch-game.mjs?v=20261023a&planner=20261023b';
 import {buildRecap,saveStatus} from './outpost-recap.mjs?v=20261023b';
-import {mountPlanner} from './outpost-planner.mjs?v=20261023b';
+import {mountPlanner} from './outpost-planner.mjs?v=20261023b&guide=20261023-links1';
 import * as S from './watch-session.mjs?v=20261023a&rewards=gameplay-only-20261007';
 import * as L from './leaderboard-live.mjs?v=20261023a';
 const $=id=>document.getElementById(id),KEY='hynoeOutpostV1',LEGACY_KEY='hynoeDeepDeeperV1',fmt=n=>new Intl.NumberFormat('en',{notation:n>=10000?'compact':'standard',maximumFractionDigits:1}).format(n);
@@ -108,6 +108,13 @@ $('open-help').onclick=()=>{if(!guide.open)guide.showModal();};
 $('focus-mode').onclick=()=>{const enabled=document.body.classList.toggle('game-focus');$('focus-mode').setAttribute('aria-pressed',String(enabled));$('focus-mode').textContent=enabled?'▣ Exit streamer view':'◫ Streamer view';if(enabled)$('game').scrollIntoView({block:'start'});};
 const commandUI=mountCommand({G,state,save,render,toast});
 plannerUI=mountPlanner({state,save,render,toast,openRoom,recap:offlineRecap});
+const focusGuideTarget=target=>{target.focus({preventScroll:true});target.scrollIntoView({block:'center',behavior:'instant'});};
+document.querySelectorAll('[data-guide-open]').forEach(button=>button.onclick=()=>{
+ guide.close();
+ if(button.dataset.guideOpen==='goals')focusGuideTarget($('pinned-goal-select'));
+ else if(button.dataset.guideOpen==='crew'){$('tab-crew').click();focusGuideTarget($('preset-mining-save'));}
+ else if(button.dataset.guideOpen==='offline')plannerUI.openRecap();
+});
 setInterval(()=>{let now=Date.now(),elapsed=(now-last)/1000;const badges=G.tick(state,elapsed,now),sessionEvents=S.tick(streamRun,state);last=now;if(badges.length)toast('Achievement unlocked: '+badges.join(', '));if(sessionEvents.length){toast(sessionEvents.map(e=>e.text).join(' '));save();saveStreamRun();}render();},1000);setInterval(()=>{save();saveStreamRun();},10000);setInterval(()=>syncLeaderboard(),30000);document.addEventListener('visibilitychange',()=>{if(document.hidden){save();saveStreamRun();}else syncLeaderboard();});window.addEventListener('pagehide',()=>{save();saveStreamRun();});render();save();if(GLOBAL_BOARD_ENABLED)connectLeaderboard();
 // watch-video.mjs owns broadcast loading and playback.
 // Keep the original video slot in the layout; only its iframe floats.
