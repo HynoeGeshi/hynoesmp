@@ -1,0 +1,26 @@
+/*! Copyright © 2026 Hynoe. All rights reserved. */
+.outpost-planner,.offline-recap,.crew-presets{margin:18px 0;padding:20px;border:1px solid #8d754f;background:linear-gradient(135deg,#211e19,#141812);border-radius:7px;min-width:0;color:#eee7d4}
+.planner-heading small{letter-spacing:.16em;color:#dfb66e;font-weight:800}
+.planner-heading h2,.crew-presets h3{margin:8px 0}
+.planner-heading p,.crew-presets>p,.preset-reason,.planner-message{color:#c8c4b3;line-height:1.6}
+.planner-controls{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:10px;align-items:end}
+.planner-controls label{grid-column:1/-1;font-weight:700}
+.planner-controls select{width:100%;min-width:0;min-height:44px;padding:10px;color:#fff2d5;background:#191f17;border:1px solid #8d754f;border-radius:7px;font:inherit}
+.outpost-planner button,.crew-presets button,.offline-recap button,#show-offline-recap{min-height:44px;padding:10px 14px;border:1px solid #8d754f;border-radius:7px;background:#2b3524;color:#fff0c9;font:inherit;font-weight:700;cursor:pointer;white-space:normal;overflow-wrap:anywhere}
+.outpost-planner button:disabled,.crew-presets button:disabled{opacity:.55;cursor:default}
+.outpost-planner :is(button,select):focus-visible,.crew-presets button:focus-visible,.offline-recap button:focus-visible,#show-offline-recap:focus-visible{outline:3px solid #f5c96d;outline-offset:3px}
+.pinned-goal-card{margin-top:16px;padding-top:12px;border-top:1px solid #584c39}
+.pinned-goal-card p,.pinned-goal-card li{line-height:1.6}
+.pinned-goal-card ul{padding-left:22px}
+.goal-sources,.preset-actions,.recap-heading{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.goal-sources{margin:12px 0}
+.crew-preset{margin-top:14px;padding:15px;background:#ffffff06;border:1px solid #65563b;border-radius:7px;overflow-wrap:anywhere}
+.crew-preset h4{margin:0;font-size:1.05rem;color:#f2ce8b}
+.preset-bonus{color:#c1d796;line-height:1.6}
+.recap-heading{justify-content:space-between}
+.recap-heading h2{font-size:1.2rem;margin:0}
+#recap-details{line-height:1.7}
+#show-offline-recap{margin-top:10px}
+.outpost-planner [hidden],.offline-recap[hidden],#show-offline-recap[hidden],.crew-presets[hidden]{display:none!important}
+@media(min-width:900px){.crew-presets{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.crew-presets>h3,.crew-presets>p{grid-column:1/-1}.crew-preset{margin:0}.preset-actions button{flex:1 1 130px}}
+@media(max-width:600px){.outpost-planner,.offline-recap,.crew-presets{padding:14px}.planner-controls{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.planner-controls select{grid-column:1/-1}.planner-controls button{width:100%}.preset-actions button{flex:1 1 130px}}
