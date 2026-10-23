@@ -5,6 +5,7 @@ import {readPreferences,writePreferences} from './outpost-preferences.mjs?v=2026
 
 const number=n=>new Intl.NumberFormat('en',{maximumFractionDigits:1}).format(n);
 const el=(tag,text='',className='')=>{const node=document.createElement(tag);node.textContent=text;node.className=className;return node;};
+const guideReturn=section=>{const button=el('button','Back to guide','guide-return');button.type='button';button.dataset.guideReturn=section;return button;};
 const duration=seconds=>seconds>=3600?number(seconds/3600)+' hours':number(seconds/60)+' minutes';
 const routeNames={mine:'Mine',upgrades:'Workshop',research:'Research & gear',frontier:'Campaign',journal:'Legacy',crew:'Crew Deck',operations:'Operations Bay',expeditions:'Relic Hunts'};
 
@@ -21,7 +22,7 @@ export function mountPlanner({state,save,render,toast,openRoom,recap}){
   const goal=el('div','','pinned-goal-card'),title=el('h3','No goal pinned'),detail=el('p','Your automatic next move is still available below.'),requirements=el('ul'),sources=el('div','','goal-sources'),action=el('button','Open goal');
   title.id='pinned-goal-title';requirements.id='pinned-goal-requirements';action.id='pinned-goal-action';
   const message=el('p','','planner-message');message.id='planner-storage';message.setAttribute('role','status');
-  goal.append(title,detail,requirements,sources,action);host.append(heading,controls,goal,message);
+  goal.append(title,detail,requirements,sources,action);host.append(heading,controls,goal,message,guideReturn('goals'));
   const persist=()=>{const ok=writePreferences(storage,prefs);message.textContent=ok?'Saved on this device.':'Planner settings are available this session, but browser storage could not save them.';return ok;};
   pin.onclick=()=>{if(!goalView(state,select.value))return;prefs.goal=select.value;prefs.completedGoal=null;persist();drawGoal();};
   clear.onclick=()=>{prefs.goal=null;prefs.completedGoal=null;persist();drawGoal();};
@@ -37,6 +38,7 @@ export function mountPlanner({state,save,render,toast,openRoom,recap}){
     apply.onclick=()=>{const result=applyPreset(state,prefs.presets,slot.id);if(!result.ok){toast(result.reason);renderPresets();return;}save();render();toast(slot.label+' preset applied.');};
     slots.set(slot.id,{team,bonus,reason,apply});
   }
+  crewHost.append(guideReturn('crew'));
   function renderPresets(){
     for(const slot of PRESET_SLOTS){const row=slots.get(slot.id),view=previewPreset(state,prefs.presets,slot.id);
       row.team.textContent=prefs.presets[slot.id]===null?'No lineup saved':view.names.length?view.names.join(' · '):'Empty lineup saved';

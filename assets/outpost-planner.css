@@ -21,6 +21,8 @@
 .recap-heading h2{font-size:1.2rem;margin:0}
 #recap-details{line-height:1.7}
 #show-offline-recap{margin-top:10px}
+.guide-return{margin-top:12px}
+.crew-presets>.guide-return{grid-column:1/-1;justify-self:start}
 .outpost-planner [hidden],.offline-recap[hidden],#show-offline-recap[hidden],.crew-presets[hidden]{display:none!important}
 @media(min-width:900px){.crew-presets{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.crew-presets>h3,.crew-presets>p{grid-column:1/-1}.crew-preset{margin:0}.preset-actions button{flex:1 1 130px}}
 @media(max-width:600px){.outpost-planner,.offline-recap,.crew-presets{padding:14px}.planner-controls{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.planner-controls select{grid-column:1/-1}.planner-controls button{width:100%}.preset-actions button{flex:1 1 130px}}
