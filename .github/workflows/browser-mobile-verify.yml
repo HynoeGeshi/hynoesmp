@@ -17,6 +17,7 @@ on:
       - 'tests/browser-mobile.mjs'
       - 'tests/browser-first-load.mjs'
       - 'tests/browser-restored-run.mjs'
+      - 'tests/browser-outpost-planner.mjs'
       - '.github/workflows/browser-mobile-verify.yml'
   pull_request:
     branches:
@@ -32,6 +33,7 @@ on:
       - 'tests/browser-mobile.mjs'
       - 'tests/browser-first-load.mjs'
       - 'tests/browser-restored-run.mjs'
+      - 'tests/browser-outpost-planner.mjs'
       - '.github/workflows/browser-mobile-verify.yml'
   workflow_dispatch:
 
@@ -67,6 +69,7 @@ jobs:
           node tests/browser-mobile.mjs
           node tests/browser-first-load.mjs
           RESTORED_RUN_ENGINE=chromium node tests/browser-restored-run.mjs
+          node tests/browser-outpost-planner.mjs
       - name: Upload visual evidence
         if: always()
         uses: actions/upload-artifact@v4
