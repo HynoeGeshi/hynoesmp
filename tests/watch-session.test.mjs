@@ -95,6 +95,6 @@ test('game page removes viewing incentive copy and retains gameplay goals', () =
 });
 
 test('both changed browser entry points have an additional cache-busting revision', () => {
-  assert.match(read('watch.html'),/assets\/watch\.mjs\?v=20261006d&amp;rewards=gameplay-only-20261007/);
-  assert.match(read('assets/watch.mjs'),/watch-session\.mjs\?v=20261006d&rewards=gameplay-only-20261007/);
+  assert.match(read('watch.html'),/assets\/watch\.mjs\?v=20261023a&amp;rewards=gameplay-only-20261007/);
+  assert.match(read('assets/watch.mjs'),/watch-session\.mjs\?v=20261023a&rewards=gameplay-only-20261007/);
 });

@@ -38,13 +38,31 @@ export function saveProgressScore(raw){
   );
 }
 
+function values(value){return value&&typeof value==='object'?Object.values(value):[];}
+
+function hasProgress(s){
+  const p=s.progress&&typeof s.progress==='object'?s.progress:{};
+  const c=p.command&&typeof p.command==='object'?p.command:{};
+  // Clocks and freshly generated veins alone are not evidence of gameplay.
+  return saveProgressScore(s)>0||
+    ['ore','pick','crew','drill','forge','quest','orders','orderBase','opsBase','guardianBase'].some(key=>n(s[key])>0)||
+    n(s.depth)>1||values(s.badges).length>0||!!s.guardian||!!s.expedition||!!p.run||!!p.trip||
+    ['insight','mastery','masteryBase','runsFailed'].some(key=>n(p[key])>0)||
+    ['research','gear','bag','sectorWins'].some(key=>values(p[key]).some(value=>n(value)>0))||
+    ['marks','intel','collectionRewards','contracts','contractBase','quarryDeliveries'].some(key=>n(c[key])>0)||
+    values(c.works).some(value=>n(value)>0)||
+    values(c.stations).some(slot=>slot&&(!!slot.crew||n(slot.level)>1||n(slot.work)>0))||
+    !!(p.style&&p.style!=='outpost')||!!(c.focus&&c.focus!=='all')||!!(c.material&&c.material!=='copper');
+}
+
 export function chooseSave(currentRaw,legacyRaw){
   const current=parse(currentRaw),legacy=parse(legacyRaw);
   if(!current&&legacy)return {source:'legacy',raw:legacyRaw};
   if(current&&!legacy)return {source:'current',raw:currentRaw};
   if(!current&&!legacy)return {source:'none',raw:null};
-  const currentScore=saveProgressScore(current),legacyScore=saveProgressScore(legacy);
-  if(legacyScore>currentScore)return {source:'legacy',raw:legacyRaw};
+  // Spending or reassigning crew can lower a score without losing progress.
+  // Recover only a pristine current save; a played current save stays authoritative.
+  if(!hasProgress(current)&&hasProgress(legacy))return {source:'legacy',raw:legacyRaw};
   return {source:'current',raw:currentRaw};
 }
 
