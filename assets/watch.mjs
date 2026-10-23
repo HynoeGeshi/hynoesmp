@@ -2,7 +2,7 @@
 import {mountCommand} from './watch-command.mjs?v=20261023a';
 import * as G from './watch-game.mjs?v=20261023a&planner=20261023b';
 import {buildRecap,saveStatus} from './outpost-recap.mjs?v=20261023b';
-import {mountPlanner} from './outpost-planner.mjs?v=20261023b&guide=20261023-links1';
+import {mountPlanner} from './outpost-planner.mjs?v=20261023b&guide=20261023-return1';
 import * as S from './watch-session.mjs?v=20261023a&rewards=gameplay-only-20261007';
 import * as L from './leaderboard-live.mjs?v=20261023a';
 const $=id=>document.getElementById(id),KEY='hynoeOutpostV1',LEGACY_KEY='hynoeDeepDeeperV1',fmt=n=>new Intl.NumberFormat('en',{notation:n>=10000?'compact':'standard',maximumFractionDigits:1}).format(n);
@@ -109,6 +109,10 @@ $('focus-mode').onclick=()=>{const enabled=document.body.classList.toggle('game-
 const commandUI=mountCommand({G,state,save,render,toast});
 plannerUI=mountPlanner({state,save,render,toast,openRoom,recap:offlineRecap});
 const focusGuideTarget=target=>{target.focus({preventScroll:true});target.scrollIntoView({block:'center',behavior:'instant'});};
+document.querySelectorAll('[data-guide-return]').forEach(button=>button.onclick=()=>{
+ if(!guide.open)guide.showModal();
+ focusGuideTarget(guide.querySelector('[data-guide-open="'+button.dataset.guideReturn+'"]'));
+});
 document.querySelectorAll('[data-guide-open]').forEach(button=>button.onclick=()=>{
  guide.close();
  if(button.dataset.guideOpen==='goals')focusGuideTarget($('pinned-goal-select'));

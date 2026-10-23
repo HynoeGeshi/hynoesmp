@@ -115,6 +115,23 @@ try{
    const bounds=await page.locator('#'+target).evaluate(element=>{const r=element.getBoundingClientRect(),nav=document.querySelector('[data-site-navigation]').getBoundingClientRect();return {top:r.top,bottom:r.bottom,header:nav.bottom,height:innerHeight};});
    assert.ok(bounds.top>=bounds.header&&bounds.bottom<=bounds.height,label+' destination must be clear of sticky navigation');
    if(target==='preset-mining-save')assert.equal(await page.locator('#tab-crew').getAttribute('aria-selected'),'true');
+   const section=target==='pinned-goal-select'?'goals':target==='preset-mining-save'?'crew':'offline';
+   const back=page.locator('[data-guide-return="'+section+'"]');
+   assert.equal(await back.count(),1,'one return button should exist for '+section);
+   assert.equal(await back.innerText(),'Back to guide');
+   assert.equal(await back.getAttribute('type'),'button','return navigation must not submit a form');
+   assert.ok((await back.boundingBox()).height>=44,'return button must be a usable touch target');
+   if(width<600)await back.tap();else{await back.focus();await back.press('Enter');}
+   assert.equal(await dialog.isVisible(),true,'return button reopens the guide');
+   assert.equal(await page.evaluate(()=>document.activeElement?.dataset.guideOpen),section,'guide focuses the matching explanation');
+   const guideBounds=await button.evaluate(element=>{const r=element.getBoundingClientRect(),d=element.closest('dialog').getBoundingClientRect();return {top:r.top,bottom:r.bottom,dialogTop:d.top,dialogBottom:d.bottom,height:innerHeight};});
+   assert.ok(guideBounds.top>=Math.max(0,guideBounds.dialogTop)&&guideBounds.bottom<=Math.min(guideBounds.height,guideBounds.dialogBottom),'matching guide shortcut must be visible');
+   await page.keyboard.press('Escape');
+   assert.equal(await dialog.isVisible(),false,'native guide dismissal still works');
+   assert.equal(await page.evaluate(()=>document.activeElement?.dataset.guideReturn),section,'closing the guide returns focus to its opener');
+   if(width<600)await back.tap();else await back.press('Enter');
+   if(width<600)await button.tap();else await button.press('Enter');
+   await page.waitForFunction(id=>document.activeElement?.id===id,target,{timeout:3000});
    if(target==='dismiss-offline-recap'){
     assert.equal(await page.locator('#offline-recap').isVisible(),true);
     const text=await page.locator('#recap-details').innerText();
@@ -127,5 +144,5 @@ try{
   }
   assert.deepEqual(errors,[]);await context.close();
  }
- console.log('Outpost planner browser checks passed: pin/source, preset save/apply/reload, recap, progress preservation, desktop and phone.');
+ console.log('Outpost planner browser checks passed: pin/source, preset save/apply/reload, recap, guide round trips and focus, progress preservation, desktop and phone.');
 }finally{await browser.close();}
