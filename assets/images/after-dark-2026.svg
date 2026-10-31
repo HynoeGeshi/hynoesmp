@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="264" height="208" viewBox="0 0 264 208" fill="none">
+  <title>After Dark moon, bats and pumpkins</title>
+  <circle cx="168" cy="62" r="41" fill="#ffdaa4"/>
+  <circle cx="183" cy="48" r="36" fill="#412438"/>
+  <path d="m20 56 24 7 10-11 9 15 22 2-13 9-8 18-10-12-17 3 3-16Zm94 49 20 5 8-9 8 12 18 2-10 7-7 15-8-10-14 3 3-13Z" fill="#c6a4f3"/>
+  <path d="m111 34 3 8 8 3-8 3-3 8-3-8-8-3 8-3Zm111 60 2 6 7 2-7 3-2 6-3-6-6-3 6-2Z" fill="#ffdaa4"/>
+  <path d="M10 190h244" stroke="#bd879b" stroke-width="3" stroke-linecap="round"/>
+  <path d="m50 131 7-13 8 1-2 17m93 2 6-14 8 1-3 18" stroke="#b6cda4" stroke-width="8" stroke-linecap="round"/>
+  <ellipse cx="58" cy="160" rx="42" ry="32" fill="#e99956"/>
+  <ellipse cx="58" cy="160" rx="22" ry="32" stroke="#be653f" stroke-width="3"/>
+  <path d="m37 151 12-6 1 12Zm30-6 12 6-13 6ZM38 168l11 7 9-3 8 3 12-7-8 14H47Z" fill="#241322"/>
+  <ellipse cx="166" cy="165" rx="33" ry="26" fill="#ffb169"/>
+  <ellipse cx="166" cy="165" rx="17" ry="26" stroke="#c77849" stroke-width="3"/>
+  <path d="m149 158 9-4 1 9Zm25-4 9 4-10 5ZM151 171l9 4 6-2 6 2 8-4-6 10h-16Z" fill="#241322"/>
+  <path d="m112 187 3-14 5 14m106 0-5-16-5 16" stroke="#b6cda4" stroke-width="3" stroke-linecap="round"/>
+</svg>
