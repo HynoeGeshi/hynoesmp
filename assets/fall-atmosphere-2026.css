@@ -1,0 +1,108 @@
+/*! Copyright © 2026 Hynoe. All rights reserved. See /COPYRIGHT.md. */
+/* A shared warm finish. Geometry, content and Minecraft artwork stay intact. */
+:root{
+  --fall-espresso:#17110e;--fall-charcoal:#241a14;--fall-amber:#d5a247;
+  --fall-copper:#b87333;--fall-cream:#f4ead6;--fall-line:#715039;
+  --fall-muted:#c6b29a;--bg:#17110e;--bg2:#211710;--panel:#241a14;
+  --panel2:#302219;--line:#715039;--muted:#c6b29a;--gold:#d5a247;
+  --gold2:#ecd09a;--refresh-bg:#17110e;--refresh-panel:#241a14;
+  --refresh-panel-2:#302219;--refresh-line:#715039;--refresh-gold:#d5a247;
+  --refresh-cream:#f4ead6;--refresh-muted:#c6b29a;--hub-bg:#17110e;
+  --hub-panel:#241a14;--hub-panel-2:#302219;--hub-line:#715039;
+  --hub-gold:#d5a247;--hub-text:#f4ead6;--hub-muted:#c6b29a;
+  --control-gold:#d5a247;--control-line:#715039;
+}
+body,body[data-page="home"]{
+  background:radial-gradient(ellipse at 12% 0,#b8733324,transparent 44%),
+    radial-gradient(ellipse at 94% 22%,#d5a24712,transparent 38%),#17110e;
+  color:#f4ead6;
+}
+body:before,body[data-page="home"]:before{
+  background:radial-gradient(circle at 18% 12%,#b8733317,transparent 32%),
+    radial-gradient(circle at 84% 28%,#d5a2470d,transparent 34%);
+}
+body[data-page] .world-hud,body .topbar,body .legal-top{
+  background:linear-gradient(180deg,#2b1e16f7,#17110ef7);border-color:#715039;
+}
+body[data-page] nav[data-site-navigation],body nav.site-pages[data-site-navigation]{
+  background:#1c140ff5;border-bottom-color:#715039;
+}
+body[data-page] :is(.hud-action,.journal-toggle),body .topbar nav a{
+  background:#302219;color:#f4ead6;border-color:#715039;
+}
+body nav[data-site-navigation] a span,body[data-page] nav[data-site-navigation] a span{
+  background:#241a14;color:#ecd09a;border-color:#715039;
+}
+body nav[data-site-navigation] a:hover,body nav[data-site-navigation] a[aria-current="page"],
+body[data-page] .hotbar-slot.active,body[data-page] .hotbar-slot:hover{
+  background:#422c1d;border-color:#b87333;color:#f4ead6;
+}
+body[data-page="home"] .world-gate-bg{
+  background-image:linear-gradient(90deg,#17110eeb 0,#17110ebf 42%,#17110e55 70%,#17110e25),
+    linear-gradient(0deg,#17110e,transparent 32%),url('images/cover.webp');
+}
+body[data-page="home"] .gate-copy{
+  background:linear-gradient(135deg,#302219ed,#17110ee3);border-color:#8f603c;
+}
+body[data-page="home"] .hero-lead{
+  background:#241a14c2;border-left-color:#b87333;color:#f4ead6;
+}
+body[data-page="home"] :is(.world-dashboard a,.quick-start-grid a){
+  background:linear-gradient(145deg,#34251bee,#201711ed);border-color:#715039;
+}
+body[data-page="home"] .recent-updates,body[data-page] .october-panel{
+  background:linear-gradient(130deg,#302219,#211710);border-color:#8f603c;
+}
+body[data-page="home"] .update-strip article{
+  background:#241a14;border-color:#715039;
+}
+body[data-page] :is(.guide-chapter,.quest-step>div,.market-stall,.encounter-card,.join-step,.campaign-roadmap-grid article,.october-grid article,.quick-start-grid a,.vault-grid article,.age-card,.update-card,.progression-card,.command-card),
+body .panel,body .legal-card{
+  background-color:#241a14f0;border-color:#715039;
+}
+body .install-copy{
+  background:linear-gradient(150deg,#17110ef2,#302219ed)!important;border-color:#715039!important;
+}
+body[data-page="home"] .viewer-feature{
+  background:radial-gradient(circle at 84% 15%,#d5a2471f,transparent 35%),
+    linear-gradient(120deg,#241a14,#302219);border-color:#715039;
+}
+body[data-page="home"] .outpost-terminal{
+  background:radial-gradient(circle at 50% 40%,#d5a24726,transparent 25%),
+    linear-gradient(#302219,#17110e);border-color:#8f603c;
+}
+body[data-page="home"] .wood-sign,body[data-page="home"] .scene-sign{
+  background:linear-gradient(135deg,#302219ed,#211710ed);border-color:#715039;
+}
+body .viewer-ribbon,body .fall-announcement{
+  background:linear-gradient(110deg,#48301e,#241a14);color:#f4ead6;border-color:#b87333;
+}
+body .viewer-ribbon span,body .fall-announcement small{color:#ecd09a}
+body .viewer-ribbon b{
+  background:#17110e;color:#f4ead6;border-color:#b87333;
+}
+body .fall-announcement a,body .fall-announcement strong{color:#ecd09a}
+body .campaign-strip{
+  background:linear-gradient(100deg,#48301e88,#302219);border-color:#715039;
+}
+body .game>.panel-head{
+  background:linear-gradient(120deg,#302219,#241a14);border-color:#715039;
+}
+body .stats>div,body .outpost-planner{
+  background:#241a14;border-color:#715039;
+}
+body .outpost-planner select,body .outpost-planner button{
+  background:#302219;border-color:#8f603c;color:#f4ead6;
+}
+body[data-page] .mc-button.gold,body .mc-button.gold{
+  background:linear-gradient(#e3b96c,#d5a247);border-color:#ecd09a;color:#17110e;
+}
+body[data-page] .mc-button.purple,body .mc-button.purple{
+  background:linear-gradient(#694329,#422c1d);border-color:#b87333;color:#f4ead6;
+}
+body[data-page] .mc-button.emerald,body .mc-button.emerald{
+  background:linear-gradient(#483524,#302219);border-color:#9f784c;color:#f4ead6;
+}
+body[data-page="home"] .site-footer,body .site-footer,body .legal-footer{
+  background:#17110e;border-color:#715039;color:#c6b29a;
+}
