@@ -289,12 +289,12 @@
       ]
     },
     {
-      "id": "acdda8a602743858",
+      "id": "2e184357412c2288",
       "page": "index.html",
       "url": "/",
       "title": "Hynoe SMP | Modded Minecraft Survival, Campaign & Community",
       "heading": "November in the world.",
-      "text": "FALL 2026 After Dark continues through the first week of November. Enroll with /season , then follow the Fall Journal for undead hunts, a Void Worm challenge and four relic finds. Finish and claim all four After Dark tasks before Homecoming opens November 7 at 12:00 a.m. EST . See all eight seasonal tasks → OCT 17 HARVEST FESTIVAL",
+      "text": "FALL 2026 After Dark stays open through November 7. Enroll with /season , then follow the Fall Journal for undead hunts, a Void Worm challenge and four relic finds. Finish and claim all four After Dark tasks before Homecoming opens November 8 at 12:00 a.m. EST . See all eight seasonal tasks → OCT 17 HARVEST FESTIVAL",
       "tokens": [
         "/season",
         "00",
@@ -307,7 +307,6 @@
         "challenge",
         "claim",
         "community",
-        "continues",
         "dark",
         "eight",
         "enroll",
@@ -316,7 +315,6 @@
         "festival",
         "finds",
         "finish",
-        "first",
         "follow",
         "four",
         "harvest",
@@ -328,18 +326,19 @@
         "modded",
         "november",
         "oct",
+        "open",
         "opens",
         "relic",
         "seasonal",
         "see",
         "smp",
+        "stays",
         "survival",
         "tasks",
         "then",
         "through",
         "undead",
         "void",
-        "week",
         "world",
         "worm"
       ]
@@ -1203,12 +1202,12 @@
       ]
     },
     {
-      "id": "c2a0b09c3350cb2b",
+      "id": "9eef3373caefd0b6",
       "page": "join.html",
       "url": "/join.html",
       "title": "Join Hynoe SMP | Minecraft Java Modpack & Server",
       "heading": "Enter the world the right way.",
-      "text": "The Discord is the front door for current server information, announcements and support. New players can use our guided Modrinth install instead of manually moving mods into folders. November on Hynoe SMP. Explore the autumn festival, then open /season to enroll before starting the current After Dark hunts. Finish and claim all four After Dark tasks before November 7 at 12:00 a.m. EST . Read the Fall guide → The Hynoe SMP client pack is required; returning players need no additional festival download. ↓ DOWNLOAD MODPACK JOIN THE HYNOE DISCORD → Comparing modded Minecraft servers? See Hynoe at a glance → 01 OPEN THE PORTAL",
+      "text": "The Discord is the front door for current server information, announcements and support. New players can use our guided Modrinth install instead of manually moving mods into folders. November on Hynoe SMP. Explore the autumn festival, then open /season to enroll before starting the current After Dark hunts. Finish and claim all four After Dark tasks before November 8 at 12:00 a.m. EST . Read the Fall guide → The Hynoe SMP client pack is required; returning players need no additional festival download. ↓ DOWNLOAD MODPACK JOIN THE HYNOE DISCORD → Comparing modded Minecraft servers? See Hynoe at a glance → 01 OPEN THE PORTAL",
       "tokens": [
         "/season",
         "00",
@@ -2552,13 +2551,13 @@
       ]
     },
     {
-      "id": "af679412c3479ce9",
+      "id": "e68b7cba9c2e0559",
       "page": "start.html",
       "url": "/start.html",
       "title": "Hynoe SMP First-Day Guide | Modded Minecraft Survival",
       "heading": "After Dark: the current Fall phase.",
-      "text": "The After Dark phase is active in game. Open /season to enroll before hunting, then follow the Fall Journal. Take on Ashes on the Trail , Break the Coven , The Night Beneath and Relics of the Long Night . Existing Fall progress is preserved. Finish and claim all four dark tasks before Homecoming begins on November 7, 2026 at 12:00 a.m. EST (America/New_York). Keep at least seven main-inventory slots empty when claiming. Use Refresh Counts or reopen the journal after collecting items. TASKS & REWARDS FIND THE RELICS USE YOUR REWARDS FALL 2026 · COMPLETION GUIDE",
-      "dated_at": "2026-11-07",
+      "text": "The After Dark phase is active in game. Open /season to enroll before hunting, then follow the Fall Journal. Take on Ashes on the Trail , Break the Coven , The Night Beneath and Relics of the Long Night . Existing Fall progress is preserved. After Dark stays open through November 7. Finish and claim all four dark tasks before Homecoming begins on November 8, 2026 at 12:00 a.m. EST (America/New_York). Keep at least seven main-inventory slots empty when claiming. Use Refresh Counts or reopen the journal after collecting items. TASKS & REWARDS FIND THE RELICS USE YOUR REWARDS FALL 2026 · COMPLETION GUIDE",
+      "dated_at": "2026-11-08",
       "tokens": [
         "/new_york",
         "/season",
@@ -2617,20 +2616,22 @@
         "seven",
         "slots",
         "smp",
+        "stays",
         "survival",
         "take",
         "tasks",
         "then",
+        "through",
         "trail"
       ]
     },
     {
-      "id": "533303835729db78",
+      "id": "831d5251a4583099",
       "page": "start.html",
       "url": "/start.html",
       "title": "Hynoe SMP First-Day Guide | Modded Minecraft Survival",
       "heading": "Complete all eight Fall tasks.",
-      "text": "Open /season first to join, then use its objectives and Claim buttons. Breeding, biome visits and hunt credit must happen after joining. Existing progress stays saved as the phase changes. Each core reward is once per player. After Dark opened on October 31, 2026 at 12:00 a.m. EDT and is active. Homecoming opens automatically on November 7, 2026 at 12:00 a.m. EST . Both times use America/New_York. If the server is offline at midnight, activation retries during that date; check /season for the active phase. Finish and claim all four After Dark tasks before November 7 at 12:00 a.m. EST. Homecoming closes dark hunts and dark claims, even if you already earned their requirements. The three Harvest tasks remain available through Homecoming. Eight core tasks · scroll sideways on smaller screens Task What to do Claim window Reward 1. Stock the Harvest Market Carry 1,024 Wheat (16 stacks) and 512 Pumpkins (8 stacks) together. Both are consumed. Harvest through Homecoming Harvest Lantern + 2 Tokens 2. A Living Homestead Breed 64 animal pairs after joining. No item turn-in. Harvest through Homecoming Harvestkeeper’s Scythe + 3 Tokens 3. The Autumn Trail Visit Biomes O’ Plenty Maple Woods, Orchard and Seasonal Forest after joining.",
+      "text": "Open /season first to join, then use its objectives and Claim buttons. Breeding, biome visits and hunt credit must happen after joining. Existing progress stays saved as the phase changes. Each core reward is once per player. After Dark opened on October 31, 2026 at 12:00 a.m. EDT and is active. Homecoming opens automatically on November 8, 2026 at 12:00 a.m. EST . Both times use America/New_York. If the server is offline at midnight, activation retries during that date; check /season for the active phase. Finish and claim all four After Dark tasks before November 8 at 12:00 a.m. EST. Homecoming closes dark hunts and dark claims, even if you already earned their requirements. The three Harvest tasks remain available through Homecoming. Eight core tasks · scroll sideways on smaller screens Task What to do Claim window Reward 1. Stock the Harvest Market Carry 1,024 Wheat (16 stacks) and 512 Pumpkins (8 stacks) together. Both are consumed. Harvest through Homecoming Harvest Lantern + 2 Tokens 2. A Living Homestead Breed 64 animal pairs after joining. No item turn-in. Harvest through Homecoming Harvestkeeper’s Scythe + 3 Tokens 3. The Autumn Trail Visit Biomes O’ Plenty Maple Woods, Orchard and Seasonal Forest after joining.",
       "dated_at": "2026-10-31",
       "tokens": [
         "/new_york",
@@ -7851,12 +7852,12 @@
       ]
     },
     {
-      "id": "b1b1d631c069cab9",
+      "id": "6a7ea0856691b4ee",
       "page": "updates.html",
       "url": "/updates.html",
       "title": "Latest Updates | Hynoe SMP",
       "heading": "The Halloween hunts are open.",
-      "text": "Hynoe Halloween is live. Open /season to enroll before hunting, then follow the Fall Journal for the four dark tasks. Finish and claim them before Homecoming opens on November 7 at 12:00 a.m. EST (America/New_York). Existing Fall progress is kept, and returning players need no additional Halloween download. Open the Halloween guide → OCTOBER 17 · HARVEST FESTIVAL",
+      "text": "Hynoe Halloween is live. Open /season to enroll before hunting, then follow the Fall Journal for the four dark tasks. Finish and claim them before Homecoming opens on November 8 at 12:00 a.m. EST (America/New_York). Existing Fall progress is kept, and returning players need no additional Halloween download. Open the Halloween guide → OCTOBER 17 · HARVEST FESTIVAL",
       "tokens": [
         "/new_york",
         "/season",
@@ -7999,12 +8000,12 @@
       ]
     },
     {
-      "id": "3626c87227c83d67",
+      "id": "fc7f39a23da45d48",
       "page": "updates.html",
       "url": "/updates.html",
       "title": "Latest Updates | Hynoe SMP",
       "heading": "Your route through all eight Fall tasks.",
-      "text": "After Dark opens October 31, 2026 at 12:00 a.m. EDT. Homecoming opens automatically on November 7, 2026 at 12:00 a.m. EST , America/New_York. Finish and claim Ashes on the Trail, Break the Coven, The Night Beneath and Relics of the Long Night before Homecoming: their hunts and claims close when the phase changes. The completion guide lists all eight requirements, consumed ingredients, rewards, relic guarantees and mob directions. Open /season to enroll before breeding, exploring or hunting. All eight core claims and the completion bonus total 30 Tokens; Mosco and Farseer bonus hunts are optional. Follow the complete Fall task guide → OCTOBER 16 · FALL 2026",
+      "text": "After Dark opens October 31, 2026 at 12:00 a.m. EDT. Homecoming opens automatically on November 8, 2026 at 12:00 a.m. EST , America/New_York. Finish and claim Ashes on the Trail, Break the Coven, The Night Beneath and Relics of the Long Night before Homecoming: their hunts and claims close when the phase changes. The completion guide lists all eight requirements, consumed ingredients, rewards, relic guarantees and mob directions. Open /season to enroll before breeding, exploring or hunting. All eight core claims and the completion bonus total 30 Tokens; Mosco and Farseer bonus hunts are optional. Follow the complete Fall task guide → OCTOBER 16 · FALL 2026",
       "dated_at": "2026-10-31",
       "tokens": [
         "/new_york",
