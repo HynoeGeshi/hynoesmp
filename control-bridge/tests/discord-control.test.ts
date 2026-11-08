@@ -98,7 +98,7 @@ describe('Discord control boundary', () => {
   it('supports embeds and editing only bot-authored messages', async () => {
     const c = client(); const tools = createManagedDiscordTools(config, c);
     await tools.discord_send_embed({ channelId: 'c1', embeds: [{ title: 'Hynoe', description: 'Welcome', color: 0xd4af37 }] });
-    expect(c.sendMessagePayload).toHaveBeenCalledWith('c1', expect.objectContaining({ embeds: [{ title: 'Hynoe', description: 'Welcome', color: 0xd4af37 }], allowed_mentions: { parse: [] } }));
+    expect(c.sendMessagePayload).toHaveBeenCalledWith('c1', expect.objectContaining({ embeds: [{ title: 'Hynoe', description: 'Welcome', color: 0xd4af37 }], allowed_mentions: { parse: [] } }), undefined);
     vi.mocked(c.getMessage).mockResolvedValue({ id: 'm1', author: { id: 'human' } });
     await expect(tools.discord_edit_message({ channelId: 'c1', messageId: 'm1', content: 'oops' })).rejects.toThrow(/bot/i);
     expect(c.editMessage).not.toHaveBeenCalled();

@@ -102,6 +102,8 @@ const EXTERNAL_WRITE = { readOnlyHint: false, destructiveHint: false, idempotent
 
 const reasonSchema = z.string().min(1).max(512).optional();
 const controlSchema = { dryRun: z.boolean().optional(), approvalId: z.string().regex(/^[a-f0-9]{64}$/).optional() };
+const sendRequestId = z.string().regex(/^[A-Za-z0-9_-]{1,100}$/).optional().describe('Unique ID for this send. Reuse only with identical inputs when retrying within Discord’s few-minute deduplication window.');
+const sendRetryDescription = ' Supply a unique requestId before sending. After an uncertain outcome, verify Discord first; only reuse the same requestId with identical inputs within Discord’s few-minute deduplication window.';
 const embedSchema = z.object({
   title: z.string().max(256).optional(), description: z.string().max(4096).optional(), url: z.string().url().optional(),
   color: z.number().int().min(0).max(0xffffff).optional(),
@@ -127,7 +129,7 @@ export function createHynoeMcpHandler(config: AppConfig) {
 
   return createMcpHandler((server) => {
     server.registerTool('discord_capabilities', { title: 'Verify Discord Management Access', description: 'Check bot membership, effective target permissions, role hierarchy and Message Content intent without exposing credentials.', inputSchema: z.object({ channelId: idSchema.optional() }), annotations: READ_ONLY }, async input => result(await discord.discord_capabilities(input)));
-    server.registerTool('discord_send_embed', { title: 'Send Hynoe Embed', description: 'Send a branded embed. Preview with dryRun; mass mentions require owner dashboard approval.', inputSchema: z.object({ channelId: idSchema, content: z.string().max(2000).optional(), embeds: z.array(embedSchema).min(1).max(10), allowMassMention: z.boolean().optional(), ...controlSchema }), annotations: EXTERNAL_WRITE }, async input => result(await discord.discord_send_embed(input)));
+    server.registerTool('discord_send_embed', { title: 'Send Hynoe Embed', description: 'Send a branded embed. Preview with dryRun; mass mentions require owner dashboard approval.' + sendRetryDescription, inputSchema: z.object({ channelId: idSchema, content: z.string().max(2000).optional(), embeds: z.array(embedSchema).min(1).max(10), allowMassMention: z.boolean().optional(), requestId: sendRequestId, ...controlSchema }), annotations: EXTERNAL_WRITE }, async input => result(await discord.discord_send_embed(input)));
     server.registerTool('discord_edit_message', { title: 'Edit Bot Message', description: 'Edit content or embeds on a bot-authored message.', inputSchema: z.object({ channelId: idSchema, messageId: idSchema, content: z.string().max(2000).optional(), embeds: z.array(embedSchema).max(10).optional(), allowMassMention: z.boolean().optional(), ...controlSchema }), annotations: EXTERNAL_WRITE }, async input => result(await discord.discord_edit_message(input)));
     server.registerTool('discord_publish_announcement', { title: 'Publish Announcement', description: 'Crosspost a bot-authored announcement to following servers. Requires owner dashboard approval.', inputSchema: z.object({ channelId: idSchema, messageId: idSchema, ...controlSchema }), annotations: DESTRUCTIVE }, async input => result(await discord.discord_publish_announcement(input)));
     server.registerTool('discord_delete_channel_permission', { title: 'Remove Permission Overwrite', description: 'Preview or remove an overwrite. Requires owner dashboard approval because inherited access can broaden.', inputSchema: z.object({ channelId: idSchema, overwriteId: idSchema, reason: reasonSchema, ...controlSchema }), annotations: DESTRUCTIVE }, async input => result(await discord.discord_delete_channel_permission(input)));
@@ -219,13 +221,13 @@ export function createHynoeMcpHandler(config: AppConfig) {
     }, async (input) => result(await audited(config, 'discord_search_recent', input.channelId ?? config.discordGuildId, { queryLength: input.query.length, channelId: input.channelId }, () => discord.discord_search_recent(input))));
 
     server.registerTool('discord_send_message', {
-      title: 'Send Discord Message', description: 'Send a message to a Hynoe Discord channel. Mass mentions are disabled unless explicitly requested.',
-      inputSchema: z.object({ channelId: idSchema, content: z.string().min(1).max(2000), allowMassMention: z.boolean().optional() }).extend(controlSchema), annotations: EXTERNAL_WRITE,
+      title: 'Send Discord Message', description: 'Send a message to a Hynoe Discord channel. Mass mentions require owner dashboard approval.' + sendRetryDescription,
+      inputSchema: z.object({ channelId: idSchema, content: z.string().min(1).max(2000), allowMassMention: z.boolean().optional(), requestId: sendRequestId }).extend(controlSchema), annotations: EXTERNAL_WRITE,
     }, async (input) => result(await audited(config, 'discord_send_message', input.channelId, { contentBytes: Buffer.byteLength(input.content, 'utf8'), allowMassMention: input.allowMassMention }, () => discord.discord_send_message(input))));
 
     server.registerTool('discord_send_announcement', {
-      title: 'Send Discord Announcement', description: 'Send an announcement. @everyone/@here requires explicit mass-mention approval.',
-      inputSchema: z.object({ channelId: idSchema, content: z.string().min(1).max(2000), allowMassMention: z.boolean().optional() }).extend(controlSchema), annotations: EXTERNAL_WRITE,
+      title: 'Send Discord Announcement', description: 'Send an announcement. @everyone/@here requires owner dashboard approval.' + sendRetryDescription,
+      inputSchema: z.object({ channelId: idSchema, content: z.string().min(1).max(2000), allowMassMention: z.boolean().optional(), requestId: sendRequestId }).extend(controlSchema), annotations: EXTERNAL_WRITE,
     }, async (input) => result(await audited(config, 'discord_send_announcement', input.channelId, { contentBytes: Buffer.byteLength(input.content, 'utf8'), allowMassMention: input.allowMassMention }, () => discord.discord_send_announcement(input))));
 
     server.registerTool('discord_delete_own_message', {

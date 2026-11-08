@@ -1,7 +1,7 @@
 import type { AppConfig } from '../config';
 import { audited } from '../audit';
 import { createDiscordTools } from '../tools/discord';
-import { createDiscordClient } from './client';
+import { createDiscordClient, discordSendNonce } from './client';
 import type { DiscordClient, DiscordEmbed, DiscordMessagePayload, DiscordRole } from './types';
 import { ApprovalStore, approvalDigest, discordApprovals } from './approvals';
 
@@ -42,7 +42,9 @@ export function messagePayload(input: Input): DiscordMessagePayload {
 
 function createRawDiscordTools(config: AppConfig, client: DiscordClient): Record<string, Tool> {
   const raw: Record<string, Tool> = createDiscordTools(config, client) as unknown as Record<string, Tool>;
-  raw.discord_send_embed = async (input = {}) => ({ message: await client.sendMessagePayload(input.channelId, messagePayload(input)) });
+  raw.discord_send_embed = async (input = {}) => ({
+    message: await client.sendMessagePayload(input.channelId, messagePayload(input), discordSendNonce(config.discordGuildId, input.channelId, 'discord_send_embed', input.requestId)),
+  });
   raw.discord_edit_message = async (input = {}) => {
     const [me, message] = await Promise.all([client.getCurrentUser(), client.getMessage(input.channelId, input.messageId)]);
     if (message.author.id !== me.id) throw new Error('Only bot-authored messages can be edited');

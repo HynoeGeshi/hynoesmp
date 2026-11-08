@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import type { AppConfig } from '../config';
 import { auditAction } from '../audit';
 import type {
@@ -15,6 +16,11 @@ import type {
 } from './types';
 
 const API = 'https://discord.com/api/v10';
+
+export function discordSendNonce(guildId: string, channelId: string, tool: string, requestId?: string): string | undefined {
+  if (requestId === undefined) return undefined;
+  return createHash('sha256').update(JSON.stringify(['hynoe-control', guildId, channelId, tool, requestId])).digest('hex').slice(0, 24);
+}
 
 export function createDiscordClient(config: AppConfig): DiscordClient {
   function withReason(init: RequestInit, reason?: string): RequestInit {
@@ -68,7 +74,7 @@ export function createDiscordClient(config: AppConfig): DiscordClient {
   return {
     getGuildMember: (userId) => request(`/guilds/${guildId}/members/${encodeURIComponent(userId)}`),
     getApplication: () => request('/oauth2/applications/@me'),
-    sendMessagePayload: (channelId, payload) => request(`/channels/${encodeURIComponent(channelId)}/messages`, json(payload, 'POST')),
+    sendMessagePayload: (channelId, payload, nonce) => request(`/channels/${encodeURIComponent(channelId)}/messages`, json({ ...payload, ...(nonce ? { nonce, enforce_nonce: true } : {}) }, 'POST')),
     editMessage: (channelId, messageId, payload) => request(`/channels/${encodeURIComponent(channelId)}/messages/${encodeURIComponent(messageId)}`, json(payload, 'PATCH')),
     crosspostMessage: (channelId, messageId) => request(`/channels/${encodeURIComponent(channelId)}/messages/${encodeURIComponent(messageId)}/crosspost`, empty('POST')),
     getGuild: () => request<DiscordGuild>(`/guilds/${guildId}`),
@@ -77,8 +83,8 @@ export function createDiscordClient(config: AppConfig): DiscordClient {
     listGuildWebhooks: async () => (await request<DiscordWebhook[]>(`/guilds/${guildId}/webhooks`)).map(({ id, type, guild_id, channel_id, name, application_id }) => ({ id, type, guild_id, channel_id, name, application_id })),
     getGuildOnboarding: () => request<DiscordOnboarding>(`/guilds/${guildId}/onboarding`),
     recentMessages: (channelId, limit) => request<DiscordMessage[]>(`/channels/${encodeURIComponent(channelId)}/messages?limit=${Math.max(1, Math.min(100, Math.trunc(limit)))}`),
-    sendMessage: (channelId, content, allowMassMention = false) => request<DiscordMessage>(`/channels/${encodeURIComponent(channelId)}/messages`, {
-      method: 'POST', body: JSON.stringify({ content, allowed_mentions: { parse: allowMassMention ? ['everyone'] : [] } }),
+    sendMessage: (channelId, content, allowMassMention = false, nonce) => request<DiscordMessage>(`/channels/${encodeURIComponent(channelId)}/messages`, {
+      method: 'POST', body: JSON.stringify({ content, allowed_mentions: { parse: allowMassMention ? ['everyone'] : [] }, ...(nonce ? { nonce, enforce_nonce: true } : {}) }),
     }),
     getCurrentUser: () => request<DiscordUser>('/users/@me'),
     getMessage: (channelId, messageId) => request<DiscordMessage>(`/channels/${encodeURIComponent(channelId)}/messages/${encodeURIComponent(messageId)}`),

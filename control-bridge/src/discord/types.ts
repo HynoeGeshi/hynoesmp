@@ -99,7 +99,7 @@ export type DiscordRolePatch = {
 export interface DiscordClient {
   getGuildMember(userId: string): Promise<{ roles: string[] }>;
   getApplication(): Promise<{ id: string; flags?: number }>;
-  sendMessagePayload(channelId: string, payload: DiscordMessagePayload): Promise<DiscordMessage>;
+  sendMessagePayload(channelId: string, payload: DiscordMessagePayload, nonce?: string): Promise<DiscordMessage>;
   editMessage(channelId: string, messageId: string, payload: DiscordMessagePayload): Promise<DiscordMessage>;
   crosspostMessage(channelId: string, messageId: string): Promise<DiscordMessage>;
   getGuild(): Promise<DiscordGuild>;
@@ -108,7 +108,7 @@ export interface DiscordClient {
   listGuildWebhooks(): Promise<DiscordWebhook[]>;
   getGuildOnboarding(): Promise<DiscordOnboarding>;
   recentMessages(channelId: string, limit: number): Promise<DiscordMessage[]>;
-  sendMessage(channelId: string, content: string, allowMassMention?: boolean): Promise<DiscordMessage>;
+  sendMessage(channelId: string, content: string, allowMassMention?: boolean, nonce?: string): Promise<DiscordMessage>;
   getCurrentUser(): Promise<DiscordUser>;
   getMessage(channelId: string, messageId: string): Promise<DiscordMessage>;
   deleteMessage(channelId: string, messageId: string): Promise<void>;

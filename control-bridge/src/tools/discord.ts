@@ -1,5 +1,5 @@
 import type { AppConfig } from '../config';
-import { createDiscordClient } from '../discord/client';
+import { createDiscordClient, discordSendNonce } from '../discord/client';
 import { summarizeDiscordActivity } from '../discord/analytics';
 import type { DiscordChannelPatch, DiscordClient, DiscordMessage, DiscordRolePatch } from '../discord/types';
 import { assertAllowedChannel, assertDiscordActionAllowed } from '../policy/discord-policy';
@@ -75,19 +75,19 @@ export function createDiscordTools(config: AppConfig, client: DiscordClient = cr
       }
       return { matches: matches.slice(0, 100) };
     },
-    async discord_send_message({ channelId, content, allowMassMention = false }: { channelId: string; content: string; allowMassMention?: boolean }) {
+    async discord_send_message({ channelId, content, allowMassMention = false, requestId }: { channelId: string; content: string; allowMassMention?: boolean; requestId?: string }) {
       assertAllowedChannel(channelId, config);
       assertDiscordActionAllowed('send_message', {});
       if (!content.trim() || content.length > 2000) throw new Error('Discord message must be 1-2000 characters');
       rejectMassMention(content, allowMassMention);
-      return { message: await client.sendMessage(channelId, content, allowMassMention) };
+      return { message: await client.sendMessage(channelId, content, allowMassMention, discordSendNonce(config.discordGuildId, channelId, 'discord_send_message', requestId)) };
     },
-    async discord_send_announcement({ channelId, content, allowMassMention = false }: { channelId: string; content: string; allowMassMention?: boolean }) {
+    async discord_send_announcement({ channelId, content, allowMassMention = false, requestId }: { channelId: string; content: string; allowMassMention?: boolean; requestId?: string }) {
       assertAllowedChannel(channelId, config);
       assertDiscordActionAllowed('send_message', {});
       if (!content.trim() || content.length > 2000) throw new Error('Discord announcement must be 1-2000 characters');
       rejectMassMention(content, allowMassMention);
-      return { message: await client.sendMessage(channelId, content, allowMassMention) };
+      return { message: await client.sendMessage(channelId, content, allowMassMention, discordSendNonce(config.discordGuildId, channelId, 'discord_send_announcement', requestId)) };
     },
     async discord_delete_own_message({ channelId, messageId }: { channelId: string; messageId: string }) {
       assertAllowedChannel(channelId, config);

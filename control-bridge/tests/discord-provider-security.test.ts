@@ -1,5 +1,6 @@
 import { afterEach, expect, it, vi } from 'vitest';
 import { createDiscordClient } from '../src/discord/client';
+import { createManagedDiscordTools } from '../src/discord/control';
 import type { AppConfig } from '../src/config';
 const config = { discordGuildId: 'guild', discordBotToken: 'BOT_SECRET' } as AppConfig;
 afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); });
@@ -41,4 +42,33 @@ it('sends and edits embeds without parsing role or member mentions', async () =>
   await client.sendMessagePayload('c1', { embeds: [{ title: 'Gold Hynoe' }], allowed_mentions: { parse: [] } });
   await client.editMessage('c1', 'm1', { content: 'updated', allowed_mentions: { parse: [] } });
   expect(fetchMock.mock.calls.map((call: any) => [call[0], call[1].method])).toEqual([['https://discord.com/api/v10/channels/c1/messages', 'POST'], ['https://discord.com/api/v10/channels/c1/messages/m1', 'PATCH']]);
+});
+
+it.each(['discord_send_message', 'discord_send_announcement', 'discord_send_embed'])('deduplicates a manual retry of %s after an accepted write loses its response', async tool => {
+  const created = new Map<string, { id: string }>();
+  const writes: Array<{ nonce?: string; enforce_nonce?: boolean; allowed_mentions: { parse: string[] } }> = [];
+  let lost = false;
+  vi.spyOn(console, 'info').mockImplementation(() => {});
+  vi.stubGlobal('fetch', vi.fn(async (_url: string, init: RequestInit) => {
+    if (init.method !== 'POST') return Response.json([{ id: 'c1', type: 5 }]);
+    const body = JSON.parse(String(init.body)) as typeof writes[number];
+    writes.push(body);
+    const key = body.enforce_nonce && body.nonce ? body.nonce : String(writes.length);
+    if (!created.has(key)) created.set(key, { id: `m${created.size + 1}` });
+    if (!lost) { lost = true; throw new Error('response lost'); }
+    return Response.json(created.get(key));
+  }));
+  const send = createManagedDiscordTools({ ...config, discordGuildManagementEnabled: true, auditLogEnabled: true })[tool];
+  const input = { channelId: 'c1', content: 'hello', ...(tool === 'discord_send_embed' ? { embeds: [{ title: 'Hello' }] } : {}) };
+  await expect(send({ ...input, requestId: 'retry-1' })).rejects.toThrow(/may have applied/i);
+  expect(writes).toHaveLength(1);
+  await expect(send({ ...input, requestId: 'retry-1' })).resolves.toEqual({ message: { id: 'm1' } });
+  await expect(send({ ...input, requestId: 'retry-2' })).resolves.toEqual({ message: { id: 'm2' } });
+  await expect(send(input)).resolves.toEqual({ message: { id: 'm3' } });
+  expect(writes).toHaveLength(4);
+  expect(writes[0]).toMatchObject({ nonce: expect.stringMatching(/^[a-f0-9]{24}$/), enforce_nonce: true, allowed_mentions: { parse: [] } });
+  expect(writes[1].nonce).toBe(writes[0].nonce);
+  expect(writes[2].nonce).not.toBe(writes[0].nonce);
+  expect(writes[3]).not.toHaveProperty('nonce');
+  expect(writes[3]).not.toHaveProperty('enforce_nonce');
 });
