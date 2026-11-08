@@ -36,6 +36,18 @@ export type DiscordEmbed = {
 };
 export type DiscordMessagePayload = { content?: string; embeds?: DiscordEmbed[]; allowed_mentions: { parse: string[] } };
 
+export type DiscordAutomodRule = {
+  id: string;
+  guild_id: string;
+  name: string;
+  event_type: number;
+  trigger_type: number;
+  enabled: boolean;
+  actions: Array<{ type: number }>;
+  exempt_channels: string[];
+  exempt_roles: string[];
+};
+
 export type DiscordGuild = {
   id: string;
   name?: string;
@@ -106,6 +118,7 @@ export interface DiscordClient {
   listGuildChannels(): Promise<DiscordChannel[]>;
   listGuildRoles(): Promise<DiscordRole[]>;
   listGuildWebhooks(): Promise<DiscordWebhook[]>;
+  listGuildAutomodRules(): Promise<DiscordAutomodRule[]>;
   getGuildOnboarding(): Promise<DiscordOnboarding>;
   recentMessages(channelId: string, limit: number): Promise<DiscordMessage[]>;
   sendMessage(channelId: string, content: string, allowMassMention?: boolean, nonce?: string): Promise<DiscordMessage>;

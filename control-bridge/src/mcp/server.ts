@@ -4,6 +4,8 @@ import type { AppConfig } from '../config';
 import { audited } from '../audit';
 import { createBloomTools } from '../tools/bloom';
 import { createManagedDiscordTools } from '../discord/control';
+import { createDiscordClient, readDiscordAutomodStatus } from '../discord/client';
+import { previewHynoeOverhaul } from '../discord/overhaul';
 
 export const TOOL_NAMES = [
   'hynoe_status',
@@ -47,6 +49,8 @@ export const TOOL_NAMES = [
   'discord_edit_message',
   'discord_publish_announcement',
   'discord_delete_channel_permission',
+  'discord_plan_overhaul',
+  'discord_automod_status',
 ] as const;
 
 export const WRITE_TOOL_NAMES = new Set<string>([
@@ -128,6 +132,21 @@ export function createHynoeMcpHandler(config: AppConfig) {
   const discord = createManagedDiscordTools(config);
 
   return createMcpHandler((server) => {
+    server.registerTool('discord_automod_status', {
+      title: 'Inspect Hynoe Discord AutoMod',
+      description: 'Read enabled Discord AutoMod rules, blocking language-rule status and configured exemptions. Requires Manage Server permission for the bot. Omits keyword and action text; does not test or change enforcement.',
+      inputSchema: z.strictObject({}),
+      annotations: READ_ONLY,
+    }, async () => result(await audited(config, 'discord_automod_status', config.discordGuildId, {}, () => readDiscordAutomodStatus(config))));
+    server.registerTool('discord_plan_overhaul', {
+      title: 'Preview Hynoe Discord Organization',
+      description: 'Preview the Hynoe layout against current guild channels and roles. Preserve known welcome, alert, support and SMP relay destinations and flag ambiguous matches for review. This tool never writes.',
+      inputSchema: z.strictObject({}),
+      annotations: READ_ONLY,
+    }, async () => result(await audited(config, 'discord_plan_overhaul', config.discordGuildId, {}, async () => {
+      if (config.discordGuildManagementEnabled !== true) throw new Error('Discord guild management is disabled');
+      return previewHynoeOverhaul(config.discordGuildId, createDiscordClient(config));
+    })));
     server.registerTool('discord_capabilities', { title: 'Verify Discord Management Access', description: 'Check bot membership, effective target permissions, role hierarchy and Message Content intent without exposing credentials.', inputSchema: z.object({ channelId: idSchema.optional() }), annotations: READ_ONLY }, async input => result(await discord.discord_capabilities(input)));
     server.registerTool('discord_send_embed', { title: 'Send Hynoe Embed', description: 'Send a branded embed. Preview with dryRun; mass mentions require owner dashboard approval.' + sendRetryDescription, inputSchema: z.object({ channelId: idSchema, content: z.string().max(2000).optional(), embeds: z.array(embedSchema).min(1).max(10), allowMassMention: z.boolean().optional(), requestId: sendRequestId, ...controlSchema }), annotations: EXTERNAL_WRITE }, async input => result(await discord.discord_send_embed(input)));
     server.registerTool('discord_edit_message', { title: 'Edit Bot Message', description: 'Edit content or embeds on a bot-authored message.', inputSchema: z.object({ channelId: idSchema, messageId: idSchema, content: z.string().max(2000).optional(), embeds: z.array(embedSchema).max(10).optional(), allowMassMention: z.boolean().optional(), ...controlSchema }), annotations: EXTERNAL_WRITE }, async input => result(await discord.discord_edit_message(input)));

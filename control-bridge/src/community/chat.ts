@@ -17,7 +17,9 @@ export function minecraftCommand(name:string,body:string) {
 export function publicMessages(input:FeedMessage[],botId:string) {
   return input.filter(m=>m.content && !containsBlockedChatContent(m.content) && (!m.author.bot || m.webhook_id || m.author.id===botId)).map(m=>{
     const web=m.author.id===botId && /^\[WEB\] ([^\n:]{1,24}): ([\s\S]*)$/.exec(m.content);
-    return {id:m.id,display_name:censorChatProfanity(web?web[1]:(m.author.global_name||m.author.username)),body:censorChatProfanity(web?web[2]:m.content).slice(0,2000),created_at:m.timestamp,source:web?'Website':m.webhook_id?'Minecraft':m.author.bot?'Server':'Discord'};
+    const name = web ? web[1] : (m.author.global_name || m.author.username);
+    const displayName = containsBlockedChatContent(name) ? 'Player' : censorChatProfanity(name);
+    return {id:m.id,display_name:displayName,body:censorChatProfanity(web?web[2]:m.content).slice(0,2000),created_at:m.timestamp,source:web?'Website':m.webhook_id?'Minecraft':m.author.bot?'Server':'Discord'};
   }).reverse();
 }
 export function createCommunityHandler(deps:Dependencies) {

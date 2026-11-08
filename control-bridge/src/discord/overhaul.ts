@@ -1,10 +1,14 @@
-import type { DiscordChannel, DiscordRole } from './types';
+import type { DiscordChannel, DiscordClient, DiscordRole } from './types';
+
+const HYNOE_GUILD_ID = '976637845542416476';
+type Review = 'ambiguous' | 'type-mismatch' | 'category-ambiguous' | 'protected-missing';
 
 export type PlannedCategory = {
   name: string;
   position: number;
   existingId?: string;
   hidden?: boolean;
+  review?: Review;
 };
 
 export type PlannedChannel = {
@@ -13,6 +17,8 @@ export type PlannedChannel = {
   category: string;
   existingId?: string;
   topic?: string;
+  protected?: boolean;
+  review?: Review;
 };
 
 const CATEGORY_ALIASES: Record<string, string[]> = {
@@ -28,9 +34,8 @@ const CATEGORY_ALIASES: Record<string, string[]> = {
   'Future Hynoe Services': ['future hynoe services', 'hynoe services'],
 };
 
-const CHANNELS: Array<PlannedChannel & { aliases?: string[] }> = [
-  { name: '👋┃welcome', type: 0, category: 'Start Here' },
-  { name: '🧭┃start-here', type: 0, category: 'Start Here' },
+const CHANNELS: Array<PlannedChannel & { aliases?: string[]; protectedId?: string }> = [
+  { name: '🧭┃welcome-and-guide', type: 0, category: 'Start Here', protectedId: '1557453599502630932' },
   { name: '📜┃rules', type: 0, category: 'Start Here', aliases: ['rules'] },
   { name: '🎭┃choose-your-interests', type: 0, category: 'Start Here' },
   { name: '📢┃announcements', type: 5, category: 'Start Here', aliases: ['announcements'] },
@@ -41,19 +46,19 @@ const CHANNELS: Array<PlannedChannel & { aliases?: string[] }> = [
   { name: '🎮┃what-are-you-playing', type: 0, category: 'Community', aliases: ['setups'] },
   { name: '📊┃polls', type: 0, category: 'Community' },
   { name: '💡┃suggestions', type: 15, category: 'Community', aliases: ['suggestions'] },
-  { name: '🎵┃music', type: 0, category: 'Community', aliases: ['music'] },
   { name: '🖼️┃media', type: 0, category: 'Community', aliases: ['media'] },
   { name: '🔊┃general-voice', type: 2, category: 'Community' },
 
-  { name: '🔴┃hynoe-live', type: 5, category: 'Live / Content', aliases: ['hynoe streams and videos', 'hynoe live'] },
-  { name: '▶️┃youtube', type: 0, category: 'Live / Content' },
+  { name: '🔴┃hynoe-live', type: 5, category: 'Live / Content', protectedId: '1557352371942588489' },
+  { name: '▶️┃videos-and-shorts', type: 5, category: 'Live / Content', protectedId: '976639224193355818' },
+  { name: '💬┃youtube-discussion', type: 0, category: 'Live / Content', aliases: ['youtube'] },
   { name: '🎬┃clips-and-highlights', type: 15, category: 'Live / Content' },
   { name: '📺┃stream-chat', type: 0, category: 'Live / Content' },
   { name: '💡┃content-suggestions', type: 15, category: 'Live / Content' },
 
   { name: '📌┃smp-info', type: 0, category: 'Hynoe SMP', aliases: ['minecraft info'] },
   { name: '📢┃smp-updates', type: 5, category: 'Hynoe SMP', aliases: ['minecraft announcements'] },
-  { name: '⚔️┃server-chat', type: 0, category: 'Hynoe SMP', aliases: ['minecraft chat'] },
+  { name: '⚔️┃server-chat', type: 0, category: 'Hynoe SMP', protectedId: '1320704486615941190' },
   { name: '🧰┃campaign-help', type: 0, category: 'Hynoe SMP' },
   { name: '👥┃looking-for-group', type: 0, category: 'Hynoe SMP' },
   { name: '🛒┃trading-market', type: 0, category: 'Hynoe SMP' },
@@ -78,7 +83,7 @@ const CHANNELS: Array<PlannedChannel & { aliases?: string[] }> = [
   { name: '🎉┃event-chat', type: 0, category: 'Events' },
   { name: '🏅┃competitions-and-giveaways', type: 15, category: 'Events' },
 
-  { name: '🆘┃help-desk', type: 15, category: 'Support' },
+  { name: '🆘┃help-desk', type: 15, category: 'Support', protectedId: '1557352545691631666' },
 
   { name: '🛡️┃mod-chat', type: 0, category: 'Staff / Control', aliases: ['admin chat'] },
   { name: '📋┃audit-log', type: 0, category: 'Staff / Control' },
@@ -86,9 +91,9 @@ const CHANNELS: Array<PlannedChannel & { aliases?: string[] }> = [
   { name: '🚨┃reports', type: 15, category: 'Staff / Control' },
 
   { name: '🌐┃services-info', type: 0, category: 'Future Hynoe Services' },
-  { name: '🧰┃creatorops', type: 0, category: 'Future Hynoe Services' },
-  { name: '🛠️┃hynoe-net', type: 0, category: 'Future Hynoe Services' },
 ];
+
+const PROTECTED_CHANNEL_IDS = new Set(CHANNELS.flatMap(channel => channel.protectedId ? [channel.protectedId] : []));
 
 function normalize(name: string | undefined): string {
   return (name ?? '').toLocaleLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
@@ -98,18 +103,37 @@ export function planHynoeOverhaul(channels: DiscordChannel[], roles: DiscordRole
   const existingCategories = channels.filter((channel) => channel.type === 4);
   const categories: PlannedCategory[] = Object.entries(CATEGORY_ALIASES).map(([name, aliases], position) => {
     const keys = [name, ...aliases].map(normalize);
-    const found = existingCategories.find((channel) => keys.includes(normalize(channel.name)));
+    const matches = existingCategories.filter((channel) => keys.includes(normalize(channel.name)));
+    const canonical = matches.filter(channel => normalize(channel.name) === normalize(name));
+    const candidates = canonical.length ? canonical : matches;
     return {
       name,
       position,
-      ...(found ? { existingId: found.id } : {}),
+      ...(candidates.length === 1 ? { existingId: candidates[0].id } : candidates.length > 1 ? { review: 'ambiguous' as const } : {}),
       ...(name === 'Future Hynoe Services' ? { hidden: true } : {}),
     };
   });
-  const channelPlan: PlannedChannel[] = CHANNELS.map(({ aliases = [], ...planned }) => {
+  const channelPlan: PlannedChannel[] = CHANNELS.map(({ aliases = [], protectedId, ...planned }) => {
+    if (protectedId) {
+      const existing = channels.find(channel => channel.id === protectedId);
+      if (!existing) return { ...planned, protected: true, review: 'protected-missing' };
+      // Existing alert destinations can be text or announcement channels.
+      if (existing.type === planned.type || (planned.type === 5 && existing.type === 0)) {
+        return { ...planned, protected: true, type: existing.type, existingId: existing.id };
+      }
+      return { ...planned, protected: true, review: 'type-mismatch' };
+    }
     const keys = [planned.name, ...aliases].map(normalize);
-    const found = channels.find((channel) => channel.type !== 4 && keys.includes(normalize(channel.name)));
-    return { ...planned, ...(found ? { existingId: found.id } : {}) };
+    const matches = channels.filter(channel => !PROTECTED_CHANNEL_IDS.has(channel.id) && channel.type !== 4 && keys.includes(normalize(channel.name)));
+    const category = categories.find(candidate => candidate.name === planned.category);
+    const compatible = matches.filter(channel => channel.type === planned.type);
+    const inCategory = category?.existingId ? compatible.filter(channel => channel.parent_id === category.existingId) : [];
+    const candidates = inCategory.length ? inCategory : compatible;
+    if (!compatible.length && matches.length) return { ...planned, review: 'type-mismatch' };
+    if (category?.review) return { ...planned, review: 'category-ambiguous' };
+    if (candidates.length > 1) return { ...planned, review: 'ambiguous' };
+    if (candidates.length === 1) return { ...planned, existingId: candidates[0].id };
+    return planned;
   });
   const plannedIds = new Set(channelPlan.flatMap((channel) => channel.existingId ? [channel.existingId] : []));
   const knownCategoryIds = new Set(categories.flatMap((category) => category.existingId ? [category.existingId] : []));
@@ -119,8 +143,17 @@ export function planHynoeOverhaul(channels: DiscordChannel[], roles: DiscordRole
   const rolePlan = [
     'Hynoe', 'Staff', 'Moderator', 'Creator', 'Member', 'New Here',
     'Hynoe SMP', 'Hynoe Outpost', 'Hynoe Flicks', 'Streams & Content',
-    'Skateboarding', 'Fitness', 'Music', 'Giveaways',
-  ].map((name) => ({ name, existingId: roles.find((role) => normalize(role.name) === normalize(name))?.id }));
+    'Gaming', 'Giveaways',
+  ].map(name => {
+    const matches = roles.filter(role => normalize(role.name) === normalize(name));
+    return { name, ...(matches.length === 1 ? { existingId: matches[0].id } : matches.length > 1 ? { review: 'ambiguous' as const } : {}) };
+  });
 
   return { categories, channelPlan, rolePlan, manualReview, deletions: [] as never[] };
+}
+
+export async function previewHynoeOverhaul(guildId: string, client: Pick<DiscordClient, 'listGuildChannels' | 'listGuildRoles'>) {
+  if (guildId !== HYNOE_GUILD_ID) throw new Error('This preview is restricted to the Hynoe Discord guild');
+  const [channels, roles] = await Promise.all([client.listGuildChannels(), client.listGuildRoles()]);
+  return { guildId, dryRun: true, ...planHynoeOverhaul(channels, roles) };
 }

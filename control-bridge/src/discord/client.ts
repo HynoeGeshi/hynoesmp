@@ -1,7 +1,9 @@
 import { createHash } from 'node:crypto';
 import type { AppConfig } from '../config';
 import { auditAction } from '../audit';
+import { redactSecrets } from '../security/redact';
 import type {
+  DiscordAutomodRule,
   DiscordChannel,
   DiscordChannelPatch,
   DiscordClient,
@@ -81,6 +83,7 @@ export function createDiscordClient(config: AppConfig): DiscordClient {
     listGuildChannels: () => request<DiscordChannel[]>(`/guilds/${guildId}/channels`),
     listGuildRoles: () => request<DiscordRole[]>(`/guilds/${guildId}/roles`),
     listGuildWebhooks: async () => (await request<DiscordWebhook[]>(`/guilds/${guildId}/webhooks`)).map(({ id, type, guild_id, channel_id, name, application_id }) => ({ id, type, guild_id, channel_id, name, application_id })),
+    listGuildAutomodRules: () => request<DiscordAutomodRule[]>(`/guilds/${guildId}/auto-moderation/rules`),
     getGuildOnboarding: () => request<DiscordOnboarding>(`/guilds/${guildId}/onboarding`),
     recentMessages: (channelId, limit) => request<DiscordMessage[]>(`/channels/${encodeURIComponent(channelId)}/messages?limit=${Math.max(1, Math.min(100, Math.trunc(limit)))}`),
     sendMessage: (channelId, content, allowMassMention = false, nonce) => request<DiscordMessage>(`/channels/${encodeURIComponent(channelId)}/messages`, {
@@ -129,5 +132,31 @@ export function createDiscordClient(config: AppConfig): DiscordClient {
       request<void>(`/channels/${encodeURIComponent(channelId)}/messages/bulk-delete`, json({ messages: messageIds }, 'POST', reason)),
     deleteWebhook: (webhookId: string, reason?: string) =>
       request<void>(`/webhooks/${encodeURIComponent(webhookId)}`, empty('DELETE', reason)),
+  };
+}
+
+export async function readDiscordAutomodStatus(config: AppConfig) {
+  if (config.discordGuildId !== '976637845542416476') throw new Error('This status check is restricted to the Hynoe Discord guild');
+  if (config.discordGuildManagementEnabled !== true) throw new Error('Discord guild management is disabled');
+  const rules = await createDiscordClient(config).listGuildAutomodRules().catch(() => {
+    // Provider errors may contain fragments of keyword or action metadata.
+    throw new Error('Could not read Discord AutoMod rules. Verify the bot has Manage Server permission and Discord is reachable.');
+  });
+  if (!Array.isArray(rules) || rules.some(rule => rule?.guild_id !== config.discordGuildId)) throw new Error('Discord returned an invalid AutoMod inventory for the configured guild');
+  const enabledRules = rules.filter(rule => rule.enabled === true).map(rule => ({
+    id: rule.id,
+    name: redactSecrets(rule.name, [config.discordBotToken, config.bloomApiKey]) as string,
+    eventType: rule.event_type,
+    triggerType: rule.trigger_type,
+    actionTypes: rule.actions.map(action => action.type),
+    exemptChannelIds: rule.exempt_channels,
+    exemptRoleIds: rule.exempt_roles,
+  }));
+  return {
+    guildId: config.discordGuildId,
+    enabledRules,
+    blockingLanguageRulePresent: enabledRules.some(rule => rule.eventType === 1 && [1, 4].includes(rule.triggerType) && rule.actionTypes.includes(1)),
+    hasConfiguredExemptions: enabledRules.some(rule => rule.exemptChannelIds.length > 0 || rule.exemptRoleIds.length > 0),
+    coverageNote: 'This is a configuration check, not a test of which text is blocked. Members with Administrator or Manage Server permissions are exempt under Discord’s rules.',
   };
 }

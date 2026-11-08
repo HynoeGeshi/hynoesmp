@@ -47,6 +47,16 @@ describe('public Minecraft bridge', () => {
     expect(deps.postDiscord).not.toHaveBeenCalled();
     expect(deps.sendMinecraft).not.toHaveBeenCalled();
   });
+  it('blocks punctuation and numbered threat variants without treating gameplay as a threat', async () => {
+    const { deps, handler } = setup();
+    for (const body of ['kill yourself!', 'send me nudes!', 'I have 3 bombs!', 'I will detonate ８ b0mbs!']) {
+      expect((await handler(post({ body, request_id: requestId }))).status, body).toBe(400);
+    }
+    expect(deps.verifyUser).not.toHaveBeenCalled();
+    expect(deps.postDiscord).not.toHaveBeenCalled();
+    expect(deps.sendMinecraft).not.toHaveBeenCalled();
+    expect((await handler(post({ body: 'I found 3 bombs in this game!', request_id: requestId }))).status).toBe(201);
+  });
   it('honors muted users and atomic cooldown failures', async () => {
     const {deps,handler}=setup(); deps.reserveSlot.mockRejectedValue(new Error('Posting unavailable or cooldown active.'));
     expect((await handler(post())).status).toBe(429); expect(deps.postDiscord).not.toHaveBeenCalled();
@@ -94,5 +104,12 @@ describe('public Minecraft bridge', () => {
     expect(messages.map(m=>m.id)).toEqual(['1','4']);
     expect(messages[0].body).toBe('class assignment; sex education matters');
     expect(messages[1].body).toBe('This **** is wild.');
+  });
+  it('keeps safe incoming messages without exposing a blocked display name', () => {
+    const messages = publicMessages([
+      { id: '1', author: { id: 'user', username: 'go k.y.s.!' }, content: 'Hello!', timestamp: '2026-10-07T01:00:00Z' },
+      { id: '2', author: { id: 'user2', username: 'Player' }, content: 'I have 3 bombs!', timestamp: '2026-10-07T02:00:00Z' },
+    ], 'bridge-bot');
+    expect(messages).toEqual([expect.objectContaining({ id: '1', display_name: 'Player', body: 'Hello!' })]);
   });
 });
