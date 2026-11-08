@@ -41,6 +41,7 @@ The bridge also:
 - blocks Discord mass mentions by default
 - keeps message/activity analysis bounded
 - logs management metadata without storing message bodies, passwords, auth headers, tokens, or provider secrets
+- records rejected, applied and uncertain Discord writes separately, and asks the operator to check the target before retrying an uncertain result
 - does not automatically retry failed Discord writes
 - relies on Discord's role hierarchy and API permission enforcement instead of bypassing it
 
@@ -118,6 +119,8 @@ The bridge verifies Supabase JWT signatures/issuer and requires the exact config
 - Owner login: `/login?authorization_id=...`
 - Health: `/health`
 
+The public OAuth discovery endpoint only needs the bridge and Supabase URLs. A valid discovery response does not grant tool access. `/health` reports missing configuration names without showing their values, and `/api/mcp` returns an unavailable response until the server configuration is complete. Add the Discord bot token and the exact owner UUID in the Render service environment, then deploy the saved environment.
+
 ## Development and verification
 
 ```bash
@@ -132,12 +135,11 @@ The Render service uses the same test → typecheck → production-build gate be
 Recommended live verification order:
 
 1. `hynoe_status`
-2. `discord_guild_overview`
-3. `discord_list_roles`
-4. `discord_list_webhooks`
-5. `discord_activity_summary`
-6. one reversible low-risk Discord channel update/create operation
-7. verify a high-impact operation cannot execute without explicit confirmation
-8. Bloom status/console verification
+2. `discord_capabilities` for the configured guild and target channel
+3. `discord_guild_overview`, `discord_list_roles`, and `discord_list_webhooks`
+4. `discord_activity_summary`
+5. one reversible low-risk Discord channel update/create operation
+6. verify a high-impact operation cannot execute without explicit confirmation
+7. Bloom status/console verification
 
 Do not begin a live Discord overhaul by deleting the old structure. Inventory first, preserve useful channel history by renaming/moving where practical, validate permissions, and only then request confirmation for any destructive cleanup.

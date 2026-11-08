@@ -1,4 +1,4 @@
-name: Sync Hynoe Control Bridge
+name: Validate Hynoe Control Bridge
 
 on:
   push:
@@ -6,38 +6,38 @@ on:
       - feature/hynoe-control-bridge
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  sync:
+  validate:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: control-bridge
     steps:
-      - name: Checkout feature branch
+      - name: Checkout pushed commit
         uses: actions/checkout@v4
         with:
-          ref: feature/hynoe-control-bridge
-          fetch-depth: 0
+          ref: ${{ github.sha }}
+          persist-credentials: false
 
-      - name: Download verified bridge source
-        run: |
-          curl --fail --silent --show-error --location \
-            https://sb-2nbwx51r8yxp.vercel.run/hynoe-control-bridge-source.tar.gz \
-            --output /tmp/hynoe-control-bridge-source.tar.gz
-          echo "e8a229eaf69832780f90b0950da2d9da98f04c4f86ad71dcacecc017a4fa15dd  /tmp/hynoe-control-bridge-source.tar.gz" | sha256sum --check
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.23.4'
+          cache: npm
+          cache-dependency-path: control-bridge/package-lock.json
 
-      - name: Replace bridge tree
+      - name: Install dependencies with bundled npm 10.9.9
         run: |
-          rm -rf control-bridge
-          tar -xzf /tmp/hynoe-control-bridge-source.tar.gz
+          test "$(npm --version)" = '10.9.9'
+          npm ci
 
-      - name: Commit verified tree
-        run: |
-          git config user.name "Hynoe Bridge Sync"
-          git config user.email "noreply@users.noreply.github.com"
-          git add -A control-bridge
-          if git diff --cached --quiet; then
-            echo "Bridge tree already matches verified source."
-            exit 0
-          fi
-          git commit -m "feat: sync verified Hynoe control bridge"
-          git push origin HEAD:feature/hynoe-control-bridge
+      - name: Run tests
+        run: npm test
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build for production
+        run: npm run build

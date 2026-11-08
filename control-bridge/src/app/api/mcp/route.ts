@@ -1,13 +1,12 @@
 import { withMcpAuth } from 'mcp-handler';
-import { loadConfig } from '../../../config';
+import { loadConfig, type AppConfig } from '../../../config';
 import { verifyMcpAccessToken } from '../../../auth/verify-token';
 import { createHynoeMcpHandler } from '../../../mcp/server';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
 
-function createHandler() {
-  const config = loadConfig();
+function createHandler(config: AppConfig) {
   const rawHandler = createHynoeMcpHandler(config);
 
   return withMcpAuth(
@@ -36,19 +35,22 @@ function createHandler() {
 
 let handler: ReturnType<typeof createHandler> | undefined;
 
-function getHandler() {
-  handler ??= createHandler();
-  return handler;
+async function handleRequest(request: Request) {
+  if (!handler) {
+    let config: AppConfig;
+    try {
+      config = loadConfig();
+    } catch {
+      return Response.json(
+        { error: 'Hynoe control tools are unavailable until configuration is complete.' },
+        { status: 503, headers: { 'cache-control': 'no-store' } },
+      );
+    }
+    handler = createHandler(config);
+  }
+  return handler(request);
 }
 
-export async function GET(request: Request) {
-  return getHandler()(request);
-}
-
-export async function POST(request: Request) {
-  return getHandler()(request);
-}
-
-export async function DELETE(request: Request) {
-  return getHandler()(request);
-}
+export const GET = handleRequest;
+export const POST = handleRequest;
+export const DELETE = handleRequest;

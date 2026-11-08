@@ -2,7 +2,7 @@ import type { AppConfig } from '../config';
 
 export const MCP_SCOPES = ['openid', 'email'] as const;
 
-export function protectedResourceMetadata(config: AppConfig) {
+export function protectedResourceMetadata(config: Pick<AppConfig, 'publicBaseUrl' | 'supabaseUrl'>) {
   return {
     resource: `${config.publicBaseUrl}/api/mcp`,
     authorization_servers: [`${config.supabaseUrl}/auth/v1`],

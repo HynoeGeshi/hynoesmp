@@ -40,7 +40,7 @@ export function messagePayload(input: Input): DiscordMessagePayload {
   return { ...(input.content !== undefined ? { content: input.content } : {}), ...(input.embeds !== undefined ? { embeds } : {}), allowed_mentions: { parse: input.allowMassMention ? ['everyone'] : [] } };
 }
 
-export function createManagedDiscordTools(config: AppConfig, client: DiscordClient = createDiscordClient(config), approvals: ApprovalStore = discordApprovals): Record<string, Tool> {
+function createRawDiscordTools(config: AppConfig, client: DiscordClient): Record<string, Tool> {
   const raw: Record<string, Tool> = createDiscordTools(config, client) as unknown as Record<string, Tool>;
   raw.discord_send_embed = async (input = {}) => ({ message: await client.sendMessagePayload(input.channelId, messagePayload(input)) });
   raw.discord_edit_message = async (input = {}) => {
@@ -58,7 +58,7 @@ export function createManagedDiscordTools(config: AppConfig, client: DiscordClie
     return { ok: true };
   };
   raw.discord_capabilities = async (input = {}) => {
-    const [me, roles, channels, application] = await Promise.all([client.getCurrentUser(), client.listGuildRoles(), client.listGuildChannels(), client.getApplication()]);
+    const [me, roles, channels, application] = await Promise.all([client.getCurrentUser(), client.listGuildRoles(), input.channelId ? client.listGuildChannels() : [], client.getApplication()]);
     const member = await client.getGuildMember(me.id);
     const assigned = roles.filter(r => r.id === config.discordGuildId || member.roles.includes(r.id));
     const base = assigned.reduce((p, r) => p | bits(r.permissions ?? '0'), 0n);
@@ -76,13 +76,19 @@ export function createManagedDiscordTools(config: AppConfig, client: DiscordClie
     const required = { manageChannels: 16n, manageRoles: 1n << 28n, viewChannel: 1024n, sendMessages: 2048n, embedLinks: 16384n, readHistory: 65536n, viewAuditLog: 128n, manageGuild: 32n };
     return { guildId: config.discordGuildId, botId: me.id, applicationId: application.id, administrator: Boolean(base & 8n), permissions: Object.fromEntries(Object.entries(required).map(([name, flag]) => [name, Boolean((effective & 8n) || (effective & flag))])), highestRolePosition: Math.max(0, ...assigned.map(r => r.position ?? 0)), messageContentIntent: Boolean((application.flags ?? 0) & ((1 << 18) | (1 << 19))), channelId: input.channelId, managementEnabled: config.discordGuildManagementEnabled === true };
   };
+  return raw;
+}
 
-  async function prepare(tool: string, input: Input) {
+export function createManagedDiscordTools(config: AppConfig, client: DiscordClient = createDiscordClient(config), approvals: ApprovalStore = discordApprovals): Record<string, Tool> {
+  const raw = createRawDiscordTools(config, client);
+
+  async function prepare(tool: string, input: Input, client: DiscordClient) {
     const { dryRun: _dryRun, approvalId: _approvalId, confirmed: _confirmed, ...args } = input;
     const write = !READS.has(tool);
     if (STRUCTURAL.has(tool) && config.discordGuildManagementEnabled !== true) throw new Error('Discord guild management is disabled');
     if (write && !config.auditLogEnabled) throw new Error('Audit logging must be enabled for Discord writes');
-    const channels = await client.listGuildChannels();
+    const needsChannelInventory = write || input.dryRun === true || args.channelId || args.parentId || args.channelIds?.length || args.channels?.length;
+    const channels = needsChannelInventory ? await client.listGuildChannels() : [];
     function channel(id: unknown, parent = false) {
       const found = channels.find(c => c.id === id);
       if (!found) throw new Error('Channel is outside the configured Discord guild');
@@ -99,7 +105,7 @@ export function createManagedDiscordTools(config: AppConfig, client: DiscordClie
     if (tool === 'discord_update_channel' && args.parentId !== undefined) highImpact = true;
     if ((args.channels ?? []).some((c: Input) => c.parentId !== undefined || c.lockPermissions)) highImpact = true;
     let roles: DiscordRole[] = [];
-    if (tool.includes('role') || tool.includes('permission')) {
+    if ((tool.includes('role') || tool.includes('permission')) && (write || input.dryRun === true || args.roleId || args.roles?.length || args.overwriteId)) {
       roles = await client.listGuildRoles();
       const [me] = await Promise.all([client.getCurrentUser()]);
       const member = await client.getGuildMember(me.id);
@@ -140,11 +146,16 @@ export function createManagedDiscordTools(config: AppConfig, client: DiscordClie
 
   return Object.fromEntries(Object.entries(raw).map(([tool, invoke]) => [tool, async (input: Input = {}) => {
     return audited(config, tool, config.discordGuildId, { dryRun: input.dryRun === true, channelId: input.channelId, roleId: input.roleId, count: input.channels?.length ?? input.userIds?.length, requestId: approvalDigest({ tool, at: Date.now() }).slice(0, 16) }, async () => {
-      const preview = await prepare(tool, input);
+      const read = READS.has(tool);
+      let channels: ReturnType<DiscordClient['listGuildChannels']> | undefined;
+      // Scope inventory reuse to one read; writes retain fresh provider checks.
+      const requestClient = read ? { ...client, listGuildChannels: () => channels ??= client.listGuildChannels() } : client;
+      const preview = await prepare(tool, input, requestClient);
       if (input.dryRun === true) return preview;
       if (preview.requiresApproval) approvals.consume(input.approvalId, preview.digest, config.allowedSupabaseUserId);
       // Only this trusted execution boundary supplies legacy confirmation.
-      return invoke({ ...preview.input, confirmed: preview.requiresApproval });
+      const run = read ? createRawDiscordTools(config, requestClient)[tool] : invoke;
+      return run({ ...preview.input, confirmed: preview.requiresApproval });
     });
   }]));
 }

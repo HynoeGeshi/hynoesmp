@@ -47,6 +47,13 @@ function assertHttps(name: string, value: string): string {
   return url.origin;
 }
 
+export function loadOAuthMetadataConfig(env: NodeJS.ProcessEnv = process.env) {
+  return {
+    supabaseUrl: assertHttps('SUPABASE_URL', required(env, 'SUPABASE_URL')),
+    publicBaseUrl: assertHttps('PUBLIC_BASE_URL', required(env, 'PUBLIC_BASE_URL')),
+  };
+}
+
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
   for (const key of REQUIRED) required(env, key);
   const bloomPanelUrl = assertHttps('BLOOM_PANEL_URL', env.BLOOM_PANEL_URL?.trim() || 'https://mc.bloom.host');
@@ -71,10 +78,9 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     discordGuildId: required(env, 'DISCORD_GUILD_ID'),
     discordAllowedChannelIds,
     discordGuildManagementEnabled,
-    supabaseUrl: assertHttps('SUPABASE_URL', required(env, 'SUPABASE_URL')),
+    ...loadOAuthMetadataConfig(env),
     supabasePublishableKey: required(env, 'SUPABASE_PUBLISHABLE_KEY'),
     allowedSupabaseUserId: required(env, 'ALLOWED_SUPABASE_USER_ID'),
-    publicBaseUrl: assertHttps('PUBLIC_BASE_URL', required(env, 'PUBLIC_BASE_URL')),
     auditLogEnabled: (env.AUDIT_LOG_ENABLED ?? 'true').trim().toLowerCase() !== 'false',
   };
 }

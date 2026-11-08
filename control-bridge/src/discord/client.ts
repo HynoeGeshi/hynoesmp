@@ -29,15 +29,36 @@ export function createDiscordClient(config: AppConfig): DiscordClient {
     headers.set('authorization', `Bot ${config.discordBotToken}`);
     headers.set('accept', 'application/json');
     if (init.body != null && !headers.has('content-type')) headers.set('content-type', 'application/json');
-    const response = await fetch(`${API}${path}`, { ...init, headers, cache: 'no-store', signal: AbortSignal.timeout(15000) });
-    if (init.method && init.method !== 'GET') auditAction(config, { tool: 'discord_provider_write', target: path.split('?')[0], status: response.ok ? 'success' : 'error', detail: { method: init.method, httpStatus: response.status } });
+    const write = Boolean(init.method && init.method !== 'GET');
+    const auditWrite = (outcome: 'applied' | 'rejected' | 'unknown', httpStatus?: number) => auditAction(config, {
+      tool: 'discord_provider_write', target: path.split('?')[0], status: outcome === 'applied' ? 'success' : 'error',
+      detail: { method: init.method, httpStatus, outcome },
+    });
+    const uncertainWrite = (httpStatus?: number) => new Error(`Discord may have applied the write${httpStatus ? ` (HTTP ${httpStatus})` : ''}. Verify the target in Discord before retrying.`);
+    let response: Response;
+    try {
+      response = await fetch(`${API}${path}`, { ...init, headers, cache: 'no-store', signal: AbortSignal.timeout(15000) });
+    } catch (error) {
+      if (!write) throw error;
+      auditWrite('unknown');
+      throw uncertainWrite();
+    }
+    if (write) {
+      auditWrite(response.ok ? 'applied' : response.status >= 500 ? 'unknown' : 'rejected', response.status);
+      if (response.status >= 500) throw uncertainWrite(response.status);
+    }
     if (!response.ok) {
       const detail = await response.json().catch(() => ({})) as { code?: number; retry_after?: number };
       throw new Error(`Discord API request failed (${response.status}), code ${typeof detail.code === 'number' ? detail.code : 'unknown'}${response.status === 429 ? `; rate limited, retry after ${Number(detail.retry_after) || 1}s. Write not retried.` : ''}`);
     }
     if (response.status === 204) return undefined as T;
-    const text = await response.text();
-    return (text ? JSON.parse(text) : undefined) as T;
+    try {
+      const text = await response.text();
+      return (text ? JSON.parse(text) : undefined) as T;
+    } catch (error) {
+      if (!write) throw error;
+      throw new Error('Discord accepted the write, but its response could not be read. Verify the result in Discord before retrying.');
+    }
   }
 
   const guildId = encodeURIComponent(config.discordGuildId);

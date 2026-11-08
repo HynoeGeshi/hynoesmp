@@ -24,6 +24,23 @@ function client() {
 }
 
 describe('Discord control boundary', () => {
+  it('does not load channels for a guild role read', async () => {
+    const c = client();
+    await expect(createManagedDiscordTools(config, c).discord_list_roles()).resolves.toHaveProperty('roles');
+    expect(c.listGuildChannels).not.toHaveBeenCalled();
+    expect(c.listGuildRoles).toHaveBeenCalledTimes(1);
+  });
+  it('reuses one guild channel inventory to validate and inspect a channel', async () => {
+    const c = client();
+    await expect(createManagedDiscordTools(config, c).discord_channel_permissions({ channelId: 'c1' })).resolves.toEqual({ channelId: 'c1', permissionOverwrites: [] });
+    expect(c.listGuildChannels).toHaveBeenCalledTimes(1);
+  });
+  it('rejects a foreign channel before reading its messages', async () => {
+    const c = client();
+    c.recentMessages = vi.fn();
+    await expect(createManagedDiscordTools(config, c).discord_recent_messages({ channelId: 'foreign' })).rejects.toThrow(/guild/i);
+    expect(c.recentMessages).not.toHaveBeenCalled();
+  });
   it('rejects foreign channel IDs before provider writes', async () => {
     const c = client();
     await expect(createManagedDiscordTools(config, c).discord_update_channel({ channelId: 'foreign', name: 'bad' })).rejects.toThrow(/guild/i);
