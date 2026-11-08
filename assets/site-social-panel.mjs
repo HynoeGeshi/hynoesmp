@@ -11,14 +11,14 @@ import {
   loadMessageReactions,
   loadActiveAnnouncement,
   sendHelpFeedback,
-} from './site-social.mjs?v=20261008-language-filter-threats';
+} from './site-social.mjs?v=20261107-chat-policy';
 import {
   SITE_REACTIONS,
   validateDisplayName,
   mergeMessageLists,
   presenceOnlineCount,
   messageDisplayBody,
-} from './site-social-core.mjs?v=20261008-language-filter-threats';
+} from './site-social-core.mjs?v=20261107-chat-policy';
 import { askHynoe, appendPrivateHistory } from './ask-hynoe.mjs';
 import { loadMinecraftMessages, sendMinecraftMessage } from './minecraft-chat.mjs';
 

@@ -15,17 +15,11 @@ const BLOCKED_TERMS = Object.freeze([
   'beaner', 'tranny', 'coon', 'porchmonkey', 'raghead', 'retard',
 ]);
 
-function moderationComparable(input) {
-  return String(input ?? '')
-    .normalize('NFKD')
-    .toLowerCase()
-    .replace(/[\u0300-\u036f]/g, '')
+function decodeLeet(text) {
+  return text
     .split('')
     .map((char) => MODERATION_LEET_MAP[char] ?? char)
-    .join('')
-    .replace(/[^a-z]+/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
+    .join('');
 }
 
 function termPattern(term) {
@@ -46,6 +40,12 @@ const BLOCKED_SEXUAL_SOLICITATION_PATTERNS = Object.freeze([
   /(?:^|\s)(?:send|show|give|dm|trade|share)\s+(?:me\s+)?(?:your\s+)?(?:tits|boobs|ass)(?:$|\s)/i,
 ]);
 
+const BLOCKED_CONTENT_PATTERNS = [
+  ...BLOCKED_TERM_PATTERNS,
+  ...BLOCKED_HARASSMENT_PATTERNS,
+  ...BLOCKED_SEXUAL_SOLICITATION_PATTERNS,
+];
+
 const CENSORED_PROFANITY = Object.freeze([
   'motherfuckers', 'motherfucker', 'motherfucking', 'motherfucked', 'motherfuck',
   'fucking', 'fucked', 'fuckers', 'fucker', 'fucks', 'fuck',
@@ -63,11 +63,16 @@ function profanityPattern(term) {
 const CENSORED_PROFANITY_PATTERNS = CENSORED_PROFANITY.map(profanityPattern);
 
 export function containsBlockedChatContent(input) {
-  const comparable = moderationComparable(input);
-  if (!comparable) return false;
-  return BLOCKED_TERM_PATTERNS.some((pattern) => pattern.test(comparable))
-    || BLOCKED_HARASSMENT_PATTERNS.some((pattern) => pattern.test(comparable))
-    || BLOCKED_SEXUAL_SOLICITATION_PATTERNS.some((pattern) => pattern.test(comparable));
+  const normalized = String(input ?? '').normalize('NFKD').toLowerCase().replace(/[\u0300-\u036f]/g, '');
+  const stylized = decodeLeet(normalized).replace(/[^a-z]+/g, ' ').trim();
+  if (BLOCKED_CONTENT_PATTERNS.some((pattern) => pattern.test(stylized))) return true;
+
+  // Preserve literal quantities and sentence punctuation while still decoding digits inside words.
+  const literal = normalized
+    .replace(/[a-z0-9]+/g, (word) => /\d/.test(word) && /[a-z]/.test(word) ? decodeLeet(word) : word)
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+  return literal !== stylized && BLOCKED_CONTENT_PATTERNS.some((pattern) => pattern.test(literal));
 }
 
 export function censorChatProfanity(input) {

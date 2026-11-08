@@ -25,17 +25,11 @@ const CHAT_CENSORED_PATTERNS = CHAT_CENSORED_TERMS.map((term) => {
   return new RegExp(`(^|[^A-Za-z0-9])(${letters})(?=$|[^A-Za-z0-9])`, 'gi');
 });
 
-function comparableChatText(input) {
-  return String(input ?? '')
-    .normalize('NFKD')
-    .toLowerCase()
-    .replace(/[\u0300-\u036f]/g, '')
+function decodeChatLeet(text) {
+  return text
     .split('')
     .map((char) => CHAT_LEET_MAP[char] ?? char)
-    .join('')
-    .replace(/[^a-z]+/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
+    .join('');
 }
 
 function chatTermPattern(term) {
@@ -53,12 +47,19 @@ const CHAT_BLOCKED_PHRASES = Object.freeze([
   /(?:^|\s)(?:send|show|give|dm|trade|share)\s+(?:me\s+)?(?:your\s+)?(?:tits|boobs|ass)(?:$|\s)/i,
 ]);
 
+const CHAT_BLOCKED_CONTENT_PATTERNS = [...CHAT_BLOCKED_PATTERNS, ...CHAT_BLOCKED_PHRASES];
+
 export function containsBlockedChatContent(input) {
-  const comparable = comparableChatText(input);
-  return Boolean(comparable) && (
-    CHAT_BLOCKED_PATTERNS.some((pattern) => pattern.test(comparable))
-    || CHAT_BLOCKED_PHRASES.some((pattern) => pattern.test(comparable))
-  );
+  const normalized = String(input ?? '').normalize('NFKD').toLowerCase().replace(/[\u0300-\u036f]/g, '');
+  const stylized = decodeChatLeet(normalized).replace(/[^a-z]+/g, ' ').trim();
+  if (CHAT_BLOCKED_CONTENT_PATTERNS.some((pattern) => pattern.test(stylized))) return true;
+
+  // Preserve literal quantities and sentence punctuation while still decoding digits inside words.
+  const literal = normalized
+    .replace(/[a-z0-9]+/g, (word) => /\d/.test(word) && /[a-z]/.test(word) ? decodeChatLeet(word) : word)
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+  return literal !== stylized && CHAT_BLOCKED_CONTENT_PATTERNS.some((pattern) => pattern.test(literal));
 }
 
 export function censorChatProfanity(input) {
@@ -75,7 +76,7 @@ export function sanitizeSiteChatMessages(messages = []) {
     if (!message.is_deleted && containsBlockedChatContent(message.body)) return [];
     return [{
       ...message,
-      display_name: censorChatProfanity(message.display_name),
+      display_name: containsBlockedChatContent(message.display_name) ? 'Player' : censorChatProfanity(message.display_name),
       body: message.is_deleted ? message.body : censorChatProfanity(message.body),
     }];
   });
