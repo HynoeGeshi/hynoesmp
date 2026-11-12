@@ -52,5 +52,5 @@ Reward audit (October 8, 2026): Campaign mission cash and stage rewards are sepa
 
 Website audit (October 8): All 18 HTML pages reviewed; 470 local references and 13 external links checked. Genesis normal/ominous trials require at least one copper/iron armor piece respectively. Time unlock estimates assume 20 TPS. Published client release v1.0.1 targets Minecraft 26.2 and Fabric Loader 0.19.3 with 158 bundled client mod files; matching shared versions is not a full login test. Minecraft Chat is public and relays website posts to Discord and Minecraft; clearing browser data does not delete connected copies. Outpost has 36 crew cards, its first cave has 5 rooms, and the 15% synergy requires three active crew of the same faction.
 
-## Fall 2026 Halloween timing
-After Dark begins automatically on October 31, 2026 at 12:00 a.m. EDT (America/New_York), equivalent to 2026-10-31T04:00:00Z. No staff activation is needed. If the server is offline at midnight, it checks again during Halloween. Existing Fall progress is kept. Open /season for the active phase and objectives. Keep using the current Hynoe SMP client pack. Guide: https://hynoesmp.com/start.html#seasonal-counts
+## Fall 2026 claim windows
+After Dark opened on October 31, 2026 and ended when Homecoming began on November 8, 2026. Homecoming offers the Feast and the three Harvest tasks. Open /season for the live phase, available claims and saved progress. Requirements and rewards are in the Fall guide at https://hynoesmp.com/start.html#seasonal-counts.

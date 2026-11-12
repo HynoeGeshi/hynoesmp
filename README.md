@@ -14,7 +14,7 @@ Install the required **Hynoe SMP client pack** before joining. Build a home, tak
 - [Join the Discord community](https://discord.gg/wYTePCkXd5)
 - [Watch Hynoe SMP on YouTube](https://www.youtube.com/@Hynoe)
 
-**Fall 2026:** Hynoe Halloween is live in the After Dark phase, which opened **October 31 at midnight Eastern**. Finish and claim its four tasks before **November 8 at 12:00 a.m. EST**, when Homecoming opens. Read the [seasonal task guide](https://hynoesmp.com/start.html#seasonal-counts) for requirements and rewards.
+**Fall 2026.** After Dark opened on October 31 and ended when Homecoming began on November 8. During Homecoming, the Feast and the three Harvest tasks are available. Open `/season` for the live phase and see the [seasonal task guide](https://hynoesmp.com/start.html#seasonal-counts) for requirements and rewards.
 
 Play respectfully: no griefing, stealing, cheating, duplication, exploits, or harassment. The [joining guide](https://hynoesmp.com/join.html) has the current requirements and server rules.
 
