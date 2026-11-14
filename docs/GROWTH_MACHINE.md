@@ -37,7 +37,7 @@ Before submitting anywhere, check the site's current rules and required fields. 
 - **Server address:** hynoesmp.com
 - **Edition:** Minecraft Java
 - **Loader/client:** Fabric; Hynoe SMP client pack required
-- **Discord:** https://discord.gg/wYTePCkXd5
+- **Discord:** https://discord.gg/VDp9AGQGFv
 - **Positioning:** Long-term modded survival with structured progression, community systems and exploration.
 
 ## Short listing copy

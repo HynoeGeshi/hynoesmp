@@ -15,7 +15,7 @@ Boss guide: https://hynoesmp.com/bosses.html
 Updates: https://hynoesmp.com/updates.html
 Watch and play: https://hynoesmp.com/watch.html
 Discovery page: https://hynoesmp.com/modded-minecraft-server.html
-Discord: https://discord.gg/wYTePCkXd5
+Discord: https://discord.gg/VDp9AGQGFv
 
 ## Core systems
 - 31-stage Campaign connecting major server systems.

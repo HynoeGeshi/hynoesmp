@@ -11,7 +11,7 @@ Install the required **Hynoe SMP client pack** before joining. Build a home, tak
 - [Install and join](https://hynoesmp.com/join.html)
 - [Official client pack](https://hynoesmp.com/modpack.html)
 - [Player handbook and guides](https://hynoesmp.com/start.html)
-- [Join the Discord community](https://discord.gg/wYTePCkXd5)
+- [Join the Discord community](https://discord.gg/VDp9AGQGFv)
 - [Watch Hynoe SMP on YouTube](https://www.youtube.com/@Hynoe)
 
 **Fall 2026.** After Dark opened on October 31 and ended when Homecoming began on November 8. During Homecoming, the Feast and the three Harvest tasks are available. Open `/season` for the live phase and see the [seasonal task guide](https://hynoesmp.com/start.html#seasonal-counts) for requirements and rewards.
@@ -34,7 +34,7 @@ The install guide's primary button points to the latest GitHub Release asset nam
 The separate interactive player dashboard remains owner-only and is intentionally not linked from this public site.
 
 ## Community
-Discord: https://discord.gg/wYTePCkXd5
+Discord: https://discord.gg/VDp9AGQGFv
 
 
 ## YouTube broadcast automation
