@@ -9340,12 +9340,12 @@
       ]
     },
     {
-      "id": "7f2f18ba114ba16e",
+      "id": "42da84941bbe3aac",
       "page": "llms.txt",
       "url": "/llms.txt",
       "title": "Hynoe SMP",
       "heading": "Hynoe SMP",
-      "text": "Hynoe SMP is a long-term modded Minecraft Java survival server focused on progression, community, exploration, village life, economy, bosses, and rare gear. Canonical site: https://hynoesmp.com/ Server address: hynoesmp.com Edition: Minecraft Java Loader/client: Fabric; the Hynoe SMP client pack is required Join guide: https://hynoesmp.com/join.html Modpack guide: https://hynoesmp.com/modpack.html Progression guide: https://hynoesmp.com/progression.html Village life guide: https://hynoesmp.com/mca.html Economy guide: https://hynoesmp.com/economy.html Boss guide: https://hynoesmp.com/bosses.html Updates: https://hynoesmp.com/updates.html Watch and play: https://hynoesmp.com/watch.html Discovery page: https://hynoesmp.com/modded-minecraft-server.html Discord: https://discord.gg/wYTePCkXd5",
+      "text": "Hynoe SMP is a long-term modded Minecraft Java survival server focused on progression, community, exploration, village life, economy, bosses, and rare gear. Canonical site: https://hynoesmp.com/ Server address: hynoesmp.com Edition: Minecraft Java Loader/client: Fabric; the Hynoe SMP client pack is required Join guide: https://hynoesmp.com/join.html Modpack guide: https://hynoesmp.com/modpack.html Progression guide: https://hynoesmp.com/progression.html Village life guide: https://hynoesmp.com/mca.html Economy guide: https://hynoesmp.com/economy.html Boss guide: https://hynoesmp.com/bosses.html Updates: https://hynoesmp.com/updates.html Watch and play: https://hynoesmp.com/watch.html Discovery page: https://hynoesmp.com/modded-minecraft-server.html Discord: https://discord.gg/VDp9AGQGFv",
       "tokens": [
         "/bosses",
         "/client",
@@ -9358,8 +9358,8 @@
         "/modpack",
         "/progression",
         "/updates",
+        "/vdp9agqgfv",
         "/watch",
-        "/wytepckxd5",
         "address",
         "boss",
         "bosses",
@@ -10159,12 +10159,12 @@
       ]
     },
     {
-      "id": "eeb0599c58986ec4",
+      "id": "018e295e117a8421",
       "page": "data/server-profile.json",
       "url": "/data/server-profile.json",
       "title": "Hynoe SMP",
       "heading": "Canonical server profile",
-      "text": "Name: Hynoe SMP. Canonical Url: https://hynoesmp.com/. Server Address: hynoesmp.com. Edition: Java. Loader: Fabric. Client Requirement: Hynoe SMP client pack required. Join Url: https://hynoesmp.com/join.html. Modpack Url: https://hynoesmp.com/modpack.html. Discovery Url: https://hynoesmp.com/modded-minecraft-server.html. Discord Url: https://discord.gg/wYTePCkXd5. Category Tags: modded survival; SMP; campaign progression; economy; village life; bosses; exploration. Features: 31-stage campaign; Genesis Ages progression gates; Minecraft Comes Alive village life; player economy and jobs; bosses and rare gear; Waystones and exploration; native Claims menu with personal and party settings. Positioning: Long-term modded survival built for progression, community and discovery rather than a short endgame rush.. Last Reviewed: 2026-10-14",
+      "text": "Name: Hynoe SMP. Canonical Url: https://hynoesmp.com/. Server Address: hynoesmp.com. Edition: Java. Loader: Fabric. Client Requirement: Hynoe SMP client pack required. Join Url: https://hynoesmp.com/join.html. Modpack Url: https://hynoesmp.com/modpack.html. Discovery Url: https://hynoesmp.com/modded-minecraft-server.html. Discord Url: https://discord.gg/VDp9AGQGFv. Category Tags: modded survival; SMP; campaign progression; economy; village life; bosses; exploration. Features: 31-stage campaign; Genesis Ages progression gates; Minecraft Comes Alive village life; player economy and jobs; bosses and rare gear; Waystones and exploration; native Claims menu with personal and party settings. Positioning: Long-term modded survival built for progression, community and discovery rather than a short endgame rush.. Last Reviewed: 2026-10-14",
       "dated_at": "2026-10-14",
       "tokens": [
         "/discord",
@@ -10172,7 +10172,7 @@
         "/join",
         "/modded-minecraft-server",
         "/modpack",
-        "/wytepckxd5",
+        "/vdp9agqgfv",
         "2026-10-14",
         "31-stage",
         "address",
