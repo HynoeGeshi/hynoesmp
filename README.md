@@ -51,9 +51,9 @@ It updates:
 Behavior:
 - Current livestream = shown first with **LIVE NOW**
 - No active livestream = newest completed stream
-- Temporary YouTube parsing failure = existing website data is preserved
+- Blocked or unverifiable refresh = existing website data is preserved and the workflow reports failure
 
-No YouTube API key or GitHub Secret is required.
+The workflow uses the official API to verify playback metadata when the repository secret `YOUTUBE_DATA_API_KEY` is configured. Create that key in a Google Cloud project with YouTube Data API v3 enabled, restrict the key to that API, and store it in GitHub Actions secrets. Without the secret, the workflow checks public watch pages and stops at the first YouTube bot challenge.
 
 After uploading this version to GitHub:
 1. Open **Actions**

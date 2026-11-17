@@ -29,6 +29,8 @@ jobs:
         run: python -m unittest discover -s tests -p test_update_youtube.py
 
       - name: Find latest Hynoe livestream
+        env:
+          YOUTUBE_DATA_API_KEY: ${{ secrets.YOUTUBE_DATA_API_KEY }}
         run: python scripts/update_youtube.py
 
       - name: Commit broadcast change

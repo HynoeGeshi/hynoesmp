@@ -2,10 +2,10 @@
 """
 Update data/stream.json from the public @Hynoe YouTube Streams page.
 
-No YouTube API key is required. The script:
+The script:
 1) reads the public /streams page,
 2) collects recent stream video IDs,
-3) checks recent watch pages,
+3) verifies candidates through the YouTube Data API when configured or public watch pages,
 4) prioritizes an active livestream,
 5) otherwise publishes the newest completed stream.
 
@@ -19,20 +19,30 @@ import datetime as dt
 import html as html_lib
 from html.parser import HTMLParser
 import json
+import os
 import pathlib
 import re
 import sys
+import urllib.error
+import urllib.parse
 import urllib.request
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 OUT = ROOT / "data" / "stream.json"
 CHANNEL_HANDLE = "Hynoe"
+CHANNEL_ID = "UCjWR1CZVFkrVk3S-TRrOGGQ"
 STREAMS_URL = f"https://www.youtube.com/@{CHANNEL_HANDLE}/streams"
+VIDEOS_API_URL = "https://www.googleapis.com/youtube/v3/videos"
 UA = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
     "AppleWebKit/537.36 (KHTML, like Gecko) "
     "Chrome/152.0 Safari/537.36"
 )
+
+
+class YouTubeBotChallenge(ValueError):
+    """YouTube has challenged the runner's anonymous watch-page requests."""
+
 
 def get(url: str) -> str:
     req = urllib.request.Request(
@@ -99,6 +109,9 @@ def video_info(video_id: str) -> dict:
         raise ValueError("YouTube player metadata unreadable") from error
     details = player.get("videoDetails", {})
     playback = player.get("playabilityStatus", {})
+    reason = playback.get("reason", "")
+    if playback.get("status") == "LOGIN_REQUIRED" and re.search(r"not\s+a\s+bot\b", reason, re.I):
+        raise YouTubeBotChallenge(reason)
     if details.get("isPrivate") or playback.get("status") != "OK":
         raise ValueError(
             "YouTube video unavailable or private: "
@@ -153,6 +166,54 @@ def video_info(video_id: str) -> dict:
         "publishedAt": published,
     }
 
+
+def official_video_infos(ids: list[str], api_key: str) -> list[dict]:
+    query = urllib.parse.urlencode({
+        "part": "snippet,status,liveStreamingDetails,contentDetails",
+        "id": ",".join(ids),
+    })
+    request = urllib.request.Request(f"{VIDEOS_API_URL}?{query}", headers={"Accept": "application/json"})
+    request.add_unredirected_header("X-Goog-Api-Key", api_key)
+    with urllib.request.urlopen(request, timeout=25) as response:
+        videos = json.load(response)["items"]
+
+    candidates = {}
+    for video in videos:
+        video_id = video["id"]
+        snippet = video.get("snippet", {})
+        status = video.get("status", {})
+        content = video.get("contentDetails", {})
+        live = video.get("liveStreamingDetails")
+        if (
+            video_id not in ids
+            or snippet.get("channelId") != CHANNEL_ID
+            or status.get("privacyStatus") != "public"
+            or status.get("embeddable") is not True
+            or content.get("regionRestriction")
+            or content.get("contentRating", {}).get("ytRating") == "ytAgeRestricted"
+            or not isinstance(live, dict)
+        ):
+            continue
+
+        broadcast = snippet.get("liveBroadcastContent")
+        if broadcast in ("live", "upcoming"):
+            label = broadcast
+        elif live.get("actualEndTime"):
+            label = "latest"
+        else:
+            continue
+        candidates[video_id] = {
+            "channel": f"@{CHANNEL_HANDLE}",
+            "videoId": video_id,
+            "title": snippet.get("title") or "Hynoe livestream",
+            "status": label,
+            "url": f"https://www.youtube.com/watch?v={video_id}",
+            "thumbnail": f"https://i.ytimg.com/vi/{video_id}/hqdefault.jpg",
+            "publishedAt": live.get("actualStartTime") or snippet.get("publishedAt", ""),
+        }
+    return [candidates[video_id] for video_id in ids if video_id in candidates]
+
+
 def main() -> int:
     try:
         streams = get(STREAMS_URL)
@@ -173,15 +234,30 @@ def main() -> int:
         print("No stream video IDs found; leaving existing data untouched.")
         return 1
 
-    candidates = []
-    for vid in ids[:6]:
+    api_key = os.environ.get("YOUTUBE_DATA_API_KEY", "").strip()
+    if api_key:
         try:
-            info = video_info(vid)
-            candidates.append(info)
-            if info["status"] == "live":
-                break
-        except Exception as e:
-            print(f"Skipping {vid}: {e}")
+            candidates = official_video_infos(ids, api_key)
+        except urllib.error.HTTPError as error:
+            print(f"YouTube Data API request failed with HTTP {error.code}; published data kept.")
+            return 1
+        except (OSError, KeyError, TypeError, ValueError):
+            print("YouTube Data API response could not be read; published data kept.")
+            return 1
+    else:
+        candidates = []
+        for vid in ids[:6]:
+            try:
+                info = video_info(vid)
+                candidates.append(info)
+                if info["status"] == "live":
+                    break
+            except YouTubeBotChallenge:
+                annotation = "::warning title=YouTube refresh blocked::" if os.environ.get("GITHUB_ACTIONS") == "true" else ""
+                print(f"{annotation}YouTube challenged the runner's watch requests. Published data kept. Configure YOUTUBE_DATA_API_KEY for the official API.")
+                return 1
+            except Exception as e:
+                print(f"Skipping {vid}: {e}")
 
     if not candidates:
         print("No stream metadata could be read; leaving existing data untouched.")

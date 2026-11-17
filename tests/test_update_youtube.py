@@ -1,9 +1,13 @@
 import importlib.util
+import io
 import json
+import os
 import pathlib
 import tempfile
 import unittest
 from unittest.mock import patch
+from urllib.error import HTTPError
+from urllib.parse import parse_qs, urlparse
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 SPEC = importlib.util.spec_from_file_location("update_youtube", ROOT / "scripts" / "update_youtube.py")
@@ -80,6 +84,88 @@ class YouTubeUpdaterTests(unittest.TestCase):
         with patch.object(update_youtube, "get", return_value=page):
             with self.assertRaisesRegex(ValueError, "LOGIN_REQUIRED.*Sign in to confirm availability"):
                 update_youtube.video_info("3IQpeV2i4Tc")
+
+    def test_bot_challenge_stops_watch_page_checks_and_keeps_published_bytes(self):
+        streams = '{"videoId":"3IQpeV2i4Tc"},{"videoId":"QljzCRTJ-mA"}'
+        challenge = self.watch_page("LOGIN_REQUIRED", reason="Sign in to confirm you’re not a bot")
+        with tempfile.TemporaryDirectory() as directory:
+            output = pathlib.Path(directory) / "stream.json"
+            original = b'{"videoId":"QljzCRTJ-mA","title":"Existing broadcast"}\n'
+            output.write_bytes(original)
+            with (
+                patch.dict(os.environ, {"YOUTUBE_DATA_API_KEY": "", "GITHUB_ACTIONS": "true"}),
+                patch.object(update_youtube, "OUT", output),
+                patch.object(update_youtube, "get", side_effect=[streams, challenge]) as get,
+                io.StringIO() as messages,
+                patch("sys.stdout", messages),
+            ):
+                self.assertEqual(update_youtube.main(), 1)
+                self.assertIn("::warning title=YouTube refresh blocked::", messages.getvalue())
+                self.assertIn("YOUTUBE_DATA_API_KEY", messages.getvalue())
+            self.assertEqual(get.call_count, 2)
+            self.assertEqual(output.read_bytes(), original)
+
+    def test_configured_official_api_prefers_public_embeddable_live_stream_in_one_request(self):
+        ids = ["QljzCRTJ-mA", "X8qVLJlVhNU", "3IQpeV2i4Tc", "AAAAAAAAAAA", "BBBBBBBBBBB"]
+        streams = ",".join(json.dumps({"videoId": video_id}, separators=(",", ":")) for video_id in ids)
+
+        def video(video_id, title, broadcast, visibility="public", channel="UCjWR1CZVFkrVk3S-TRrOGGQ", embeddable=True):
+            timing = {"actualStartTime": "2026-11-17T12:00:00Z"}
+            if broadcast == "none":
+                timing["actualEndTime"] = "2026-11-17T13:00:00Z"
+            return {
+                "id": video_id,
+                "snippet": {
+                    "channelId": channel,
+                    "title": title,
+                    "liveBroadcastContent": broadcast,
+                    "publishedAt": "2026-11-17T11:30:00Z",
+                },
+                "status": {"privacyStatus": visibility, "embeddable": embeddable},
+                "liveStreamingDetails": timing,
+            }
+
+        response = {"items": [
+            video(ids[1], "Another channel", "live", channel="UCaaaaaaaaaaaaaaaaaaaaaa"),
+            video(ids[3], "Private", "live", visibility="private"),
+            video(ids[4], "No embeds", "live", embeddable=False),
+            video(ids[0], "Completed", "none"),
+            video(ids[2], "Hynoe live", "live"),
+        ]}
+        with tempfile.TemporaryDirectory() as directory:
+            output = pathlib.Path(directory) / "stream.json"
+            with (
+                patch.dict(os.environ, {"YOUTUBE_DATA_API_KEY": "synthetic-test-key"}),
+                patch.object(update_youtube, "OUT", output),
+                patch.object(update_youtube, "get", return_value=streams),
+                patch.object(update_youtube.urllib.request, "urlopen", return_value=io.BytesIO(json.dumps(response).encode())) as request,
+            ):
+                self.assertEqual(update_youtube.main(), 0)
+            stream = json.loads(output.read_text(encoding="utf-8"))
+            self.assertEqual((stream["videoId"], stream["status"], stream["title"]), (ids[2], "live", "Hynoe live"))
+        request.assert_called_once()
+        sent = request.call_args.args[0]
+        self.assertEqual(parse_qs(urlparse(sent.full_url).query)["id"], [",".join(ids)])
+        self.assertEqual(sent.get_header("X-goog-api-key"), "synthetic-test-key")
+        self.assertNotIn("synthetic-test-key", sent.full_url)
+
+    def test_api_error_keeps_published_bytes_without_falling_back_to_watch_pages(self):
+        streams = '{"videoId":"3IQpeV2i4Tc"}'
+        denial = HTTPError("https://www.googleapis.com/youtube/v3/videos", 403, "Forbidden", {}, None)
+        with tempfile.TemporaryDirectory() as directory:
+            output = pathlib.Path(directory) / "stream.json"
+            original = b'{"videoId":"QljzCRTJ-mA","title":"Existing broadcast"}\n'
+            output.write_bytes(original)
+            with (
+                patch.dict(os.environ, {"YOUTUBE_DATA_API_KEY": "synthetic-test-key"}),
+                patch.object(update_youtube, "OUT", output),
+                patch.object(update_youtube, "get", side_effect=[streams]) as get,
+                patch.object(update_youtube.urllib.request, "urlopen", side_effect=denial) as request,
+            ):
+                self.assertEqual(update_youtube.main(), 1)
+            request.assert_called_once()
+            get.assert_called_once_with(update_youtube.STREAMS_URL)
+            self.assertEqual(output.read_bytes(), original)
 
     def test_unchanged_verified_stream_returns_zero_without_rewriting_json(self):
         info = {
