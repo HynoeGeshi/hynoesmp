@@ -3,8 +3,22 @@ import assert from 'node:assert/strict';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildHelpIndex, DEFAULT_HELP_SOURCES } from '../scripts/build-help-index.mjs';
+import { answerAskHynoe } from '../supabase/functions/_shared/ask-hynoe-engine.mjs';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+
+test('Thanksgiving quest and reward questions retrieve the complete requirement or benefit', async () => {
+  const { chunks } = await buildHelpIndex({ rootDir });
+  for (const [question, fact] of [
+    ['When does Thanksgiving start?', /November 26/],
+    ['How do I finish Kitchen Stock?', /16 baked potatoes, 8 bread, and 4 pumpkin pies/],
+    ['What is the River Charm?', /River Charm.*breathe longer.*underwater/],
+  ]) {
+    const result = await answerAskHynoe({ question, pagePath: '/start.html', chunks });
+    assert.match(result.answer, fact, question);
+    assert.ok(result.sources.some(({ url }) => url === '/start.html'), question);
+  }
+});
 
 test('help index uses an explicit approved Hynoe source allowlist', async () => {
   const index = await buildHelpIndex({ rootDir, sources: DEFAULT_HELP_SOURCES });
