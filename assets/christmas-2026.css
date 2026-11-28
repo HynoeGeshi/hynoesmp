@@ -1,0 +1,374 @@
+/*! Copyright © 2026 Hynoe. All rights reserved. See /COPYRIGHT.md. */
+/* Christmas 2026 shares the same layout, navigation and controls across the site. */
+:root {
+  --winter-night: #0b191b;
+  --winter-pine: #152a27;
+  --winter-spruce: #203a33;
+  --winter-line: #547368;
+  --winter-snow: #f1f7f3;
+  --winter-mist: #bccfc7;
+  --winter-gold: #f4cc86;
+  --winter-cranberry: #692f38;
+  --winter-berry-light: #ba7b80;
+  --bg: var(--winter-night);
+  --bg2: #112323;
+  --panel: var(--winter-pine);
+  --panel2: var(--winter-spruce);
+  --line: var(--winter-line);
+  --text: var(--winter-snow);
+  --muted: var(--winter-mist);
+  --gold: var(--winter-gold);
+  --gold2: #ffe0a3;
+  --grass: #a5d2b8;
+  --emerald: #a5d2b8;
+  --refresh-bg: var(--winter-night);
+  --refresh-panel: var(--winter-pine);
+  --refresh-panel-2: var(--winter-spruce);
+  --refresh-line: var(--winter-line);
+  --refresh-gold: var(--winter-gold);
+  --refresh-cream: var(--winter-snow);
+  --refresh-muted: var(--winter-mist);
+  --refresh-green: #a5d2b8;
+  --hub-bg: var(--winter-night);
+  --hub-panel: var(--winter-pine);
+  --hub-panel-2: var(--winter-spruce);
+  --hub-line: var(--winter-line);
+  --hub-gold: var(--winter-gold);
+  --hub-green: #a5d2b8;
+  --hub-text: var(--winter-snow);
+  --hub-muted: var(--winter-mist);
+  --control-gold: var(--winter-gold);
+  --control-line: var(--winter-line);
+}
+
+body, body[data-page="home"] {
+  background: radial-gradient(ellipse at 12% 0, #356c604d, transparent 45%),
+    radial-gradient(ellipse at 94% 17%, #2448475c, transparent 42%),
+    var(--winter-night);
+  color: var(--winter-snow);
+}
+
+body:before, body[data-page="home"]:before {
+  background: radial-gradient(circle at 82% 12%, #67908013, transparent 32%);
+}
+
+body[data-page] .world-hud, body .topbar, body .legal-top {
+  background: linear-gradient(#19312df7, #0b191bf7);
+  border-color: var(--winter-line);
+}
+
+body[data-page] nav[data-site-navigation], body nav.site-pages[data-site-navigation] {
+  background: #0d201ff5;
+  border-bottom-color: var(--winter-line);
+}
+
+body[data-page] :is(.hud-action, .journal-toggle), body .topbar nav a,
+body nav[data-site-navigation] a span, body[data-page] nav[data-site-navigation] a span {
+  background: var(--winter-pine);
+  border-color: var(--winter-line);
+  color: var(--winter-snow);
+}
+
+body nav[data-site-navigation] a:hover, body nav[data-site-navigation] a[aria-current="page"],
+body[data-page] .hotbar-slot.active, body[data-page] .hotbar-slot:hover {
+  background: var(--winter-cranberry);
+  border-color: var(--winter-berry-light);
+  color: var(--winter-snow);
+}
+
+body[data-page] :is(.hud-action, .journal-toggle):hover, body .topbar nav a:hover {
+  border-color: var(--winter-gold);
+  color: var(--winter-gold);
+}
+
+body[data-page="home"] .world-context,
+body:is([data-page="home"], [data-page="updates"])::after {
+  display: none;
+}
+
+body:is([data-page="home"], [data-page="updates"]) main::before {
+  background: linear-gradient(180deg, transparent, var(--winter-night));
+}
+
+body[data-page="home"] .world-gate {
+  padding-top: clamp(42px, 5vw, 76px);
+}
+
+body[data-page="home"] .world-gate-bg {
+  background: linear-gradient(90deg, #0b191be8 0%, #0b191b87 40%, transparent 76%),
+    linear-gradient(0deg, var(--winter-night) 0%, transparent 32%),
+    url("images/christmas-village-2026.webp") 66% center / cover no-repeat;
+  transform: none;
+  filter: none;
+}
+
+body[data-page="home"] .world-gate::after {
+  display: none;
+}
+
+body[data-page="home"] .gate-copy {
+  max-width: 620px;
+  background: linear-gradient(135deg, #142a25f2, #0b191bd9);
+  border-color: var(--winter-line);
+}
+
+body[data-page="home"] .world-gate h1 {
+  font-size: clamp(48px, 6vw, 82px);
+  line-height: 1;
+  color: var(--winter-snow);
+}
+
+body[data-page="home"] .world-gate h1 em {
+  color: var(--winter-gold);
+}
+
+body[data-page="home"] .hero-lead {
+  background: #0b191bb8;
+  border-left-color: var(--winter-berry-light);
+  color: var(--winter-snow);
+}
+
+body[data-page="home"] .hero-subactions :is(a, button) {
+  color: var(--winter-snow);
+  text-decoration-color: #8aad9c;
+}
+
+body[data-page="home"] :is(.world-dashboard a, .quick-start-grid a) {
+  background: linear-gradient(145deg, #203a33ef, #122423ed);
+  border-color: var(--winter-line);
+}
+
+body[data-page="home"] :is(.world-dashboard a, .quick-start-grid a):hover {
+  border-color: var(--winter-gold);
+}
+
+body[data-page] :is(.guide-chapter, .quest-step>div, .market-stall, .encounter-card, .join-step,
+.campaign-roadmap-grid article, .october-grid article, .vault-grid article, .age-card, .update-card,
+.progression-card, .command-card),
+body[data-page="home"] .update-strip article, body .panel, body .legal-card {
+  background-color: var(--winter-pine);
+  border-color: var(--winter-line);
+}
+
+body[data-page="home"] :is(.recent-updates, .viewer-feature, .outpost-terminal, .wood-sign, .scene-sign),
+body[data-page] .october-panel {
+  background: linear-gradient(130deg, var(--winter-spruce), var(--winter-pine));
+  border-color: var(--winter-line);
+}
+
+body[data-page] .october-panel :is(h1, h2) {
+  color: var(--winter-snow);
+}
+
+body[data-page] .october-panel :is(p, li) {
+  color: var(--winter-snow);
+}
+
+body[data-page] .october-panel a:not(.mc-button), body[data-page] :is(.eyebrow, .updates-live) {
+  color: var(--winter-gold);
+}
+
+.outpost-redirect {
+  max-width: 42rem;
+  margin: min(15vh, 96px) auto;
+  padding: 24px;
+  font-family: system-ui, sans-serif;
+}
+
+.outpost-redirect a {
+  color: var(--winter-gold);
+}
+
+body[data-page] .quest-tag {
+  background: #17312bea;
+  border-color: var(--winter-line);
+}
+
+body .install-copy {
+  background: linear-gradient(150deg, #0b191bf2, #203a33ed) !important;
+  border-color: var(--winter-line) !important;
+}
+
+body .viewer-ribbon, body .campaign-strip, body .game>.panel-head {
+  background: linear-gradient(105deg, var(--winter-spruce), var(--winter-pine));
+  border-color: var(--winter-line);
+  color: var(--winter-snow);
+}
+
+body .viewer-ribbon span {
+  color: var(--winter-gold);
+}
+
+body .viewer-ribbon b {
+  background: var(--winter-night);
+  border-color: var(--winter-line);
+  color: var(--winter-snow);
+}
+
+body .stats>div, body .outpost-planner {
+  background: var(--winter-pine);
+  border-color: var(--winter-line);
+}
+
+body .guide-dialog {
+  background: var(--winter-pine);
+  border-color: var(--winter-line);
+  color: var(--winter-snow);
+}
+
+body .guide-dialog .guide-link {
+  background: var(--winter-spruce);
+  border-color: var(--winter-line);
+  color: var(--winter-snow);
+}
+
+body .guide-dialog .guide-start {
+  background: linear-gradient(#ffe0a3, #ebbe72);
+  border-color: #ffe0a3;
+  color: #221a0c;
+}
+
+body .outpost-planner :is(select, button) {
+  background: var(--winter-spruce);
+  border-color: var(--winter-line);
+  color: var(--winter-snow);
+}
+
+body[data-page] .mc-button.gold, body .mc-button.gold {
+  background: linear-gradient(#ffe0a3, #ebbe72);
+  border-color: #ffe0a3;
+  color: #221a0c;
+}
+
+body[data-page] .mc-button.purple, body .mc-button.purple {
+  background: linear-gradient(#803c48, #5c2631);
+  border-color: var(--winter-berry-light);
+  color: var(--winter-snow);
+}
+
+body[data-page] .mc-button.emerald, body .mc-button.emerald {
+  background: linear-gradient(#2e5c4c, #203e35);
+  border-color: #80a796;
+  color: var(--winter-snow);
+}
+
+body[data-page] .mc-button.stone, body .mc-button.stone {
+  background: linear-gradient(#334d51, #263a3d);
+  border-color: #779496;
+  color: var(--winter-snow);
+}
+
+body[data-page="home"] .site-footer, body .site-footer, body .legal-footer {
+  background: var(--winter-night);
+  border-color: var(--winter-line);
+  color: var(--winter-mist);
+}
+
+.holiday-notice {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px 16px;
+  flex-wrap: wrap;
+  padding: 8px 16px;
+  background: linear-gradient(105deg, #49252b, #2e2025);
+  border-bottom: 1px solid var(--winter-berry-light);
+  color: var(--winter-snow);
+  font-size: 13px;
+}
+
+.holiday-notice a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  color: var(--winter-gold);
+  font-weight: 700;
+  text-underline-offset: 3px;
+  padding-block: 4px;
+}
+
+body[data-page] .christmas-update-cover {
+  background: linear-gradient(90deg, #0b191bf5, #0b191bc7 46%, #0b191b40 92%),
+    url("images/christmas-village-2026.webp") 72% 44% / cover no-repeat;
+}
+
+.christmas-update-cover p {
+  max-width: 52ch;
+}
+
+.season-table-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+  margin: 20px 0;
+  border: 1px solid var(--winter-line);
+  border-radius: 8px;
+}
+
+:is(.holiday-notice a, .season-table-scroll, .guide-dialog button):focus-visible {
+  outline: 3px solid var(--winter-gold);
+  outline-offset: 3px;
+}
+
+.season-completion-table {
+  width: 100%;
+  min-width: 680px;
+  border-collapse: collapse;
+  font-size: 14px;
+  text-align: left;
+}
+
+.season-completion-table caption {
+  padding: 12px;
+  text-align: left;
+  color: var(--winter-gold);
+  font-weight: 700;
+}
+
+.season-completion-table :is(th, td) {
+  padding: 12px;
+  border-top: 1px solid var(--winter-line);
+  vertical-align: top;
+}
+
+.season-completion-table thead th {
+  background: var(--winter-spruce);
+  color: var(--winter-snow);
+}
+
+.season-completion-table tbody th {
+  width: 23%;
+}
+
+.season-completion-table td:last-child {
+  min-width: 150px;
+}
+
+@media (max-width: 700px) {
+  body[data-page="home"] .world-gate {
+    padding-top: clamp(150px, 43vw, 260px);
+  }
+
+  body[data-page="home"] .world-gate-bg {
+    height: clamp(230px, 70vw, 450px);
+    background: linear-gradient(0deg, var(--winter-night), transparent 52%),
+      url("images/christmas-village-2026.webp") 77% 41% / cover no-repeat;
+  }
+
+  body[data-page="home"] .world-gate h1 {
+    font-size: clamp(39px, 11vw, 66px);
+  }
+
+  .holiday-notice {
+    gap: 0 12px;
+    text-align: center;
+  }
+
+  .holiday-notice a {
+    min-height: 44px;
+  }
+
+  body[data-page] .christmas-update-cover {
+    background: linear-gradient(90deg, #0b191bf2, #0b191b9c),
+      url("images/christmas-village-2026.webp") 76% center / cover no-repeat;
+  }
+}
